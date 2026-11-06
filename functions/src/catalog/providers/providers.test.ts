@@ -225,6 +225,9 @@ describe("HardcoverProvider (schema fixtures)", () => {
     );
     const res = await hc.search({ text: "x", field: "series" }, page, signal);
     expect(res.ok).toBe(false);
+    if (res.ok) return;
+    // Not "notFound", which the circuit breaker counts as healthy.
+    expect(res.error).toBe("invalid");
   });
 
   it("sends a Bearer token exactly once", async () => {

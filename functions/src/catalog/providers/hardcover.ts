@@ -70,7 +70,7 @@ export class HardcoverProvider implements BookMetadataProvider {
     return this.token().length > 0;
   }
 
-  search(
+  async search(
     query: SearchQuery,
     page: Page,
     signal: AbortSignal,
@@ -89,7 +89,7 @@ export class HardcoverProvider implements BookMetadataProvider {
       publisher: undefined,
     };
     const field = narrowed[query.field];
-    return this.graphql(
+    const result = await this.graphql(
       `query Search($q: String!, $perPage: Int!, $page: Int!${field ? ", $fields: String!, $weights: String!, $typos: String!" : ""}) {
         search(query: $q, query_type: "Book", per_page: $perPage, page: $page${field ? ", fields: $fields, weights: $weights, typos: $typos" : ""}) { results }
       }`,
@@ -118,6 +118,11 @@ export class HardcoverProvider implements BookMetadataProvider {
           .filter((h): h is RawWorkHit => h !== undefined);
       },
     );
+    // A search answers with a hits list, even an empty one. Without one it's an
+    // outage for the circuit breaker, which treats "notFound" as healthy.
+    return !result.ok && result.error === "notFound"
+      ? fail("invalid", "search response had no hits list")
+      : result;
   }
 
   lookupIsbn(
