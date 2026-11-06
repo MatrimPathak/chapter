@@ -432,6 +432,14 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ## E. Development history
 
+### 2026-11-07 — Next steps after Firebase production
+
+- **Account deletion tested on production (W50):** at your request, your account on `chapter-reads-prod` through the app: the server asked for a recent sign-in, you were re-picked in Google's dialog, the app returned to sign-in, its local database file was gone, and the Auth export no longer listed an account. Both calls logged `auth` and `app` VALID. One run. Firestore documents not yet seen from outside the app; the sweep hasn't been observed.
+- **Dependabot alerts:** all 8 were development-only; deployed functions use `@grpc/grpc-js` 1.14.7, and `npm audit --omit=dev` was already clean. Fixed: `vitest` 3 to 4.1.12, which drops `tinypool`; overrides for `@grpc/grpc-js` under `@firebase/firestore`, which pins `~1.9`, and `minimatch` under `@typescript-eslint/typescript-estree`, which asks for `^10`. Both overrides go past what those packages declare; tests pass, but revisit when upstream moves. `npm audit` reports 0. Lint, typecheck, build, 67 unit, 67 rules and 9 integration tests pass. No redeploy needed. Local only, not published.
+- **Hardcover bug found live (W9):** every search narrowed to title, author, ISBN or series got `results: null` with status 200, because we sent fewer fields without our own `typos`. Our code read that as "0 results": series search always came back empty, and the other three silently fell through to Open Library. Fixed in `hardcover.ts`: one `typos` value per field, and a response with no hits list now counts as failed. 5 new tests; 72 unit tests pass. Confirmed with direct calls using your token: all four narrowed searches return results when `typos` is sent. **Not deployed; production still has the bug.** Rules and integration tests last ran before this fix.
+- **Google Books (W10):** your key works: a direct ISBN lookup returned status 200 and 1 result. Not observed through the app.
+- **Release bundle:** `app-prod-release.aab`, version `0.1.0+1`, signed with the upload key, 79.6 MB, on the second try: the first died with "daemon disappeared" while other work was running. Built but never run. `release_check.py` still fails on the privacy policy (3 markers) and the 0.x version. Local build output only.
+
 ### 2026-11-06 — Firebase production, B1 (COMPLETED WITH WARNINGS)
 
 - **Objective:** a production Firebase project the release build can sign in to and sync with.
@@ -448,7 +456,9 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 - **Upload key:** created and registered in Firebase, kept outside the repo with `key.properties` git-ignored. Production debug builds sign with it on machines that have `key.properties`; dev stays on the debug key, so existing dev installs keep their local data. Flutter's migrator added two flags to `gradle.properties`.
 - **Not yet verified:** a release build, Play Integrity, account deletion, the sweep firing, which providers served the results.
 - **Verification:** functions lint, build, 67 tests. App analyze clean, 406 tests. **One full app run before that stopped early** ("did not complete", 105 tests not finished), right after clearing `build/test_cache`; the rerun passed with no changes in between, cause unknown (W54 reopened). Nothing has signed in or synced yet.
-- **Publishing note:** `firebase_options_prod.dart` now holds the real API keys. They identify the project and aren't secrets, but the repository is public, and GitHub's secret scanning may flag them.
+- **Published:** PR #3 from `chore/firebase-production`, head `0704ca8`, merged by you as `5a083e8` on 2026-11-06. All four CI checks and CodeRabbit passed on the head commit. Review found one real bug, fixed before merge: signing all debug builds with the upload key would have broken dev installs.
+- **API keys:** `firebase_options_prod.dart` holds the real keys, which identify the project and aren't secrets. GitHub opened 2 secret scanning alerts for them; they stay open until you restrict the keys and dismiss them.
+- **Open from the push:** 8 Dependabot alerts in `functions/package-lock.json`, 2 critical.
 - **App Check:** Play Integrity needs the app known to Play, so "adds a book" on a release build may have to wait for internal testing or use a debug token.
 - **Risks:** the database location is permanent. Functions in a different region from the client's setting would fail every call. App Check is enforced on every callable, so nothing server-side works in a release build until it's registered.
 

@@ -185,6 +185,48 @@ describe("HardcoverProvider (schema fixtures)", () => {
     expect(body.variables.fields).toBe("series_names");
   });
 
+  it.each([
+    ["title", "title,alternative_titles", "1,1", "5,5"],
+    ["author", "author_names", "1", "5"],
+    ["isbn", "isbns", "1", "0"],
+    ["series", "series_names", "1", "5"],
+  ] as const)(
+    "sends one typos value per field when searching by %s",
+    async (field, fields, weights, typos) => {
+      let body = "";
+      const hc = new HardcoverProvider(
+        async (_url, init) => {
+          body = String(init.body);
+          return {
+            status: 200,
+            json: { data: { search: { results: { hits: [] } } } },
+          };
+        },
+        () => "tok",
+        TokenBucket.perMinute(60),
+      );
+      const res = await hc.search({ text: "x", field }, page, signal);
+      expect(res.ok).toBe(true);
+      const sent = JSON.parse(body);
+      expect(sent.variables).toMatchObject({ fields, weights, typos });
+      expect(sent.query).toContain("typos: $typos");
+    },
+  );
+
+  it("treats a search with no hits list as failed, not as nothing found", async () => {
+    // What Hardcover really returned when the typos count didn't match.
+    const hc = new HardcoverProvider(
+      async () => ({
+        status: 200,
+        json: { data: { search: { results: null } } },
+      }),
+      () => "tok",
+      TokenBucket.perMinute(60),
+    );
+    const res = await hc.search({ text: "x", field: "series" }, page, signal);
+    expect(res.ok).toBe(false);
+  });
+
   it("sends a Bearer token exactly once", async () => {
     let auth = "";
     const hc = new HardcoverProvider(

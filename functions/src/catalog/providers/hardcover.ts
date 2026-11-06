@@ -75,18 +75,23 @@ export class HardcoverProvider implements BookMetadataProvider {
     page: Page,
     signal: AbortSignal,
   ): Promise<ProviderResult<RawWorkHit[]>> {
-    const fields: Record<SearchField, string | undefined> = {
+    // `typos` needs one value per field, or Hardcover answers 200 with no
+    // results at all. It defaults to five, one for each of its default fields.
+    const narrowed: Record<
+      SearchField,
+      { fields: string; typos: string } | undefined
+    > = {
       all: undefined,
-      title: "title,alternative_titles",
-      author: "author_names",
-      isbn: "isbns",
-      series: "series_names",
+      title: { fields: "title,alternative_titles", typos: "5,5" },
+      author: { fields: "author_names", typos: "5" },
+      isbn: { fields: "isbns", typos: "0" },
+      series: { fields: "series_names", typos: "5" },
       publisher: undefined,
     };
-    const field = fields[query.field];
+    const field = narrowed[query.field];
     return this.graphql(
-      `query Search($q: String!, $perPage: Int!, $page: Int!${field ? ", $fields: String!, $weights: String!" : ""}) {
-        search(query: $q, query_type: "Book", per_page: $perPage, page: $page${field ? ", fields: $fields, weights: $weights" : ""}) { results }
+      `query Search($q: String!, $perPage: Int!, $page: Int!${field ? ", $fields: String!, $weights: String!, $typos: String!" : ""}) {
+        search(query: $q, query_type: "Book", per_page: $perPage, page: $page${field ? ", fields: $fields, weights: $weights, typos: $typos" : ""}) { results }
       }`,
       {
         q: query.text,
@@ -94,18 +99,21 @@ export class HardcoverProvider implements BookMetadataProvider {
         page: page.page,
         ...(field
           ? {
-              fields: field,
-              weights: field
+              fields: field.fields,
+              weights: field.fields
                 .split(",")
                 .map(() => "1")
                 .join(","),
+              typos: field.typos,
             }
           : {}),
       },
       signal,
       (data) => {
         const results = asRecord(asRecord(data.search)?.results);
-        return asArray(results?.hits)
+        // No hits list means the search failed, which isn't "nothing found".
+        if (!Array.isArray(results?.hits)) return undefined;
+        return asArray(results.hits)
           .map((h) => searchDocToHit(asRecord(asRecord(h)?.document)))
           .filter((h): h is RawWorkHit => h !== undefined);
       },
