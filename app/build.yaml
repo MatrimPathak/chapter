@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # Nested models must serialize to plain maps (cache round-trips).
+          explicit_to_json: true

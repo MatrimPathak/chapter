@@ -1,0 +1,308 @@
+rules_version = '2';
+
+// Chapter Firestore security rules (docs/03 §8, docs/05 §1.2).
+//
+// Principles:
+//  * Every user document is readable and writable only by its owner.
+//  * Every write is schema-checked: allow-listed fields, types, ranges.
+//  * Anything not explicitly allowed is denied. User sub-collections are
+//    added phase by phase (library, sessions, notes… arrive in Phases 4–6).
+//  * The global catalog is read-only to clients; only Cloud Functions write it.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ── Profile / preferences: users/{uid} ──────────────────────────────
+    // Per-field last-writer-wins document. Field names must match
+    // app/lib/features/profile/domain/user_preferences.dart (ProfileFields).
+    function profileFields() {
+      return ['displayName', 'photoUrl', 'email', 'onboardingDone', 'theme',
+              'analyticsConsent', 'crashConsent', 'defaultTimerMin', 'weekStartsOn'];
+    }
+
+    function optionalString(data, key, maxLen) {
+      return !(key in data) || data[key] == null
+        || (data[key] is string && data[key].size() <= maxLen);
+    }
+
+    function optionalBool(data, key) {
+      return !(key in data) || data[key] is bool;
+    }
+
+    function optionalIntInRange(data, key, lo, hi) {
+      return !(key in data) || (data[key] is int && data[key] >= lo && data[key] <= hi);
+    }
+
+    function validFieldClock(clock) {
+      return clock is map
+        && clock.keys().hasOnly(profileFields())
+        && clock.values().size() == clock.keys().size();
+    }
+
+    function validProfile(data) {
+      return data.keys().hasOnly(profileFields().concat(['fieldClock', 'updatedAt']))
+        && data.keys().hasAll(['fieldClock', 'updatedAt'])
+        && data.fieldClock is map
+        && validFieldClock(data.fieldClock)
+        && data.updatedAt == request.time
+        && optionalString(data, 'displayName', 200)
+        && optionalString(data, 'photoUrl', 2048)
+        && optionalString(data, 'email', 320)
+        && optionalBool(data, 'onboardingDone')
+        && optionalBool(data, 'analyticsConsent')
+        && optionalBool(data, 'crashConsent')
+        && (!('theme' in data) || data.theme in ['system', 'light', 'dark'])
+        && optionalIntInRange(data, 'defaultTimerMin', 1, 600)
+        && optionalIntInRange(data, 'weekStartsOn', 1, 7);
+    }
+
+    // ── Shared helpers for per-field LWW documents (Phase 4) ─────────────
+    // Every LWW write carries `fieldClock` (per-field HLC) and a server
+    // `updatedAt`, which drives the clients' incremental pull cursor.
+    function validLww(data, fields) {
+      return data.keys().hasOnly(fields.concat(['fieldClock', 'updatedAt']))
+        && data.keys().hasAll(['fieldClock', 'updatedAt'])
+        && data.fieldClock is map
+        && data.fieldClock.keys().hasOnly(fields)
+        && data.updatedAt == request.time;
+    }
+
+    function optionalNumberInRange(data, key, lo, hi) {
+      return !(key in data) || data[key] == null
+        || (data[key] is number && data[key] >= lo && data[key] <= hi);
+    }
+
+    function optionalList(data, key, maxLen) {
+      return !(key in data) || data[key] == null
+        || (data[key] is list && data[key].size() <= maxLen);
+    }
+
+    function libraryFields() {
+      return ['status', 'isWishlist', 'isFavorite', 'addedAt', 'statusChangedAt',
+              'activeEditionId', 'activeReadThroughId', 'removed',
+              'title', 'subtitle', 'authorNames', 'coverUrl', 'pageCount',
+              'seriesId', 'seriesName', 'seriesPosition', 'genres', 'firstPublishedYear',
+              'rating', 'review'];
+    }
+
+    function validLibrary(data) {
+      return validLww(data, libraryFields())
+        && (!('status' in data) || data.status in ['none', 'wantToRead', 'reading', 'read', 'dnf'])
+        && optionalBool(data, 'isWishlist')
+        && optionalBool(data, 'isFavorite')
+        && optionalBool(data, 'removed')
+        && optionalString(data, 'title', 500)
+        && optionalString(data, 'subtitle', 500)
+        && optionalString(data, 'coverUrl', 2048)
+        && optionalString(data, 'seriesName', 300)
+        && optionalString(data, 'addedAt', 40)
+        && optionalString(data, 'statusChangedAt', 40)
+        && optionalString(data, 'activeEditionId', 64)
+        && optionalString(data, 'activeReadThroughId', 64)
+        && optionalString(data, 'seriesId', 64)
+        && optionalList(data, 'authorNames', 20)
+        && optionalList(data, 'genres', 12)
+        && optionalNumberInRange(data, 'pageCount', 1, 100000)
+        && optionalNumberInRange(data, 'seriesPosition', 0, 10000)
+        && optionalNumberInRange(data, 'firstPublishedYear', 0, 3000)
+        && optionalString(data, 'review', 20000)
+        && validRating(data);
+    }
+
+    // 0.5–5 in half-star steps, or null to clear it.
+    function validRating(data) {
+      return !('rating' in data) || data.rating == null
+        || (data.rating is number && data.rating >= 0.5 && data.rating <= 5
+            && data.rating * 2 == math.floor(data.rating * 2));
+    }
+
+    function validNote(data) {
+      return validLww(data, ['workId', 'kind', 'text', 'page', 'location', 'createdAt', 'conflictOf',
+                             'textHistory', 'deleted'])
+        && optionalString(data, 'workId', 64)
+        && (!('kind' in data) || data.kind in ['note', 'quote', 'observation'])
+        && optionalString(data, 'text', 10000)
+        && optionalNumberInRange(data, 'page', 0, 100000)
+        && optionalNumberInRange(data, 'location', 0, 100000000)
+        && optionalString(data, 'createdAt', 40)
+        && optionalString(data, 'conflictOf', 300)
+        && optionalList(data, 'textHistory', 20)
+        && optionalBool(data, 'deleted');
+    }
+
+    function validGoal(data) {
+      return validLww(data, ['metric', 'period', 'start', 'end', 'target', 'createdAt', 'deleted'])
+        && (!('metric' in data) || data.metric in ['books', 'pages', 'minutes'])
+        && (!('period' in data) || data.period in ['year', 'month', 'custom'])
+        && (!('start' in data) || data.start.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+        && (!('end' in data) || data.end.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+        && optionalIntInRange(data, 'target', 1, 1000000)
+        && optionalString(data, 'createdAt', 40)
+        && optionalBool(data, 'deleted');
+    }
+
+    // A deleted session: created once, never changed (D4).
+    function validSessionTombstone(data) {
+      return data.keys().hasOnly(['deletedAt', 'updatedAt'])
+        && data.keys().hasAll(['deletedAt', 'updatedAt'])
+        && data.deletedAt is string && data.deletedAt.size() <= 40
+        && data.updatedAt == request.time;
+    }
+
+    function validReadThrough(data) {
+      return validLww(data, ['workId', 'ordinal', 'startedAt', 'finishedAt', 'outcome'])
+        && optionalString(data, 'workId', 64)
+        && optionalString(data, 'startedAt', 40)
+        && optionalString(data, 'finishedAt', 40)
+        && optionalIntInRange(data, 'ordinal', 1, 1000)
+        && (!('outcome' in data) || data.outcome in ['inProgress', 'finished', 'abandoned']);
+    }
+
+    function validUserEdition(data) {
+      return validLww(data, ['workId', 'owned', 'format', 'isbn13', 'publisher', 'coverUrl',
+                             'pageCount', 'audioDurationSec', 'pageCountOverride',
+                             'audioDurationOverride', 'contentStartPage', 'contentEndPage',
+                             'calibrationJson'])
+        && optionalString(data, 'workId', 64)
+        && optionalBool(data, 'owned')
+        && optionalString(data, 'format', 20)
+        && optionalString(data, 'isbn13', 13)
+        && optionalString(data, 'publisher', 300)
+        && optionalString(data, 'coverUrl', 2048)
+        && optionalString(data, 'calibrationJson', 4000)
+        && optionalNumberInRange(data, 'pageCount', 1, 100000)
+        && optionalNumberInRange(data, 'pageCountOverride', 1, 100000)
+        && optionalNumberInRange(data, 'audioDurationSec', 1, 1000000)
+        && optionalNumberInRange(data, 'audioDurationOverride', 1, 1000000)
+        && optionalNumberInRange(data, 'contentStartPage', 0, 100000)
+        && optionalNumberInRange(data, 'contentEndPage', 1, 100000);
+    }
+
+    // Append-only: created once, never updated or deleted by clients (D4).
+    function validProgressEvent(data) {
+      return data.keys().hasOnly(['workId', 'readThroughId', 'editionId', 'position', 'fraction',
+                                  'isApproximate', 'source', 'sessionId', 'recordedAt', 'updatedAt'])
+        && data.keys().hasAll(['workId', 'readThroughId', 'position', 'fraction',
+                               'isApproximate', 'source', 'recordedAt', 'updatedAt'])
+        && data.workId is string && data.workId.size() <= 64
+        && data.readThroughId is string && data.readThroughId.size() <= 64
+        && optionalString(data, 'editionId', 64)
+        && optionalString(data, 'sessionId', 64)
+        && data.position is map && data.position.size() <= 4
+        && data.fraction is number && data.fraction >= 0 && data.fraction <= 1
+        && data.isApproximate is bool
+        && data.source in ['manual', 'session', 'import']
+        && data.recordedAt is string && data.recordedAt.size() <= 40
+        && data.updatedAt == request.time;
+    }
+
+    // Append-only reading sessions (Phase 5, D4).
+    function validSession(data) {
+      return data.keys().hasOnly(['workId', 'readThroughId', 'editionId', 'startedAt', 'endedAt',
+                                  'plannedDurationSec', 'activeDurationSec', 'pauses',
+                                  'startPosition', 'endPosition', 'startFraction', 'endFraction',
+                                  'pagesRead', 'localDate', 'tzOffsetMin', 'completion',
+                                  'clockAdjusted', 'updatedAt'])
+        && data.keys().hasAll(['workId', 'readThroughId', 'startedAt', 'endedAt',
+                               'plannedDurationSec', 'activeDurationSec', 'localDate',
+                               'completion', 'updatedAt'])
+        && data.workId is string && data.workId.size() <= 64
+        && data.readThroughId is string && data.readThroughId.size() <= 64
+        && optionalString(data, 'editionId', 64)
+        && data.startedAt is string && data.startedAt.size() <= 40
+        && data.endedAt is string && data.endedAt.size() <= 40
+        && data.plannedDurationSec is int && data.plannedDurationSec >= 0 && data.plannedDurationSec <= 86400
+        && data.activeDurationSec is int && data.activeDurationSec >= 0 && data.activeDurationSec <= 86400
+        && optionalList(data, 'pauses', 50)
+        && (!('startPosition' in data) || (data.startPosition is map && data.startPosition.size() <= 4))
+        && (!('endPosition' in data) || (data.endPosition is map && data.endPosition.size() <= 4))
+        && optionalNumberInRange(data, 'startFraction', 0, 1)
+        && optionalNumberInRange(data, 'endFraction', 0, 1)
+        && optionalIntInRange(data, 'pagesRead', 0, 100000)
+        && data.localDate is string && data.localDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && optionalIntInRange(data, 'tzOffsetMin', -900, 900)
+        && data.completion in ['completed', 'endedEarly', 'recovered']
+        && optionalBool(data, 'clockAdjusted')
+        && data.updatedAt == request.time;
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validProfile(request.resource.data);
+      // Only the deleteAccount Cloud Function (Admin SDK) deletes accounts.
+      allow delete: if false;
+
+      match /library/{workId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validLibrary(request.resource.data);
+        allow delete: if false; // removal is a `removed` tombstone field
+      }
+
+      match /readThroughs/{id} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validReadThrough(request.resource.data);
+        allow delete: if false;
+      }
+
+      match /userEditions/{editionId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validUserEdition(request.resource.data);
+        allow delete: if false;
+      }
+
+      match /progressEvents/{id} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validProgressEvent(request.resource.data);
+        allow update, delete: if false;
+      }
+
+      match /sessions/{id} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validSession(request.resource.data);
+        allow update, delete: if false;
+      }
+
+      match /sessionTombstones/{id} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validSessionTombstone(request.resource.data);
+        allow update, delete: if false;
+      }
+
+      match /notes/{id} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validNote(request.resource.data);
+        allow delete: if false; // removal is a `deleted` tombstone field
+      }
+
+      match /goals/{id} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validGoal(request.resource.data);
+        allow delete: if false;
+      }
+
+      // Other sub-collections stay denied until their phase adds rules.
+      match /{document=**} {
+        allow read, write: if false;
+      }
+    }
+
+    // ── Global catalog (Phase 3): read-only to signed-in clients ─────────
+    match /catalog_works/{id}    { allow read: if signedIn(); allow write: if false; }
+    match /catalog_editions/{id} { allow read: if signedIn(); allow write: if false; }
+    match /catalog_authors/{id}  { allow read: if signedIn(); allow write: if false; }
+    match /catalog_series/{id}   { allow read: if signedIn(); allow write: if false; }
+    match /catalog_isbn/{id}     { allow read: if signedIn(); allow write: if false; }
+
+    // Everything else (server-only collections included) is denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// No feature uses Cloud Storage yet (docs/02 §7). Deny everything until one
+// does, so an accidentally enabled bucket can't be read or written.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

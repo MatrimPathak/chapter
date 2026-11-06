@@ -1,0 +1,57 @@
+{
+  "data": {
+    "series": [
+      {
+        "id": 9001,
+        "name": "Off-Campus",
+        "book_series": [
+          {
+            "position": 1,
+            "book": {
+              "id": 125001,
+              "title": "The Deal",
+              "release_year": 2015,
+              "image": {
+                "url": "https://assets.hardcover.app/book/125001/cover.jpg"
+              },
+              "contributions": [
+                { "author": { "id": 4401, "name": "Elle Kennedy" } }
+              ]
+            }
+          },
+          {
+            "position": 1.5,
+            "book": {
+              "id": 125099,
+              "title": "The Deal: Bonus Scenes",
+              "release_year": 2016,
+              "contributions": [
+                { "author": { "id": 4401, "name": "Elle Kennedy" } }
+              ]
+            }
+          },
+          {
+            "position": 2,
+            "book": {
+              "id": 125002,
+              "title": "The Mistake",
+              "release_year": 2015,
+              "contributions": [
+                { "author": { "id": 4401, "name": "Elle Kennedy" } }
+              ]
+            }
+          },
+          {
+            "position": null,
+            "book": {
+              "id": 125100,
+              "title": "Off-Campus Box Set",
+              "release_year": 2018,
+              "contributions": []
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

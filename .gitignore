@@ -1,0 +1,35 @@
+# ── Secrets and per-environment Firebase config (never commit) ──
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
+*.p8
+*.p12
+*.jks
+*.keystore
+key.properties
+.env
+.env.*
+.secret.local
+.runtimeconfig.json
+
+# ── Firebase / emulators ──
+.firebase/
+*-debug.log
+firebase-export-*/
+hs_err_pid*.log
+replay_pid*.log
+
+# ── Functions ──
+functions/node_modules/
+functions/lib/
+functions/coverage/
+
+# ── OS / editors ──
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# ── Claude Code local state (the shared skill in .claude/skills is tracked) ──
+.claude/settings.local.json

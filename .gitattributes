@@ -1,0 +1,7 @@
+# Developed on Windows, built on Linux and macOS: keep one line ending in the repo.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.png binary
+*.ttf binary
+*.jar binary
+*.ico binary

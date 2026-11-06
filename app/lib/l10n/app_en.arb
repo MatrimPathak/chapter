@@ -1,0 +1,802 @@
+{
+  "@@locale": "en",
+  "appName": "Chapter",
+  "tagline": "Your reading life, in one place.",
+  "signInWithGoogle": "Continue with Google",
+  "signInWithApple": "Continue with Apple",
+  "signInWithEmulator": "Continue with test account (emulator)",
+  "signInPrivacyNote": "Your library, notes and reading history are private to you.",
+  "signInFailed": "Sign-in didn't complete. Please try again.",
+  "signInCancelled": "Sign-in was cancelled.",
+  "navHome": "Home",
+  "navLibrary": "Library",
+  "navRead": "Read",
+  "navSearch": "Search",
+  "navProfile": "Profile",
+  "greetingMorning": "Good morning, {name}",
+  "@greetingMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingAfternoon": "Good afternoon, {name}",
+  "@greetingAfternoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingEvening": "Good evening, {name}",
+  "@greetingEvening": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingNoName": "Welcome back",
+  "homeEmptyTitle": "Your reading starts here",
+  "homeEmptyBody": "Books you're reading will appear here so you can pick up where you left off.",
+  "libraryEmptyTitle": "Your library is empty",
+  "libraryEmptyBody": "Books you add will live here, sorted by what you're reading, want to read and have finished.",
+  "readEmptyTitle": "Nothing to read yet",
+  "readEmptyBody": "Add a book to your library, then start a focused reading session from here.",
+  "onboardingTitle": "Before you begin",
+  "onboardingBody": "Chapter keeps your reading private. Choose what you're comfortable sharing to help improve the app. You can change this any time in Profile.",
+  "consentAnalyticsTitle": "Share anonymous usage statistics",
+  "consentAnalyticsBody": "Coarse, anonymous events only. Never book titles, notes or searches.",
+  "consentCrashTitle": "Send crash reports",
+  "consentCrashBody": "Helps us fix problems. Contains no reading content.",
+  "onboardingContinue": "Start reading",
+  "profileAppearance": "Appearance",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "profilePrivacy": "Privacy",
+  "profileAccount": "Account",
+  "signOut": "Sign out",
+  "signOutPendingTitle": "Unsynced changes",
+  "signOutPendingBody": "You have {count} changes that haven't synced yet. They stay on this device and sync next time you sign in. Sign out anyway?",
+  "@signOutPendingBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "syncSynced": "All changes saved",
+  "syncSyncing": "Syncing…",
+  "syncPending": "{count} changes waiting to sync",
+  "@syncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncOffline": "Offline — changes are saved on this device",
+  "syncError": "Some changes couldn't sync",
+  "approximate": "Approximate",
+  "retry": "Try again",
+  "genericError": "Something went wrong.",
+  "loading": "Loading",
+  "searchHint": "Title, author or ISBN",
+  "searchFieldAll": "All",
+  "searchFieldTitle": "Title",
+  "searchFieldAuthor": "Author",
+  "searchFieldIsbn": "ISBN",
+  "searchFieldSeries": "Series",
+  "searchFieldPublisher": "Publisher",
+  "searchRecent": "Recent searches",
+  "searchClearRecent": "Clear",
+  "searchTrending": "Popular this week",
+  "searchNoResultsTitle": "No books found",
+  "searchNoResultsBody": "Try another spelling, an author's name, or scan the barcode.",
+  "searchErrorBody": "Search isn't available right now.",
+  "searchOfflineBanner": "Showing saved results. Connect to search all books.",
+  "searchDegradedBanner": "Book sources are having trouble. Results may be incomplete.",
+  "searchScan": "Scan a barcode",
+  "searchIdleTitle": "Find your next book",
+  "searchIdleBody": "Search by title, author, series, publisher or ISBN, or scan a book's barcode.",
+  "bookByAuthors": "by {authors}",
+  "@bookByAuthors": {
+    "placeholders": {
+      "authors": {
+        "type": "String"
+      }
+    }
+  },
+  "bookPages": "{count, plural, =1{1 page} other{{count} pages}}",
+  "@bookPages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookPublished": "Published {date}",
+  "@bookPublished": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bookSeriesPosition": "Book {position} of {series}",
+  "@bookSeriesPosition": {
+    "placeholders": {
+      "position": {
+        "type": "String"
+      },
+      "series": {
+        "type": "String"
+      }
+    }
+  },
+  "bookInSeries": "Part of {series}",
+  "@bookInSeries": {
+    "placeholders": {
+      "series": {
+        "type": "String"
+      }
+    }
+  },
+  "bookAbout": "About this book",
+  "bookShowMore": "Show more",
+  "bookShowLess": "Show less",
+  "bookDetails": "Details",
+  "bookPublisher": "Publisher",
+  "bookLanguage": "Language",
+  "bookIsbn": "ISBN",
+  "bookFormat": "Format",
+  "bookEditions": "{count, plural, =1{1 edition} other{{count} editions}}",
+  "@bookEditions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookAddToLibrary": "Add to library",
+  "bookNotFound": "We couldn't find this book.",
+  "bookOfflineCached": "You're offline. Showing the saved copy.",
+  "authorWorks": "Books",
+  "authorBornDied": "{born} – {died}",
+  "@authorBornDied": {
+    "placeholders": {
+      "born": {
+        "type": "String"
+      },
+      "died": {
+        "type": "String"
+      }
+    }
+  },
+  "authorBorn": "Born {born}",
+  "@authorBorn": {
+    "placeholders": {
+      "born": {
+        "type": "String"
+      }
+    }
+  },
+  "authorPhotoCredit": "Photo: {credit}",
+  "@authorPhotoCredit": {
+    "placeholders": {
+      "credit": {
+        "type": "String"
+      }
+    }
+  },
+  "authorNoBio": "No biography available.",
+  "seriesBooks": "{count, plural, =1{1 book} other{{count} books}}",
+  "@seriesBooks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seriesReadingOrder": "Reading order",
+  "seriesNovella": "Novella or extra",
+  "seriesUnavailable": "Series details aren't available for this book yet.",
+  "scanTitle": "Scan a barcode",
+  "scanInstructions": "Point your camera at the barcode on the back of the book.",
+  "scanEnterManually": "Enter ISBN instead",
+  "scanManualTitle": "Enter an ISBN",
+  "scanManualHint": "10 or 13 digits",
+  "scanManualInvalid": "That doesn't look like a valid ISBN.",
+  "scanLookUp": "Look up",
+  "scanLookingUp": "Looking up {isbn}…",
+  "@scanLookingUp": {
+    "placeholders": {
+      "isbn": {
+        "type": "String"
+      }
+    }
+  },
+  "scanNotFound": "No book found for ISBN {isbn}.",
+  "@scanNotFound": {
+    "placeholders": {
+      "isbn": {
+        "type": "String"
+      }
+    }
+  },
+  "scanNotBook": "That barcode isn't a book ISBN.",
+  "scanPermissionTitle": "Camera access needed",
+  "scanPermissionBody": "Chapter uses the camera only to read book barcodes. Nothing is recorded or uploaded. You can also type the ISBN.",
+  "scanCameraError": "The camera isn't available.",
+  "scanTorch": "Toggle flashlight",
+  "scanFound": "Found it",
+  "scanViewBook": "View book",
+  "scanAgain": "Scan another",
+  "close": "Close",
+  "bookPublishedLabel": "Published",
+  "statusNone": "Not on a shelf",
+  "statusWantToRead": "Want to Read",
+  "statusReading": "Reading",
+  "statusRead": "Read",
+  "statusDnf": "Did not finish",
+  "libraryAddTitle": "Add to library",
+  "libraryAddShelf": "Shelf",
+  "libraryAddEdition": "Edition",
+  "libraryOwnEdition": "I own this edition",
+  "libraryAdded": "Added to {shelf}",
+  "@libraryAdded": {
+    "placeholders": {
+      "shelf": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryAlreadyIn": "Already in your library",
+  "libraryInLibrary": "In your library",
+  "libraryUpdateProgress": "Update progress",
+  "libraryStartReading": "Start reading",
+  "libraryChangeEdition": "Change edition",
+  "libraryRemove": "Remove from library",
+  "libraryRemoveConfirmTitle": "Remove this book?",
+  "libraryRemoveConfirmBody": "It leaves your shelves. Your reading history is kept and comes back if you add it again.",
+  "libraryRemoved": "Removed from your library",
+  "libraryFavorite": "Favourite",
+  "libraryUnfavorite": "Remove from favourites",
+  "libraryReadCount": "{count, plural, =1{Read once} other{Read {count} times}}",
+  "@libraryReadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressTitle": "Update progress",
+  "progressPage": "Page",
+  "progressPercent": "Percent",
+  "progressTime": "Time",
+  "progressPageOf": "p. {page} of {total}",
+  "@progressPageOf": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressPageHint": "Page number",
+  "progressPercentHint": "0–100",
+  "progressTimeHint": "h:mm:ss",
+  "progressSave": "Save",
+  "progressInvalid": "Enter a value within the book’s length.",
+  "progressUnknownLength": "This edition has no page count, so progress is tracked in percent.",
+  "progressMarkRead": "Mark as read",
+  "progressFinishedPrompt": "That’s the end of the book. Mark it as read?",
+  "progressSaved": "Progress saved",
+  "progressPercentLabel": "{percent}%",
+  "@progressPercentLabel": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressApproxHint": "Converted from another edition, so it’s approximate.",
+  "progressFinishBy": "At this pace you’ll finish around {date}",
+  "@progressFinishBy": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "homeContinueReading": "Continue reading",
+  "homeResume": "Update",
+  "homeLastRead": "Last activity {when}",
+  "@homeLastRead": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryTabAll": "All",
+  "librarySearchHint": "Search your library",
+  "librarySortRecent": "Recently updated",
+  "librarySortTitle": "Title",
+  "librarySortAuthor": "Author",
+  "librarySortAdded": "Date added",
+  "librarySort": "Sort",
+  "libraryGridView": "Grid view",
+  "libraryListView": "List view",
+  "libraryFavoritesOnly": "Favourites only",
+  "libraryShelfEmpty": "Nothing on this shelf yet.",
+  "libraryNoMatches": "No books match your search.",
+  "scanAddToLibrary": "Add to library",
+  "sessionNotifEndTitle": "Session complete",
+  "sessionNotifEndBody": "Nice work. Open Chapter to log where you got to.",
+  "sessionNotifRunning": "Session in progress",
+  "sessionNotifPaused": "Session paused",
+  "sessionNotifChannel": "Reading sessions",
+  "readPickBook": "What are you reading?",
+  "readDuration": "How long?",
+  "readCustom": "Custom",
+  "readCustomTitle": "Custom duration",
+  "readCustomHint": "Minutes (1–600)",
+  "readMinutes": "{minutes} min",
+  "@readMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "readStart": "Start reading",
+  "readFocusMode": "Do Not Disturb while reading",
+  "readFocusModeBody": "Silences notifications until the session ends. Your previous setting comes back afterwards.",
+  "readFocusIosTitle": "Focus on iPhone",
+  "readFocusIosBody": "iOS doesn’t let apps turn on Focus or Do Not Disturb. Set up a “Reading” Focus in Settings › Focus, and Chapter keeps your screen awake during a session.",
+  "readFocusAccessTitle": "Allow Do Not Disturb access",
+  "readFocusAccessBody": "To silence notifications while you read, Android needs you to allow Chapter in “Do Not Disturb access”. Chapter only uses it during a session you start, and restores your setting afterwards.",
+  "readFocusOpenSettings": "Open settings",
+  "readFocusNotNow": "Not now",
+  "readFocusFailed": "Couldn’t turn on Do Not Disturb.",
+  "readRecent": "Recent sessions",
+  "readNoReadingBooks": "Start a book first: mark something as Reading in your library, then come back here.",
+  "readInProgress": "Session in progress",
+  "readOpenSession": "Open",
+  "sessionRemaining": "remaining",
+  "sessionElapsed": "{time} read",
+  "@sessionElapsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionPause": "Pause",
+  "sessionResume": "Resume",
+  "sessionEnd": "End session",
+  "sessionPaused": "Paused",
+  "sessionEndConfirmTitle": "End this session?",
+  "sessionEndConfirmBody": "You’ll see a summary and can log where you got to.",
+  "sessionDndOn": "Do Not Disturb is on",
+  "sessionDndOff": "Turn off Do Not Disturb",
+  "summaryTitle": "Session summary",
+  "summaryRecovered": "Your timer finished while Chapter was closed. Here’s the session.",
+  "summaryClockAdjusted": "Your device clock changed during this session, so the time may be off. Check it before saving.",
+  "summaryMinutes": "Minutes read",
+  "summaryEndPosition": "Where did you get to?",
+  "summaryPagesRead": "{count, plural, =1{1 page} other{{count} pages}}",
+  "@summaryPagesRead": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryPagesPerHour": "{rate} pages/hour",
+  "@summaryPagesPerHour": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryProgressChange": "{from} → {to}",
+  "@summaryProgressChange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "summarySave": "Save session",
+  "summaryDiscard": "Discard",
+  "summaryDiscardConfirmTitle": "Discard this session?",
+  "summaryDiscardConfirmBody": "Nothing from it will be saved.",
+  "summarySaved": "Session saved",
+  "summaryBookRemoved": "This book is no longer in your library, so the session wasn’t saved.",
+  "sessionHistoryTitle": "Sessions",
+  "sessionHistoryItem": "{minutes} min · {date}",
+  "@sessionHistoryItem": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bookStartSession": "Start a reading session",
+  "homeRead": "Read",
+  "sessionDndTurnOn": "Turn on Do Not Disturb",
+  "insightsTitle": "Insights",
+  "insightsEmptyTitle": "Nothing here yet",
+  "insightsEmptyBody": "Your reading will show up here once you finish a session or log some progress.",
+  "insightsNotEnough": "Not enough data yet",
+  "insightsPreviousYear": "Previous year",
+  "insightsNextYear": "Next year",
+  "insightsPreviousMonth": "Previous month",
+  "insightsNextMonth": "Next month",
+  "insightsBooks": "Books",
+  "insightsPages": "Pages",
+  "insightsHours": "Hours",
+  "insightsSessions": "Sessions",
+  "insightsCalendar": "Calendar",
+  "insightsMonthly": "By month",
+  "insightsMonthlyLabel": "Reading time by month",
+  "insightsWeekdays": "By weekday",
+  "insightsWeekdaysLabel": "Reading time by weekday",
+  "insightsAuthors": "Most-read authors",
+  "insightsGenres": "Most-read genres",
+  "insightsHabits": "Habits",
+  "insightsAverageSession": "Average session",
+  "insightsPagesPerHour": "Pages per hour",
+  "insightsBooksPerMonth": "Books per month",
+  "insightsDaysInARow": "Reading days in a row",
+  "insightsLongestRun": "Longest run of reading days",
+  "insightsDayNone": "{day}: no reading logged",
+  "@insightsDayNone": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsDayFinished": "{count, plural, =1{1 book finished} other{{count} books finished}}",
+  "@insightsDayFinished": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalsTitle": "Goals",
+  "goalsEmptyTitle": "No goals yet",
+  "goalsEmptyBody": "Goals are optional. Set one if it helps: books, pages or minutes, for a year, a month or any dates you like.",
+  "goalsHistory": "Past goals",
+  "goalAdd": "Add a goal",
+  "goalEdit": "Edit goal",
+  "goalWhat": "What to count",
+  "goalWhen": "When",
+  "goalMinutes": "Minutes",
+  "goalThisYear": "This year",
+  "goalThisMonth": "This month",
+  "goalTarget": "Target",
+  "goalInvalidTarget": "Enter a whole number above zero.",
+  "goalPickDates": "Choose the dates first.",
+  "goalDelete": "Delete goal",
+  "goalDeleteTitle": "Delete this goal?",
+  "goalDeleteBody": "Your reading history isn’t affected.",
+  "goalBooksOf": "{value} of {target} books",
+  "@goalBooksOf": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "goalPagesOf": "{value} of {target} pages",
+  "@goalPagesOf": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "goalMinutesOf": "{value} of {target} minutes",
+  "@goalMinutesOf": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "profileReading": "Your reading",
+  "ratingTitle": "Your rating",
+  "reviewTitle": "Your review",
+  "reviewAdd": "Add a review",
+  "reviewEdit": "Edit review",
+  "reviewHint": "What did you think?",
+  "textTooLong": "That’s too long to save.",
+  "notesTitle": "Notes",
+  "noteAdd": "Add a note",
+  "noteEdit": "Edit note",
+  "noteHint": "Write a note, or copy out a quote",
+  "noteKindNote": "Note",
+  "noteKindQuote": "Quote",
+  "noteKindObservation": "Observation",
+  "notePageAnchor": "p. {page}",
+  "@notePageAnchor": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "notePageOptional": "Page (optional)",
+  "noteInvalid": "Write something, and use a whole number for the page.",
+  "noteConflictCopy": "Edited on another device at the same time",
+  "noteDelete": "Delete note",
+  "noteDeleteTitle": "Delete this note?",
+  "noteDeleteBody": "This can’t be undone.",
+  "sessionDelete": "Delete session",
+  "sessionDeleteTitle": "Delete this session?",
+  "sessionDeleteBody": "It leaves your history and statistics on all your devices. Your progress in the book stays where it is.",
+  "sessionDeleted": "Session deleted",
+  "libraryFilter": "Filter",
+  "libraryFilterAuthor": "Author",
+  "libraryFilterGenre": "Genre",
+  "libraryFilterSeries": "Series",
+  "libraryFilterAny": "Any",
+  "libraryFilterClear": "Clear filters",
+  "librarySortProgress": "Progress",
+  "progressPagesLeft": "{count, plural, =1{1 page left} other{{count} pages left}}",
+  "@progressPagesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "discardTitle": "Discard what you wrote?",
+  "discardBody": "It won’t be saved.",
+  "discardKeepEditing": "Keep editing",
+  "finishTitle": "When did you finish it?",
+  "finishToday": "Today",
+  "finishPick": "Choose a date",
+  "finishUnknown": "I don’t remember",
+  "finishUnknownBody": "It stays on your Read shelf but doesn’t count in statistics or goals.",
+  "finishedOn": "Finished {date}",
+  "@finishedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "finishedNoDate": "Finished, date not set",
+  "finishChangeDate": "Change finish date",
+  "integrationsTitle": "Connected services",
+  "integrationUnavailable": "Not available right now. Everything else keeps working.",
+  "integrationChooseFile": "Choose a file",
+  "integrationOpenLinks": "Open",
+  "integrationLinkFailed": "Couldn’t open that link.",
+  "integrationGoodreads": "Goodreads",
+  "integrationGoodreadsBody": "Import your Goodreads export file. Goodreads closed its API, so nothing stays connected: this is a one-time copy.",
+  "integrationStorygraph": "The StoryGraph",
+  "integrationStorygraphBody": "Import your StoryGraph export file. It’s a one-time copy; nothing stays connected.",
+  "integrationKindle": "Kindle",
+  "integrationKindleBody": "Import highlights from My Clippings.txt on your Kindle. Amazon has no public API, so Chapter can’t read your Kindle progress automatically. Log it yourself by page or percent.",
+  "integrationAudible": "Audible",
+  "integrationAudibleBody": "Chapter can’t read your Audible progress automatically: Audible doesn’t offer a public API. On a book’s page, add an audiobook edition and log your time yourself.",
+  "integrationSpotify": "Spotify",
+  "integrationSpotifyBody": "Links that open music for reading in Spotify. No account link: Chapter can’t see or control what you play.",
+  "musicTitle": "Music for reading",
+  "musicBody": "These open in Spotify. Chapter doesn’t connect to your account.",
+  "importCsvTitle": "Import your books",
+  "importCsvBody": "Choose the CSV file you exported from Goodreads or The StoryGraph. It’s read on this device, and you’ll see what’s in it before anything changes.",
+  "importFound": "{count, plural, =1{1 book} other{{count} books}} from {source}",
+  "@importFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "importSkipped": "{count, plural, =1{1 entry} other{{count} entries}} couldn’t be read and will be left out.",
+  "@importSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewNote": "Books you already have keep their shelf, rating and review. A book you removed stays removed. Importing the same file again won’t create duplicates.",
+  "importStart": "Import",
+  "importProgressTitle": "Import",
+  "importAdded": "Added: {count}",
+  "@importAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importWaiting": "Still to look up: {count}",
+  "@importWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importWaitingNote": "Each book is looked up in the catalog, so a big file can take a while. It carries on while Chapter is open, and picks up where it left off if you close it or lose your connection.",
+  "importUnmatched": "{count, plural, =1{1 book not found} other{{count} books not found}}",
+  "@importUnmatched": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importUnmatchedNote": "These weren’t added, because Chapter wouldn’t risk adding the wrong book. You can search for them, or import the file again later to retry.",
+  "importClearUnmatched": "Clear this list",
+  "importTooLarge": "That file is too large.",
+  "importCouldNotRead": "Couldn’t read that file.",
+  "importNotRecognized": "That doesn’t look like a Goodreads or StoryGraph export.",
+  "importNotClippings": "That doesn’t look like a My Clippings.txt file.",
+  "importClippingsTitle": "Kindle highlights",
+  "importClippingsBody": "Connect your Kindle by USB and copy My Clippings.txt from its documents folder to this device, then choose it here. It’s read on this device. Highlights attach to books already in your library.",
+  "importClippingsFound": "{count, plural, =1{1 highlight or note matches your library} other{{count} highlights and notes match your library}}",
+  "@importClippingsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importNotesAdded": "Added {added}. Already had {existing}.",
+  "@importNotesAdded": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "existing": {
+        "type": "int"
+      }
+    }
+  },
+  "importClippingsUnmatched": "Books not in your library",
+  "importClippingsUnmatchedNote": "Add these to your library, then choose the file again to bring in their highlights.",
+  "noteLocationAnchor": "loc. {location}",
+  "@noteLocationAnchor": {
+    "placeholders": {
+      "location": {
+        "type": "int"
+      }
+    }
+  },
+  "audioAddEdition": "Add audiobook edition",
+  "audioFormat": "Format",
+  "audioFormatAudible": "Audible",
+  "audioFormatOther": "Other audiobook",
+  "audioDuration": "Length (h:mm:ss)",
+  "audioInvalid": "Enter the length as h:mm:ss, for example 11:20:00.",
+  "audioAdded": "Now tracking this book as an audiobook",
+  "audioNoSync": "Chapter can’t read your Audible progress automatically: Audible doesn’t offer a public API. Log your time here.",
+  "audioOpenAudible": "Find on Audible",
+  "sessionListened": "{time} listened",
+  "@sessionListened": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMinutesListened": "Minutes listened",
+  "profileConnected": "Connected services",
+  "importExisting": "Already in your library: {count}",
+  "@importExisting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importRemovedEarlier": "Removed earlier, left out: {count}",
+  "@importRemovedEarlier": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioEditEdition": "Edit audiobook edition",
+  "audioStartSession": "Start a listening session",
+  "musicLinkReading": "Reading playlists",
+  "musicLinkClassical": "Classical",
+  "musicLinkAmbient": "Ambient",
+  "profileYourData": "Your data",
+  "exportTitle": "Export my data",
+  "exportSubtitle": "JSON and CSV files, made on this device. Works offline.",
+  "exportFailed": "Couldn’t create the export. Your data hasn’t changed.",
+  "deleteTitle": "Delete account",
+  "deleteBody": "This permanently deletes your Chapter account and everything in it: your library, reading history, sessions, notes, ratings and goals. It can’t be undone. You need a connection, and you may be asked to sign in again.",
+  "deleteOtherDevices": "Other phones signed in to this account stop syncing, and remove their copy the next time they open Chapter with a connection.",
+  "deleteExportFirst": "If you want a copy, export your data first.",
+  "deleteTypeWord": "Type {word} to confirm",
+  "@deleteTypeWord": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteConfirm": "Delete my account",
+  "deleteDone": "Your account has been deleted.",
+  "deleteFailed": "Couldn’t delete your account, and nothing was removed from this device. Check your connection and try again.",
+  "deleteCancelled": "Sign-in was cancelled, so nothing was deleted.",
+  "aboutTitle": "About Chapter",
+  "aboutPrivacy": "Privacy policy",
+  "aboutLicences": "Open source licences",
+  "aboutBookData": "Book data",
+  "aboutBookDataBody": "Book details and covers come from Open Library and other sources, and can contain mistakes.",
+  "importAlreadyDone": "{count, plural, =1{1 book was imported from an earlier file and left as it is.} other{{count} books were imported from an earlier file and left as they are.}}",
+  "@importAlreadyDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "wishlistAdd": "Add to wishlist",
+  "wishlistRemove": "Remove from wishlist",
+  "wishlistFilter": "Wishlist only",
+  "wishlistLabel": "On your wishlist",
+  "editionDetails": "Edition details",
+  "editionPageOverride": "Pages in your copy",
+  "editionContentStart": "First page of the text",
+  "editionContentEnd": "Last page of the text",
+  "editionLengthOverride": "Length of your copy (h:mm:ss)",
+  "editionInvalid": "Check these numbers: they need to be positive, and the last page after the first.",
+  "calibrationTitle": "Match points",
+  "calibrationHelp": "Tell Chapter that a page in print is a time in this audiobook, and moving between them gets more accurate.",
+  "calibrationPage": "Page",
+  "calibrationTime": "Time (h:mm:ss)",
+  "calibrationAdd": "Add match point",
+  "calibrationRemove": "Remove match point",
+  "calibrationRow": "Page {page} is at {time}",
+  "@calibrationRow": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsChooseYear": "Choose a year"
+}

@@ -1,0 +1,37 @@
+{
+  "type": { "key": "/type/work" },
+  "title": "The Deal",
+  "authors": [
+    {
+      "author": { "key": "/authors/OL6761347A" },
+      "type": { "key": "/type/author_role" }
+    }
+  ],
+  "key": "/works/OL42430111W",
+  "covers": [
+    10201611, 10479417, 12467877, 10830657, 12850533, 12233323, 13769322
+  ],
+  "subjects": [
+    "Romance",
+    "Sports Romance",
+    "New Adult",
+    "Sports",
+    "Contemporary",
+    "College",
+    "Contemporary Romance",
+    "Fake Dating",
+    "Friends to Lovers"
+  ],
+  "description": "The international bestseller! A standalone novel* from New York Times and international bestselling author Elle Kennedy!\r\n\r\nShe\u2019s about to make a deal with the college bad boy\u2026\r\n\r\nHannah Wells has finally found someone who turns her on. But while she might be confident in every other area of her life, she\u2019s carting around a full set of baggage when it comes to sex and seduction. If she wants to get her crush\u2019s attention, she\u2019ll have to step out of her comfort zone and make him take notice\u2026even if it means tutoring the annoying, childish, cocky captain of the hockey team in exchange for a pretend date.\r\n\r\n...and it\u2019s going to be oh so good\r\n\r\nAll Garrett Graham has ever wanted is to play professional hockey after graduation, but his plummeting GPA is threatening everything he\u2019s worked so hard for. If helping a sarcastic brunette make another guy jealous will help him secure his position on the team, he\u2019s all for it. But when one unexpected kiss leads to the wildest sex of both their lives, it doesn\u2019t take long for Garrett to realize that pretend isn\u2019t going to cut it. Now he just has to convince Hannah that the man she wants looks a lot like him.",
+  "series": [{ "series": { "key": "/series/OL334331L" }, "position": "1" }],
+  "latest_revision": 19,
+  "revision": 19,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2025-01-25T01:10:10.222432"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-10-26T11:54:19.817880"
+  }
+}

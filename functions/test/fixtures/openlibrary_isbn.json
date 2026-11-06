@@ -1,0 +1,33 @@
+{
+  "type": { "key": "/type/edition" },
+  "authors": [{ "key": "/authors/OL6761347A" }],
+  "languages": [{ "key": "/languages/eng" }],
+  "pagination": "400",
+  "publish_date": "2023",
+  "publishers": ["Little, Brown Book Group Limited"],
+  "source_records": ["bwb:9780349440842"],
+  "subjects": ["American literature"],
+  "title": "The Deal",
+  "full_title": "Deal",
+  "works": [{ "key": "/works/OL42430111W" }],
+  "key": "/books/OL49507353M",
+  "covers": [14751041],
+  "identifiers": {},
+  "isbn_13": ["9780349440842"],
+  "isbn_10": ["0349440840"],
+  "lc_classifications": ["PS3611.E55857"],
+  "subtitle": "The international sensation",
+  "series": ["Off-Campus"],
+  "physical_format": "Paperback",
+  "number_of_pages": 374,
+  "latest_revision": 6,
+  "revision": 6,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2023-09-17T09:51:37.994160"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-05-23T09:14:32.386177"
+  }
+}

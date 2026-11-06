@@ -1,0 +1,47 @@
+{
+  "data": {
+    "search": {
+      "results": {
+        "found": 2,
+        "page": 1,
+        "hits": [
+          {
+            "document": {
+              "id": 125001,
+              "title": "The Deal",
+              "subtitle": null,
+              "author_names": ["Elle Kennedy"],
+              "isbns": ["9780349440842", "0349440840", "9781522711858"],
+              "series_names": ["Off-Campus"],
+              "featured_series": {
+                "id": 9001,
+                "position": 1,
+                "series": { "id": 9001, "name": "Off-Campus" }
+              },
+              "featured_series_position": 1,
+              "pages": 390,
+              "release_year": 2015,
+              "image": {
+                "url": "https://assets.hardcover.app/edition/125001/cover.jpg"
+              },
+              "slug": "the-deal"
+            }
+          },
+          {
+            "document": {
+              "id": 125002,
+              "title": "The Mistake",
+              "author_names": ["Elle Kennedy"],
+              "isbns": ["9780349440859"],
+              "series_names": ["Off-Campus"],
+              "featured_series_position": 2,
+              "pages": 380,
+              "release_year": 2015,
+              "slug": "the-mistake"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

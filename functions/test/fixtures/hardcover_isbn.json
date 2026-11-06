@@ -1,0 +1,37 @@
+{
+  "data": {
+    "editions": [
+      {
+        "id": 777001,
+        "isbn_10": "0349440840",
+        "isbn_13": "9780349440842",
+        "pages": 374,
+        "audio_seconds": null,
+        "release_date": "2023-02-02",
+        "edition_format": "Paperback",
+        "title": "The Deal",
+        "publisher": { "name": "Piatkus" },
+        "image": {
+          "url": "https://assets.hardcover.app/edition/777001/cover.jpg"
+        },
+        "book": {
+          "id": 125001,
+          "title": "The Deal",
+          "subtitle": null,
+          "description": "She's about to make a deal with the college bad boy... Hannah Wells has finally found someone who turns her on, but there's one problem: he's not interested.",
+          "release_date": "2015-02-24",
+          "pages": 390,
+          "image": {
+            "url": "https://assets.hardcover.app/book/125001/cover.jpg"
+          },
+          "contributions": [
+            { "author": { "id": 4401, "name": "Elle Kennedy" } }
+          ],
+          "book_series": [
+            { "position": 1, "series": { "id": 9001, "name": "Off-Campus" } }
+          ]
+        }
+      }
+    ]
+  }
+}

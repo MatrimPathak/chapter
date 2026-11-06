@@ -1,0 +1,8 @@
+# Copy to android/key.properties (ignored by git) and fill in.
+# Create the key once and keep it and these values somewhere safe: losing it
+# means you can't update the app without Play's key reset process.
+#   keytool -genkey -v -keystore chapter-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias chapter
+storeFile=../../chapter-release.jks
+storePassword=
+keyAlias=chapter
+keyPassword=

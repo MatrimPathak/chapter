@@ -1,0 +1,194 @@
+{
+  "links": {
+    "self": "/works/OL42430111W/editions.json?limit=5",
+    "work": "/works/OL42430111W",
+    "next": "/works/OL42430111W/editions.json?limit=5&offset=5"
+  },
+  "size": 16,
+  "entries": [
+    {
+      "works": [{ "key": "/works/OL42430111W" }],
+      "title": "De deal",
+      "publishers": ["Love Books"],
+      "publish_date": "July 3, 2025",
+      "key": "/books/OL62696612M",
+      "type": { "key": "/type/edition" },
+      "covers": [15268433],
+      "isbn_13": ["9789062223824"],
+      "series": ["Off-Campus"],
+      "languages": [{ "key": "/languages/dut" }],
+      "translation_of": "The Deal",
+      "translated_from": [{ "key": "/languages/eng" }],
+      "description": {
+        "type": "/type/text",
+        "value": "**Hannah Wells** heeft een crush op footballster Justin Kohl, maar hoe kan ze ervoor zorgen dat hij haar eindelijk ziet staan? Ze zal uit haar comfortzone moeten stappen om zijn aandacht te trekken, dus de hulp van de arrogante aanvoerder van het ijshockeyteam kan ze eigenlijk niet weigeren.\r\n\r\n**Garrett Graham** droomt ervan om professioneel ijshockey te spelen na zijn afstuderen. Maar hij kan zijn ijshockeycarrière wel vergeten als hij niet snel zijn gemiddelde omhooghaalt. Hij laat zijn oog vallen op de sarcastische brunette die als enige van de klas een goed cijfer heeft gehaald voor het filosofietentamen dat hij over moet doen – de perfecte kandidaat om hem bijles te geven. Het enige probleem: ze heeft helemaal geen zin om hem te helpen.\r\n\r\nGarrett is echter niet voor één gat te vangen en bedenkt een sluw plan: in ruil voor bijles doet hij zich een tijdje voor als haar vriendje. Als Hannah een paar keer als zijn date op feestjes wordt gezien, zal ze daarmee ongetwijfeld de aandacht van Justin trekken. In een vlaag van verstandsverbijstering gaat Hannah akkoord met de deal. Dat kan niet misgaan… toch?"
+      },
+      "physical_format": "Paperback",
+      "number_of_pages": 392,
+      "latest_revision": 3,
+      "revision": 3,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2026-10-26T11:52:00.111799"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-10-26T11:54:19.817880"
+      }
+    },
+    {
+      "works": [{ "key": "/works/OL42430111W" }],
+      "title": "O Acordo",
+      "publishers": ["Paralela"],
+      "publish_date": "2016",
+      "key": "/books/OL62344709M",
+      "type": { "key": "/type/edition" },
+      "identifiers": {},
+      "covers": [15240020],
+      "isbn_13": ["9788584390274"],
+      "physical_dimensions": "23 x 16 x  centimeters",
+      "weight": "486 grams",
+      "series": ["Amores Improváveis, Vol. 1"],
+      "contributors": [{ "role": "Translator", "name": "Juliana Romeiro" }],
+      "languages": [{ "key": "/languages/por" }],
+      "translation_of": "The Deal",
+      "translated_from": [{ "key": "/languages/eng" }],
+      "physical_format": "Brochura",
+      "number_of_pages": 360,
+      "latest_revision": 3,
+      "revision": 3,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2026-07-21T19:49:38.547862"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-07-21T19:53:45.282189"
+      }
+    },
+    {
+      "type": { "key": "/type/edition" },
+      "title": "Prohibido enamorarse",
+      "authors": [{ "key": "/authors/OL6761347A" }],
+      "publish_date": "2016-05-12",
+      "source_records": ["amazon:8420483893"],
+      "number_of_pages": 352,
+      "publishers": ["Alfaguara"],
+      "physical_format": "paperback",
+      "full_title": "Prohibido enamorarse",
+      "covers": [13769322],
+      "works": [{ "key": "/works/OL42430111W" }],
+      "key": "/books/OL47304831M",
+      "identifiers": {
+        "amazon": ["8420483893"],
+        "goodreads": ["29561669"],
+        "storygraph": ["f215be6c-7fbb-4f51-b847-352648e7e01d"]
+      },
+      "isbn_10": ["8420483893"],
+      "isbn_13": ["9788420483894"],
+      "oclc_numbers": ["971718793"],
+      "publish_places": ["Madrid, España"],
+      "edition_name": "2a edición",
+      "series": ["#KissMe, 1"],
+      "contributors": [{ "role": "Translator", "name": "Lluvia Rojo Moro" }],
+      "languages": [{ "key": "/languages/spa" }],
+      "translation_of": "The Deal",
+      "translated_from": [{ "key": "/languages/eng" }],
+      "description": {
+        "type": "/type/text",
+        "value": "Hannah va a hacer un trato con un chico malo... y va a ganar más de lo que espera. Hannah por fin ha encontrado un chico que la vuelve loca, pero hay un pequeño problema: no tiene ni idea de cómo seducirle. La solución es Garrett, el deportista y playboy más deseado del campus: él necesita aprobar un examen a toda costa, y a cambio puede ayudarla a poner celoso a cualquiera... Incluso a sí mismo. Cuando un beso inocente les lleva a una noche increíble, Garrett ve la luz: Hannah no puede irse con otro. Tiene que convencerla de que se quede a su lado. Chicos que saben lo que hacen. Chicas que saben lo que quieren. Risas, amor, y mucho, mucha tensión sexual."
+      },
+      "other_titles": [
+        "Prohibido enamorarse (#KissMe 1); Kissme. 1., Prohibido enamorarse"
+      ],
+      "latest_revision": 3,
+      "revision": 3,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2023-03-24T03:20:26.588570"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-05-01T08:28:31.752396"
+      }
+    },
+    {
+      "type": { "key": "/type/edition" },
+      "title": "Anlaşma",
+      "authors": [{ "key": "/authors/OL6761347A" }],
+      "publish_date": "2000-01-01",
+      "source_records": ["amazon:6055016710"],
+      "number_of_pages": 448,
+      "publishers": ["Yabancı"],
+      "physical_format": "paperback",
+      "full_title": "Anlasma",
+      "covers": [12233323],
+      "works": [{ "key": "/works/OL42430111W" }],
+      "key": "/books/OL35390733M",
+      "identifiers": {
+        "amazon": ["6055016710"],
+        "goodreads": ["29203377"],
+        "storygraph": ["5bd6c6d3-9885-4c0f-9274-1c86c7b2f001"]
+      },
+      "isbn_10": ["6055016710"],
+      "isbn_13": ["9786055016715"],
+      "oclc_numbers": ["988307271"],
+      "publish_places": ["İstanbul, Türkiye"],
+      "edition_name": "1. baskı",
+      "contributors": [{ "role": "Translator", "name": "Hanife Albayrak" }],
+      "languages": [{ "key": "/languages/tur" }],
+      "translation_of": "The Deal",
+      "translated_from": [{ "key": "/languages/eng" }],
+      "description": {
+        "type": "/type/text",
+        "value": "Okulun kötü çocuğuyla anlaşmak üzereydi ve işler fena hâlde karışacaktı…\r\n\r\nHannah Wells sonunda onu etkileyen birini bulmuştu. Hayatının her alanında son derece özgüvenli olmasına rağmen, konu seks ve flört olduğunda beceriksizin tekiydi. Fakat hoşlandığı adamın dikkatini çekmek istiyorsa bu durum değişmeliydi. İşe sinir bozucu, çocuksu ve kendini beğenmiş hokey takımı kaptanının özel ders isteğini kabul ederek başlayacaktı. Tabii bir şartla.\r\n\r\nGarrett Graham’ın tek istediği mezun olduktan sonra profesyonel hokey oyuncusu olmaktı ancak düşen ortalaması, uğruna çabaladığı her şeyi tehlikeye atıyordu. Eğer alaycı bir esmer güzelinin başka bir adamı kıskandırmasına yardım etmek takımdaki pozisyonunu garanti altına alacaksa buna katlanacaktı.\r\n\r\nFakat beklenmedik bir öpücük her ikisini de daha önce deneyimlemedikleri duygulara sürüklediğinde, Garrett numara yapmanın hiçbir işe yaramayacağını anlamıştı. Hannah’yı aradığı adamın tam karşısında durduğuna ikna etmek zorundaydı."
+      },
+      "other_titles": ["Anlasma"],
+      "latest_revision": 3,
+      "revision": 3,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2021-10-29T18:04:47.114010"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-05-01T08:28:31.752396"
+      }
+    },
+    {
+      "publishers": ["Elle Kennedy Inc."],
+      "source_records": [
+        "amazon:1775293939",
+        "bwb:9781775293934",
+        "promise:bwb_daily_pallets_2023-07-26:O9-AVN-685"
+      ],
+      "title": "The Deal",
+      "notes": {
+        "type": "/type/text",
+        "value": "Source title: The Deal (Off-Campus)"
+      },
+      "number_of_pages": 376,
+      "isbn_13": ["9781775293934"],
+      "covers": [10201611],
+      "physical_format": "paperback",
+      "full_title": "The Deal",
+      "isbn_10": ["1775293939"],
+      "publish_date": "Feb 24, 2015",
+      "key": "/books/OL28274417M",
+      "authors": [{ "key": "/authors/OL6761347A" }],
+      "works": [{ "key": "/works/OL42430111W" }],
+      "type": { "key": "/type/edition" },
+      "local_id": ["urn:bwbsku:O9-AVN-685"],
+      "latest_revision": 4,
+      "revision": 4,
+      "created": {
+        "type": "/type/datetime",
+        "value": "2020-06-19T19:58:10.314934"
+      },
+      "last_modified": {
+        "type": "/type/datetime",
+        "value": "2026-05-01T08:28:31.752396"
+      }
+    }
+  ]
+}

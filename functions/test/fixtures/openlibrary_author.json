@@ -1,0 +1,72 @@
+{
+  "name": "Elle Kennedy",
+  "key": "/authors/OL6761347A",
+  "source_records": [
+    "ia:mistake0000unse",
+    "marc:harvard_bibliographic_metadata/20220215_030.bib.mrc:59102674:1274",
+    "ia:isbn_9780349433424"
+  ],
+  "remote_ids": {
+    "lc_naf": "no2010069114",
+    "wikidata": "Q5364664",
+    "viaf": "102897979",
+    "isni": "0000000077841116",
+    "goodreads": "1935000",
+    "amazon": "B002WHBZOO",
+    "imdb": "nm16099288",
+    "isfdb": "218797",
+    "librarything": "kennedyelle",
+    "storygraph": "157f6e54-f056-4dba-9a2d-b99245ca9b76"
+  },
+  "type": { "key": "/type/author" },
+  "personal_name": "Elle Kennedy",
+  "birth_date": "30 December 1979",
+  "links": [
+    {
+      "title": "Elle Kennedy - Website",
+      "url": "https://www.ellekennedy.com/",
+      "type": { "key": "/type/link" }
+    },
+    {
+      "title": "Elle Kennedy Books in Order",
+      "url": "https://www.littlestack.com/author/elle-kennedy",
+      "type": { "key": "/type/link" }
+    },
+    {
+      "title": "Elle Kennedy - BookBub",
+      "url": "https://www.bookbub.com/authors/elle-kennedy",
+      "type": { "key": "/type/link" }
+    }
+  ],
+  "alternate_names": [
+    "elle kennedy",
+    "Elle Kennedy (auteur de romans sentimentaux)",
+    "Elle Kennedy (Canadian writer)",
+    "Kenedy, Leeanne",
+    "Kennedy, Elle",
+    "Kennedy, Elle.",
+    "Kennedy, Elle, 1982-",
+    "\u05e7\u05e0\u05d3\u05d9, \u05d0\u05dc, 1979-",
+    "Kennedy, Elle, 1979-",
+    "Elle Kennedy Canadian novelist; bestselling author of contemporary romance and romantic suspense",
+    "Elle Kennedy auteur de romans sentimentaux",
+    "Kennedy, Elle, 19..-....",
+    "Watt, Erin, pseudon\u00fc\u00fcm.",
+    "Frederick, Jen."
+  ],
+  "photos": [15214786],
+  "bio": {
+    "type": "/type/text",
+    "value": "Elle Kennedy grew up in the suburbs of Toronto, Ontario, and holds a BA in English from York University. From an early age, she knew she wanted to be a writer and actively began pursuing that dream when she was a teenager.\r\n\r\nElle is the author of more than fifty contemporary fiction and romance novels, published by a variety of major houses. Her work includes the *Off-Campus* series, the global phenomenon which has captivated millions of readers around the world.\r\n\r\n(<a href=\"https://www.ellekennedy.com/about\" target=\"_blank\">Source</a>)"
+  },
+  "latest_revision": 10,
+  "revision": 10,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2009-11-24T10:24:43.895835"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2026-08-25T23:09:27.357457"
+  }
+}
