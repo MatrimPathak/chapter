@@ -62,6 +62,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Google sign-in and App Check's debug flow against a real project
+            // need a registered key. Only machines with key.properties do this.
+            if (hasReleaseKey) signingConfig = signingConfigs.getByName("release")
+        }
         release {
             // Without a key, a local release build still runs on a test device.
             // The stores refuse anything signed with the debug key.

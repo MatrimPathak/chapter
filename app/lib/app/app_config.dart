@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 
 enum Flavor { dev, prod }
 
+/// Where the Cloud Functions run. Must match `functions/src/shared/region.ts`.
+const functionsRegion = 'asia-south1';
+
 /// Build-time configuration selected by the entry point (`main_dev.dart`,
 /// `main_prod.dart`). Values that differ per machine come from
 /// `--dart-define`, never from source.

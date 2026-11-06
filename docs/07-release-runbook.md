@@ -4,34 +4,31 @@ Everything a v1.0 release needs that can't be done from the repository, in order
 
 ## 1. Firebase production (blocker B1)
 
-1. Create project `chapter-prod` and move it to the Blaze plan. Set a budget alert.
+1. Project `chapter-reads-prod` exists, with its Android and iOS apps and its database in Mumbai (`asia-south1`). Move it to the Blaze plan and set a budget alert.
 2. Enable Authentication (Google; Apple once the Apple account exists), Firestore, Functions, App Check, Analytics, Crashlytics.
-3. Generate the app's config. This replaces the file that currently fails on purpose:
+3. The app's config is in `lib/core/firebase/firebase_options_prod.dart`. To regenerate the values: `firebase apps:sdkconfig`.
+4. Set secrets. The functions declare both, and no function deploys until both exist, even with `--only functions:deleteAccount`. A value of one space keeps that provider off, with Open Library still working, because the code trims it to nothing:
    ```bash
-   flutterfire configure --project=chapter-prod --out=lib/core/firebase/firebase_options_prod.dart --android-package-name=com.chapterreads.chapter --ios-bundle-id=com.chapterreads.chapter
-   ```
-4. Set secrets. Skip one and that provider stays off, with Open Library still working:
-   ```bash
-   firebase functions:secrets:set HARDCOVER_TOKEN --project chapter-prod
+   firebase functions:secrets:set HARDCOVER_TOKEN --project chapter-reads-prod
    ```
    ```bash
-   firebase functions:secrets:set GOOGLE_BOOKS_KEY --project chapter-prod
+   firebase functions:secrets:set GOOGLE_BOOKS_KEY --project chapter-reads-prod
    ```
 5. Deploy from the repository root:
    ```bash
-   firebase deploy --only firestore:rules,firestore:indexes,functions --project chapter-prod
+   firebase deploy --only firestore:rules,firestore:indexes,functions --project chapter-reads-prod
    ```
-   This also applies the TTL policies on `catalog_searchCache` and `ops_rateLimits` (`expiresAt`), which the emulators can't test. Confirm them in the Firebase console.
-6. **App Check:** register the Android app with Play Integrity and the iOS app with App Attest. Every callable, including `deleteAccount`, enforces App Check, so without this nothing server-side works in a release build.
-7. Pass the Google OAuth web client id at build time: `--dart-define=GOOGLE_SERVER_CLIENT_ID=...`.
+   All of this is deployed as of 2026-11-06. On a first deploy, check every function was created: one failed with a 409 on the build bucket while the deploy still exited 0. This also applies the TTL policies on `catalog_searchCache` and `ops_rateLimits` (`expiresAt`), which the emulators can't test. Confirm them in the Firebase console.
+6. **App Check:** the App Check API must be on. Android is registered with Play Integrity; registering the iOS app with App Attest remains. For testing, a debug build prints a debug token to add under Manage debug tokens; delete it afterwards. Every callable, including `deleteAccount`, enforces App Check, so without this nothing server-side works in a release build.
+7. Pass the Google OAuth web client id at build time: `--dart-define=GOOGLE_SERVER_CLIENT_ID=80245747744-7cn3mrv8lju85m01nlo3ljl9j86g97l7.apps.googleusercontent.com`. It identifies the app and isn't a secret.
 8. **Crashlytics symbols:** the Crashlytics Gradle plugin isn't applied, so Android reports aren't deobfuscated. Add it once a real `google-services.json` exists. Native crash reports are unreadable until then.
 
 **Check:** a release build signs in with a real Google account, adds a book and shows "All changes saved".
 
 ## 2. Android signing and build (blocker B3)
 
-1. Create the upload key (command in `app/android/key.properties.example`) and copy that file to `app/android/key.properties`. **Back up the key and passwords outside the machine.**
-2. Add the key's SHA-1 and SHA-256, and later Play's app signing certificate, to the Firebase Android app. Google sign-in fails without them.
+1. Done 2026-11-06 on the owner's machine: upload key and `app/android/key.properties`. To recreate, see `app/android/key.properties.example`. **Back up the key and passwords outside the machine.**
+2. The key's SHA-1 and SHA-256 are on the Firebase Android app. Add Play's app signing certificate too, or Google sign-in fails for installs from Play.
 3. Build:
    ```bash
    flutter build appbundle --release --flavor prod -t lib/main_prod.dart --dart-define=GOOGLE_SERVER_CLIENT_ID=YOUR_ID

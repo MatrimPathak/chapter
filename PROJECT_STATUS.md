@@ -427,10 +427,30 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 **Risks:** package-version churn (google_sign_in v7 API, Riverpod 3, Drift); Android licenses not accepted on this machine (may block AC8); no iOS build locally (`SPIKE-29567026`).
 
 **Existing blockers:**
-- **B1:** Firebase projects `chapter-dev` and `chapter-prod` don't exist. Creating them needs you: billing (Blaze), OAuth consent screen, SHA-1 fingerprints, Apple developer setup. Until then, `dev` runs against the Firebase Emulator Suite with the offline project ID `demo-chapter`, and the real `firebase_options_*.dart` files are generated after setup.
+- **B1 (partly done 2026-11-06, see history):** production is `chapter-reads-prod`; Blaze, Auth and function deployment remain. Original note: Firebase projects `chapter-dev` and `chapter-prod` don't exist. Creating them needs you: billing (Blaze), OAuth consent screen, SHA-1 fingerprints, Apple developer setup. Until then, `dev` runs against the Firebase Emulator Suite with the offline project ID `demo-chapter`, and the real `firebase_options_*.dart` files are generated after setup.
 - **B2:** Android SDK licenses are not accepted. Fix with `flutter doctor --android-licenses` (interactive, so you need to run it).
 
 ## E. Development history
+
+### 2026-11-06 — Firebase production, B1 (COMPLETED WITH WARNINGS)
+
+- **Objective:** a production Firebase project the release build can sign in to and sync with.
+- **Decisions by you:** a new project, leaving the existing `chapter-booktracker` untouched (it uses package `com.matrimpathak.chapter`, one user account, database in nam5). Database and functions in Mumbai, `asia-south1`.
+- **Scope:** create the project and apps; create the database; set the functions and client region; generate production config; deploy rules, indexes and functions; add secrets if provided.
+- **Acceptance:** a release build signs in with a real Google account, adds a book and shows "All changes saved".
+- **Depends on you:** Blaze billing, enabling Google sign-in, App Check registration, the Hardcover token and Google Books key.
+- **Done:** project `chapter-reads-prod` (`chapter-prod` was taken globally), Android and iOS apps as `com.chapterreads.chapter`, Firestore in `asia-south1` with delete protection, security rules live, production config in `firebase_options_prod.dart`, functions and client set to `asia-south1` with a test that they match.
+- **Deployed after you turned on Blaze and Google sign-in and set both secrets:** TTL policies on `catalog_searchCache` and `ops_rateLimits`; all 8 functions in `asia-south1`. `sweepDeletedAccounts` failed the first time with a 409 on the build bucket, while the deploy still exited 0, and succeeded on a second deploy.
+- **Live check:** an anonymous call to `catalogSearch` gets 401 UNAUTHENTICATED. That shows the function is reachable and refuses anonymous callers, not that providers, App Check or sign-in work.
+- **Tested on the emulator against production (debug build, your upload key, App Check debug token):** real Google sign-in; server logged `auth: VALID, app: VALID` after failing correctly with `app: INVALID` before the token was added; search returned real results; *Project Hail Mary* added; Profile shows "All changes saved".
+- **Seen from outside the app:** you confirmed the book in the Firestore console under `users/…/library`.
+- **Acceptance not fully met:** this was a debug build; the release-build check waits for Play internal testing.
+- **Upload key:** created and registered in Firebase, kept outside the repo with `key.properties` git-ignored. Debug builds sign with it on machines that have `key.properties`. Flutter's migrator added two flags to `gradle.properties`.
+- **Not yet verified:** a release build, Play Integrity, account deletion, the sweep firing, which providers served the results.
+- **Verification:** functions lint, build, 67 tests. App analyze clean, 406 tests. **One full app run before that stopped early** ("did not complete", 105 tests not finished), right after clearing `build/test_cache`; the rerun passed with no changes in between, cause unknown (W54 reopened). Nothing has signed in or synced yet.
+- **Publishing note:** `firebase_options_prod.dart` now holds the real API keys. They identify the project and aren't secrets, but the repository is public, and GitHub's secret scanning may flag them.
+- **App Check:** Play Integrity needs the app known to Play, so "adds a book" on a release build may have to wait for internal testing or use a debug token.
+- **Risks:** the database location is permanent. Functions in a different region from the client's setting would fail every call. App Check is enforced on every callable, so nothing server-side works in a release build until it's registered.
 
 ### 2026-11-06 — Public repository and first CI
 
@@ -438,8 +458,8 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 - **CI green on PR #1:** Flutter app, functions and rules, Android release with R8, and an unsigned iOS build. **iOS compiles for the first time; it has never run.**
 - **Fixes:** format check limited to tracked files; Auth emulator in CI; iOS target 15.0; Firebase pinned to 12.19.0 in `app/ios/Podfile`, because FirebaseAnalytics 12.19.3 isn't on CocoaPods. Stopgap: Firebase stops publishing to CocoaPods from October 2026, so iOS should move to Swift Package Manager.
 - **Build trouble was this PC:** R8 crashes and hangs never appeared on CI. Use CI for release builds.
-- **Next, in its own pull request:** iOS moves to Swift Package Manager. All 15 iOS plugins with native code support it, so CocoaPods and the Firebase pin go. Firebase on iOS becomes 13.1.1.
-- **Timing:** iOS takes about 23 minutes on CI, all checks about the same, since they run in parallel.
+- **Done in PR #2 (merged as `28b44b1`):** iOS moved to Swift Package Manager; CocoaPods and the Firebase pin are gone; Firebase on iOS is 13.1.1; Flutter upgraded to 3.47.9 (TD-52). Still compile only: iOS has never run.
+- **Timing:** iOS took about 23 minutes on CI under CocoaPods, 11 minutes on the last Swift Package Manager run.
 
 ### 2026-11-06 — Backlog work
 
