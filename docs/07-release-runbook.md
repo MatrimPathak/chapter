@@ -49,7 +49,7 @@ Everything a v1.0 release needs that can't be done from the repository, in order
 
 ## 4. iOS (spike `SPIKE-29567026`, blocker B3)
 
-iOS has **never been compiled**, so expect work here. The CI job `ios-build` is the first real test.
+iOS compiles on CI (unsigned) but has **never run**, so expect work here. It targets iOS 15. Plugins and Firebase come through Swift Package Manager, not CocoaPods.
 
 1. Apple Developer account; bundle id `com.chapterreads.chapter`; enable Sign in with Apple and App Attest.
 2. Add a real `GoogleService-Info.plist` and the Google URL scheme.

@@ -431,6 +431,15 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ## E. Development history
 
+### 2026-11-06 — Public repository and first CI
+
+- **Published:** `MatrimPathak/chapter`, public, all rights reserved. Secret scanning, push protection, Dependabot alerts and private vulnerability reporting on. `main` requires the four CI checks, no force pushes or deletion.
+- **CI green on PR #1:** Flutter app, functions and rules, Android release with R8, and an unsigned iOS build. **iOS compiles for the first time; it has never run.**
+- **Fixes:** format check limited to tracked files; Auth emulator in CI; iOS target 15.0; Firebase pinned to 12.19.0 in `app/ios/Podfile`, because FirebaseAnalytics 12.19.3 isn't on CocoaPods. Stopgap: Firebase stops publishing to CocoaPods from October 2026, so iOS should move to Swift Package Manager.
+- **Build trouble was this PC:** R8 crashes and hangs never appeared on CI. Use CI for release builds.
+- **Next, in its own pull request:** iOS moves to Swift Package Manager. All 15 iOS plugins with native code support it, so CocoaPods and the Firebase pin go. Firebase on iOS becomes 13.1.1.
+- **Timing:** iOS takes about 23 minutes on CI, all checks about the same, since they run in parallel.
+
 ### 2026-11-06 — Backlog work
 
 - **W37 measured through the app:** real 214-book Goodreads export on the emulator, release build, live Open Library: 206 added, 8 listed as not found (96 %). One library. Wrong matches weren't audited; 147+ were by ISBN. About 30 books a minute, the server limit.

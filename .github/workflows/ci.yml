@@ -74,6 +74,9 @@ jobs:
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build ios --no-codesign -t lib/main_dev.dart
+      # Flutter adds SPM to the Xcode project during the build. Shows what to commit.
+      - name: Xcode project changes from the build
+        run: git diff -- ios/Runner.xcodeproj ios/Runner.xcworkspace
 
   functions:
     name: Functions & security rules
