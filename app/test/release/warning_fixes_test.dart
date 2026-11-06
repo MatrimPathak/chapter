@@ -408,11 +408,9 @@ void main() {
       expect(wal.existsSync(), isFalse);
       expect(cover.existsSync(), isFalse);
       expect(other.existsSync(), isTrue, reason: "another account's database");
-      expect(
-        docs.listSync().whereType<File>().map((f) => f.uri.pathSegments.last),
-        ['chapter_bob.sqlite'],
-        reason: 'marker gone too',
-      );
+      expect(docs.listSync().whereType<File>().map((f) => f.uri.pathSegments.last), [
+        'chapter_bob.sqlite',
+      ], reason: 'marker gone too');
     });
   });
 }

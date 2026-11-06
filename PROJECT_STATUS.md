@@ -114,6 +114,7 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 | TD-47 | 2026-11-05 | Privacy | Crash reports send the error's type and stack, never its message. Harder debugging, accepted, to keep the consent screen's promise | crash_scrubber.dart |
 | TD-48 | 2026-11-05 | Account | The server enforces a sign-in within 5 minutes for deletion; the client only reacts. Order: revoke tokens, delete data, delete Auth user last, so any failure can be retried | deleteAccount.ts |
 | TD-49 | 2026-11-05 | Backup | Android cloud backup and device transfer are off. The server holds the synced copy, and a restore could bring back deleted accounts. Unsynced changes don't survive a phone change | AndroidManifest.xml |
+| TD-52 | 2026-11-06 | Toolchain | Flutter 3.47.9, Dart 3.13. Needed for `google_sign_in_ios` 6.4.0, whose GoogleSignIn 10 resolves the shared-library conflict with Firebase 13 under Swift Package Manager | pubspec.yaml, ci.yml |
 | TD-22 | 2026-11-04 | Metadata | Open Library author works come from search sorted by editions; bios and descriptions are cleaned of HTML and Markdown; page count falls back to a print edition | docs/04 §1.5 |
 | TD-11 | 2026-11-04 | Process | Tracked in Flowboard/Chronicle; `docs/` canonical; lifecycle governed by `chapter-phase-guard`; no Git staging or publishing without explicit approval | this file |
 

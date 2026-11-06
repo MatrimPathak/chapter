@@ -5,6 +5,9 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "lib/l10n/generated/**"
+    - build/**
+    - android/**
+    - ios/**
   language:
     strict-casts: true
     strict-inference: true

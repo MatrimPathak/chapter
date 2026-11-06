@@ -345,33 +345,29 @@ void main() {
       ];
     }
 
-    test(
-      '1,000 rows complete, and a restart mid-way resumes without duplicates',
-      () async {
-        await phone.queue.enqueue(many(1000));
+    test('1,000 rows complete, and a restart mid-way resumes without duplicates', () async {
+      await phone.queue.enqueue(many(1000));
 
-        // First run stops part way, as if the app were closed.
-        final first = runner(phone);
-        var seen = 0;
-        final sub = phone.queue.watchProgress().listen((p) {
-          seen = p.done;
-          if (seen >= 300) first.dispose();
-        });
-        await first.run();
-        await sub.cancel();
-        final partial = await phone.queue.watchProgress().first;
-        expect(partial.done, greaterThanOrEqualTo(300));
-        expect(partial.pending, greaterThan(0));
+      // First run stops part way, as if the app were closed.
+      final first = runner(phone);
+      var seen = 0;
+      final sub = phone.queue.watchProgress().listen((p) {
+        seen = p.done;
+        if (seen >= 300) first.dispose();
+      });
+      await first.run();
+      await sub.cancel();
+      final partial = await phone.queue.watchProgress().first;
+      expect(partial.done, greaterThanOrEqualTo(300));
+      expect(partial.pending, greaterThan(0));
 
-        await runner(phone).run();
-        final p = await phone.queue.watchProgress().first;
-        expect(p.done, 1000);
-        expect(p.pending, 0);
-        expect(await phone.library.watchEntries().first, hasLength(1000));
-        expect(await phone.library.watchAllReadThroughs().first, hasLength(1000));
-      },
-      timeout: const Timeout(Duration(minutes: 3)),
-    );
+      await runner(phone).run();
+      final p = await phone.queue.watchProgress().first;
+      expect(p.done, 1000);
+      expect(p.pending, 0);
+      expect(await phone.library.watchEntries().first, hasLength(1000));
+      expect(await phone.library.watchAllReadThroughs().first, hasLength(1000));
+    }, timeout: const Timeout(Duration(minutes: 3)));
 
     test('a rate limit pauses for a minute, then carries on', () async {
       await phone.queue.enqueue(many(2));
