@@ -57,7 +57,9 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) => FirebaseAuth.instan
 
 final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
 
-final functionsProvider = Provider<FirebaseFunctions>((ref) => FirebaseFunctions.instance);
+final functionsProvider = Provider<FirebaseFunctions>(
+  (ref) => FirebaseFunctions.instanceFor(region: functionsRegion),
+);
 
 /// Connectivity hint for the sync engine. `true` when any network is up.
 final connectivityProvider = StreamProvider<bool>((ref) async* {

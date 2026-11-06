@@ -40,7 +40,9 @@ Future<void> bootstrap(AppConfig config, FirebaseOptions options) async {
   if (config.useEmulators) {
     await FirebaseAuth.instance.useAuthEmulator(config.emulatorHost, 9099);
     FirebaseFirestore.instance.useFirestoreEmulator(config.emulatorHost, 8080);
-    FirebaseFunctions.instance.useFunctionsEmulator(config.emulatorHost, 5001);
+    FirebaseFunctions.instanceFor(
+      region: functionsRegion,
+    ).useFunctionsEmulator(config.emulatorHost, 5001);
   } else {
     await FirebaseAppCheck.instance.activate(
       providerAndroid: kDebugMode

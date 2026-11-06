@@ -13,6 +13,7 @@ import {
 } from "../catalog/firestoreStore";
 import { RATE_LIMITS } from "../catalog/service";
 import { requireUid } from "../shared/auth";
+import { REGION } from "../shared/region";
 
 /** Deleting an account needs a sign-in this recent (docs/05 §1). */
 export const RECENT_SIGN_IN_SECONDS = 5 * 60;
@@ -107,7 +108,12 @@ export async function sweepDeleted(db: Firestore, now: Date): Promise<number> {
 }
 
 export const sweepDeletedAccounts = onSchedule(
-  { schedule: "every 30 minutes", maxInstances: 1, timeoutSeconds: 300 },
+  {
+    region: REGION,
+    schedule: "every 30 minutes",
+    maxInstances: 1,
+    timeoutSeconds: 300,
+  },
   async () => {
     await sweepDeleted(getFirestore(), new Date());
   },
@@ -129,6 +135,7 @@ export async function withOneRetry(
 
 export const deleteAccount = onCall(
   {
+    region: REGION,
     enforceAppCheck: process.env.FUNCTIONS_EMULATOR !== "true",
     maxInstances: 10,
     memory: "256MiB",

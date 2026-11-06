@@ -1,6 +1,7 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
+import { REGION } from "../shared/region";
 import {
   HttpsError,
   onCall,
@@ -25,6 +26,7 @@ const MAX_INSTANCES = 10;
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
 const options = {
+  region: REGION,
   secrets: [HARDCOVER_TOKEN, GOOGLE_BOOKS_KEY],
   // App Check protects provider quotas (D7). The emulator has no attestation.
   enforceAppCheck: !isEmulator,

@@ -36,20 +36,6 @@ android {
         versionName = flutter.versionName
     }
 
-    flavorDimensions += "environment"
-    productFlavors {
-        create("dev") {
-            dimension = "environment"
-            applicationIdSuffix = ".dev"
-            versionNameSuffix = "-dev"
-            resValue("string", "app_name", "Chapter Dev")
-        }
-        create("prod") {
-            dimension = "environment"
-            resValue("string", "app_name", "Chapter")
-        }
-    }
-
     signingConfigs {
         if (hasReleaseKey) {
             create("release") {
@@ -61,7 +47,30 @@ android {
         }
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            signingConfig = signingConfigs.getByName("debug")
+            resValue("string", "app_name", "Chapter Dev")
+        }
+        create("prod") {
+            dimension = "environment"
+            // Google sign-in and App Check's debug flow against the real project need
+            // a registered key. Only machines with key.properties have one. Dev stays
+            // on the debug key, so its installs and local data keep working.
+            signingConfig = signingConfigs.getByName(if (hasReleaseKey) "release" else "debug")
+            resValue("string", "app_name", "Chapter")
+        }
+    }
+
     buildTypes {
+        debug {
+            // Use the flavor's key. Set here, it would override both flavors.
+            signingConfig = null
+        }
         release {
             // Without a key, a local release build still runs on a test device.
             // The stores refuse anything signed with the debug key.

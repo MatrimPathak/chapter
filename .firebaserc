@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "demo-chapter"
+    "default": "demo-chapter",
+    "prod": "chapter-reads-prod"
   }
 }
