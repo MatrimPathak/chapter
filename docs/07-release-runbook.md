@@ -6,7 +6,13 @@ Everything a v1.0 release needs that can't be done from the repository, in order
 
 1. Project `chapter-reads-prod` exists, with its Android and iOS apps and its database in Mumbai (`asia-south1`). Move it to the Blaze plan and set a budget alert.
 2. Enable Authentication (Google; Apple once the Apple account exists), Firestore, Functions, App Check, Analytics, Crashlytics.
-3. The app's config is in `lib/core/firebase/firebase_options_prod.dart`. To regenerate the values: `firebase apps:sdkconfig`.
+3. The app's config is in `app/lib/core/firebase/firebase_options_prod.dart`. To get the values, run these and copy them into the Android and iOS entries by hand; they don't update the file:
+   ```bash
+   firebase apps:sdkconfig ANDROID 1:80245747744:android:09f586779176e0014d8c45 --project chapter-reads-prod
+   ```
+   ```bash
+   firebase apps:sdkconfig IOS 1:80245747744:ios:0957e323696490f94d8c45 --project chapter-reads-prod
+   ```
 4. Set secrets. The functions declare both, and no function deploys until both exist, even with `--only functions:deleteAccount`. A value of one space keeps that provider off, with Open Library still working, because the code trims it to nothing:
    ```bash
    firebase functions:secrets:set HARDCOVER_TOKEN --project chapter-reads-prod
@@ -31,7 +37,7 @@ Everything a v1.0 release needs that can't be done from the repository, in order
 2. The key's SHA-1 and SHA-256 are on the Firebase Android app. Add Play's app signing certificate too, or Google sign-in fails for installs from Play.
 3. Build:
    ```bash
-   flutter build appbundle --release --flavor prod -t lib/main_prod.dart --dart-define=GOOGLE_SERVER_CLIENT_ID=YOUR_ID
+   flutter build appbundle --release --flavor prod -t lib/main_prod.dart --dart-define=GOOGLE_SERVER_CLIENT_ID=80245747744-7cn3mrv8lju85m01nlo3ljl9j86g97l7.apps.googleusercontent.com
    ```
 
 ## 3. Play Console (blocker B3)
@@ -71,4 +77,4 @@ Run `python tool/release_check.py` from `app/`: it fails until the policy, Fireb
 ## 6. After launch
 
 - Watch the crash-free rate against the 99.5 % target. It can only be measured with real users.
-- Rotate the Hardcover token before it expires (January 1 each year).
+- Rotate the Hardcover token before it expires (January 1 each year): set the new `HARDCOVER_TOKEN` as in section 1, step 4, then redeploy the functions as in step 5. Functions keep using the old value until redeployed.
