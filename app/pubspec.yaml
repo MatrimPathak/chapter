@@ -60,6 +60,10 @@ dev_dependencies:
   path_provider_platform_interface: ^2.1.3
 
 flutter:
+  # iOS plugins come through Swift Package Manager, not CocoaPods: Firebase stops
+  # publishing to CocoaPods from October 2026.
+  config:
+    enable-swift-package-manager: true
   uses-material-design: true
   generate: true
   assets:

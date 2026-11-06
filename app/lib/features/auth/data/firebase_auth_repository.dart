@@ -43,7 +43,7 @@ class FirebaseAuthRepository implements AuthRepository {
         return const Result.err(UnknownFailure('Google returned no ID token'));
       }
       final credential = GoogleAuthProvider.credential(idToken: idToken);
-      return _signInWith(() => _auth.signInWithCredential(credential));
+      return await _signInWith(() => _auth.signInWithCredential(credential));
     } on GoogleSignInException catch (e) {
       return Result.err(
         e.code == GoogleSignInExceptionCode.canceled

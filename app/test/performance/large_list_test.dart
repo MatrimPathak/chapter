@@ -20,77 +20,73 @@ import '../helpers/test_app.dart';
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
-  testWidgets(
-    '2,000 books: lazily built, and scrolling stays bounded',
-    (tester) async {
-      tester.view
-        ..physicalSize = const Size(1080, 2340)
-        ..devicePixelRatio = 2.625;
-      addTearDown(tester.view.reset);
-      final db = AppDatabase(NativeDatabase.memory());
-      addTearDown(db.close);
-      final clock = FakeClock(DateTime(2026, 11, 5, 9));
-      final repo = LwwLibraryRepository(
-        store: LwwStore(db: db, clock: clock, ids: const UuidV7Generator()),
-        db: db,
-        clock: clock,
-        ids: const UuidV7Generator(),
-        uid: FakeAuthRepository.testUser.uid,
-        onLocalWrite: () {},
-      );
-      await tester.runAsync(() async {
-        for (var i = 0; i < 2000; i++) {
-          await repo.add(
-            workId: 'w$i',
-            book: BookSummary(title: 'Book $i', authorNames: ['Author ${i % 50}'], pageCount: 300),
-          );
-        }
-      });
-      await pumpChapterApp(
-        tester,
-        auth: FakeAuthRepository(initialUser: FakeAuthRepository.testUser),
-        catalog: FakeCatalogRepository(),
-        clock: clock,
-        database: db,
-      );
-      addTearDown(() => unmountApp(tester));
-      await tester.tap(find.text('Start reading'));
-      await settle(tester);
-
-      final open = Stopwatch()..start();
-      await tester.tap(find.text('Library'));
-      await settle(tester);
-      await tester.tap(find.textContaining('Want to Read'));
-      await settle(tester);
-      open.stop();
-
-      final built = find.byType(BookGridCard).evaluate().length;
-      expect(built, greaterThan(0));
-      expect(built, lessThan(60), reason: 'only what is near the screen');
-
-      final fling = Stopwatch()..start();
-      var frames = 0;
-      for (var i = 0; i < 30; i++) {
-        await tester.drag(find.byType(Scrollable).last, const Offset(0, -1500));
-        await tester.pump(const Duration(milliseconds: 16));
-        frames++;
+  testWidgets('2,000 books: lazily built, and scrolling stays bounded', (tester) async {
+    tester.view
+      ..physicalSize = const Size(1080, 2340)
+      ..devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final clock = FakeClock(DateTime(2026, 11, 5, 9));
+    final repo = LwwLibraryRepository(
+      store: LwwStore(db: db, clock: clock, ids: const UuidV7Generator()),
+      db: db,
+      clock: clock,
+      ids: const UuidV7Generator(),
+      uid: FakeAuthRepository.testUser.uid,
+      onLocalWrite: () {},
+    );
+    await tester.runAsync(() async {
+      for (var i = 0; i < 2000; i++) {
+        await repo.add(
+          workId: 'w$i',
+          book: BookSummary(title: 'Book $i', authorNames: ['Author ${i % 50}'], pageCount: 300),
+        );
       }
-      fling.stop();
-      await settle(tester);
-      expect(
-        find.byType(BookGridCard).evaluate().length,
-        lessThan(60),
-        reason: 'old rows are released',
-      );
-      // ignore: avoid_print
-      print(
-        'PERF library open ${open.elapsedMilliseconds} ms; '
-        '$built cards built; '
-        '${(fling.elapsedMilliseconds / frames).toStringAsFixed(1)} ms per scroll step',
-      );
-      expect(fling.elapsedMilliseconds / frames, lessThan(500));
-      await unmountApp(tester);
-    },
-    timeout: const Timeout(Duration(minutes: 4)),
-  );
+    });
+    await pumpChapterApp(
+      tester,
+      auth: FakeAuthRepository(initialUser: FakeAuthRepository.testUser),
+      catalog: FakeCatalogRepository(),
+      clock: clock,
+      database: db,
+    );
+    addTearDown(() => unmountApp(tester));
+    await tester.tap(find.text('Start reading'));
+    await settle(tester);
+
+    final open = Stopwatch()..start();
+    await tester.tap(find.text('Library'));
+    await settle(tester);
+    await tester.tap(find.textContaining('Want to Read'));
+    await settle(tester);
+    open.stop();
+
+    final built = find.byType(BookGridCard).evaluate().length;
+    expect(built, greaterThan(0));
+    expect(built, lessThan(60), reason: 'only what is near the screen');
+
+    final fling = Stopwatch()..start();
+    var frames = 0;
+    for (var i = 0; i < 30; i++) {
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, -1500));
+      await tester.pump(const Duration(milliseconds: 16));
+      frames++;
+    }
+    fling.stop();
+    await settle(tester);
+    expect(
+      find.byType(BookGridCard).evaluate().length,
+      lessThan(60),
+      reason: 'old rows are released',
+    );
+    // ignore: avoid_print
+    print(
+      'PERF library open ${open.elapsedMilliseconds} ms; '
+      '$built cards built; '
+      '${(fling.elapsedMilliseconds / frames).toStringAsFixed(1)} ms per scroll step',
+    );
+    expect(fling.elapsedMilliseconds / frames, lessThan(500));
+    await unmountApp(tester);
+  }, timeout: const Timeout(Duration(minutes: 4)));
 }
