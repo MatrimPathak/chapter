@@ -73,6 +73,8 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
+      # The runner's CocoaPods spec list can lag behind the Firebase release we use.
+      - run: pod repo update
       - run: flutter build ios --no-codesign -t lib/main_dev.dart
 
   functions:
