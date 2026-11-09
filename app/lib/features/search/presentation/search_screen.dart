@@ -228,6 +228,31 @@ class _IdleView extends ConsumerWidget {
             ),
           ),
         ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            ChapterSpacing.gutter,
+            ChapterSpacing.xl,
+            ChapterSpacing.gutter,
+            0,
+          ),
+          child: ChapterCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.searchBookInHand, style: context.textTheme.headlineSmall),
+                const SizedBox(height: ChapterSpacing.xs),
+                Text(l10n.searchBookInHandBody, style: context.textTheme.bodyMedium),
+                const SizedBox(height: ChapterSpacing.md),
+                ChapterButton(
+                  label: l10n.searchScan,
+                  variant: ChapterButtonVariant.secondary,
+                  icon: const Icon(Icons.qr_code_scanner_rounded),
+                  onPressed: () => context.push(AppRoutes.scan),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -264,14 +289,26 @@ class _Results extends ConsumerWidget {
           );
         }
         final book = state.results[i];
-        return BookListTile(
-          data: BookCardData(
-            title: book.title,
-            author: book.authors.isEmpty ? null : book.authors.take(2).join(', '),
-            coverUrl: book.coverUrl,
-            caption: _caption(context, book),
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            ChapterSpacing.gutter,
+            ChapterSpacing.sm,
+            ChapterSpacing.gutter,
+            ChapterSpacing.xs,
           ),
-          onTap: () => context.push(AppRoutes.book(workKeyOf(book))),
+          child: ChapterCard(
+            padding: EdgeInsets.zero,
+            child: BookListTile(
+              data: BookCardData(
+                title: book.title,
+                author: book.authors.isEmpty ? null : book.authors.take(2).join(', '),
+                coverUrl: book.coverUrl,
+                caption: _caption(context, book),
+              ),
+              padding: const EdgeInsets.all(ChapterSpacing.lg),
+              onTap: () => context.push(AppRoutes.book(workKeyOf(book))),
+            ),
+          ),
         );
       },
     );
@@ -331,7 +368,10 @@ class _SectionHeader extends StatelessWidget {
     child: Row(
       children: [
         Expanded(
-          child: Semantics(header: true, child: Text(title, style: context.textTheme.titleLarge)),
+          child: Semantics(
+            header: true,
+            child: Text(title, style: context.textTheme.headlineMedium),
+          ),
         ),
         ?action,
       ],

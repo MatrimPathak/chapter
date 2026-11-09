@@ -63,7 +63,7 @@ void main() {
     await settle(tester);
     expect(find.text('Your library is empty'), findsOneWidget);
 
-    await tester.tap(find.text('Read'));
+    await tester.tap(find.text('Reading'));
     await settle(tester);
     expect(find.text('Nothing to read yet'), findsOneWidget);
 
@@ -87,10 +87,17 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('Profile'));
     await settle(tester);
+    await tester.scrollUntilVisible(
+      find.text('Dark'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.ensureVisible(find.text('Dark'));
+    await settle(tester);
     await tester.tap(find.text('Dark'));
     await settle(tester);
 
-    final context = tester.element(find.text('Appearance'.toUpperCase()));
+    final context = tester.element(find.text('Dark'));
     expect(Theme.of(context).brightness, Brightness.dark);
     await unmountApp(tester);
   });

@@ -242,6 +242,8 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     expect(find.byType(RatingStars), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('add-note')));
+    await settle(tester);
     await tester.tap(find.byKey(const Key('add-note')));
     await settle(tester);
     await tester.tap(find.widgetWithText(ChoiceChip, 'Quote'));
@@ -359,6 +361,49 @@ void main() {
     await unmountApp(tester);
   });
 
+  testWidgets('the Notes screen lists notes from the library and filters them', (tester) async {
+    await launch(tester);
+    await tester.tap(find.text('The Deal').first);
+    await settle(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('add-note')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.ensureVisible(find.byKey(const Key('add-note')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('add-note')));
+    await settle(tester);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Quote'));
+    await tester.enterText(find.byKey(const Key('note-text')), 'A line I liked');
+    await tester.tap(find.byKey(const Key('note-save')));
+    await settle(tester);
+    await tester.pageBack();
+    await settle(tester);
+    await tester.tap(find.text('Profile'));
+    await settle(tester);
+    await tester.ensureVisible(find.byKey(const Key('open-notes')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('open-notes')));
+    await settle(tester);
+
+    expect(find.text('A line I liked'), findsOneWidget);
+    expect(find.text('The Deal'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Observation'));
+    await settle(tester);
+    expect(find.text('A line I liked'), findsNothing);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Quote'));
+    await settle(tester);
+    expect(find.text('A line I liked'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'nothing like this');
+    await settle(tester);
+    expect(find.text('A line I liked'), findsNothing);
+    await unmountApp(tester);
+  });
+
   testWidgets('closing a note sheet with unsaved text asks first', (tester) async {
     await launch(tester);
     await tester.tap(find.text('The Deal').first);
@@ -368,6 +413,8 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).last,
     );
+    await tester.ensureVisible(find.byKey(const Key('add-note')));
+    await settle(tester);
     await tester.tap(find.byKey(const Key('add-note')));
     await settle(tester);
 
@@ -411,7 +458,7 @@ void main() {
     await saveSession('s1', 25, at: now.subtract(const Duration(hours: 2)));
     await launch(tester);
     tester.view.physicalSize = const Size(1080, 6000);
-    await tester.tap(find.text('Read').last);
+    await tester.tap(find.text('Reading').last);
     await settle(tester);
     await tester.tap(find.byTooltip('Delete session'));
     await settle(tester);
@@ -443,7 +490,7 @@ void main() {
 
     await tester.tap(find.text('Library'));
     await settle(tester);
-    expect(find.byType(BookGridCard), findsNWidgets(2));
+    expect(find.byType(BookListTile), findsNWidgets(2));
 
     await tester.tap(find.byKey(const Key('library-filter')));
     await settle(tester);
@@ -453,14 +500,14 @@ void main() {
     await settle(tester);
     await tester.tapAt(const Offset(10, 10));
     await settle(tester);
-    expect(find.byType(BookGridCard), findsOneWidget);
+    expect(find.byType(BookListTile), findsOneWidget);
     expect(find.text('Dune'), findsWidgets);
 
     await tester.tap(find.byKey(const Key('library-filter')));
     await settle(tester);
     await tester.tap(find.text('Clear filters'));
     await settle(tester);
-    expect(find.byType(BookGridCard), findsNWidgets(2));
+    expect(find.byType(BookListTile), findsNWidgets(2));
     await unmountApp(tester);
   });
 }

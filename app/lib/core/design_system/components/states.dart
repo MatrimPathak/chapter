@@ -13,6 +13,7 @@ class EmptyState extends StatelessWidget {
     this.icon,
     this.actionLabel,
     this.onAction,
+    this.extraActions = const [],
   });
 
   final String title;
@@ -20,6 +21,9 @@ class EmptyState extends StatelessWidget {
   final IconData? icon;
   final String? actionLabel;
   final VoidCallback? onAction;
+
+  /// Further choices below the main action.
+  final List<Widget> extraActions;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +50,10 @@ class EmptyState extends StatelessWidget {
               if (actionLabel != null && onAction != null) ...[
                 const SizedBox(height: ChapterSpacing.xl),
                 ChapterButton(label: actionLabel!, onPressed: onAction),
+              ],
+              for (final action in extraActions) ...[
+                const SizedBox(height: ChapterSpacing.sm),
+                action,
               ],
             ],
           ),
@@ -110,7 +118,7 @@ class LoadingSkeleton extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: context.chapterColors.line,
+        color: context.chapterColors.surfaceMuted,
         borderRadius: BorderRadius.circular(radius),
       ),
     ),

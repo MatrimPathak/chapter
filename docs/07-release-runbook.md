@@ -72,7 +72,7 @@ Run `python tool/release_check.py` from `app/`: it fails until the policy, Fireb
 - [ ] Real export files tried (W35).
 - [ ] Physical Android device run, including a real TalkBack pass.
 - [ ] Cold start measured on a mid-range phone, in a release build, against the 2 s target.
-- [ ] Optional: a designer's app icon. To replace the generated one, see `app/tool/generate_icons.py`.
+- [ ] Optional: a designer's app icon. To replace the icon from Stitch, see `app/tool/apply_icon.ps1`.
 
 ## 6. After launch
 

@@ -30,6 +30,14 @@ class LwwNotesRepository {
   final void Function() _onLocalWrite;
   final String path;
 
+  /// Every note, newest first.
+  Stream<List<Note>> watchAllNotes() => _store.watchCollection(path).map((docs) {
+    return [for (final e in docs.entries) ?Note.fromFields(e.key, e.value.fields)]..sort((a, b) {
+      final byDate = b.createdAt.compareTo(a.createdAt);
+      return byDate != 0 ? byDate : b.id.compareTo(a.id);
+    });
+  });
+
   /// Notes of one book, oldest first.
   Stream<List<Note>> watchNotes(String workId) => _store.watchCollection(path).map((docs) {
     final list =

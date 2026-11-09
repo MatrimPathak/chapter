@@ -61,83 +61,72 @@ class _WorkView extends StatelessWidget {
         ChapterSpacing.xxxl,
       ),
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Center(
+          child: BookCover(
+            title: work.title,
+            author: work.authors.firstOrNull?.name,
+            imageUrl: work.coverUrl,
+            width: 176,
+          ),
+        ),
+        const SizedBox(height: ChapterSpacing.xl),
+        Semantics(
+          header: true,
+          child: Text(
+            work.title,
+            textAlign: TextAlign.center,
+            style: context.textTheme.displayMedium,
+          ),
+        ),
+        if (work.subtitle != null) ...[
+          const SizedBox(height: ChapterSpacing.xs),
+          Text(
+            work.subtitle!,
+            textAlign: TextAlign.center,
+            style: context.textTheme.bodyLarge?.copyWith(color: colors.inkMuted),
+          ),
+        ],
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: ChapterSpacing.sm,
           children: [
-            BookCover(
-              title: work.title,
-              author: work.authors.firstOrNull?.name,
-              imageUrl: work.coverUrl,
-              width: 116,
-            ),
-            const SizedBox(width: ChapterSpacing.lg),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Semantics(
-                    header: true,
-                    child: Text(work.title, style: context.textTheme.headlineMedium),
-                  ),
-                  if (work.subtitle != null) ...[
-                    const SizedBox(height: ChapterSpacing.xs),
-                    Text(
-                      work.subtitle!,
-                      style: context.textTheme.titleMedium?.copyWith(
-                        color: colors.inkMuted,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: ChapterSpacing.sm),
-                  Wrap(
-                    spacing: ChapterSpacing.xs,
-                    children: [
-                      for (final author in work.authors)
-                        _LinkText(
-                          text: author.name,
-                          onTap: author.id == null
-                              ? null
-                              : () => context.push(AppRoutes.author('id:${author.id}')),
-                        ),
-                    ],
-                  ),
-                  if (series != null) ...[
-                    const SizedBox(height: ChapterSpacing.sm),
-                    Consumer(
-                      builder: (context, ref, _) => _LinkText(
-                        text: series.position != null
-                            ? l10n.bookSeriesPosition(series.positionLabel ?? '', series.name)
-                            : l10n.bookInSeries(series.name),
-                        muted: true,
-                        // Without a series page (no Hardcover), search by its name.
-                        onTap: series.seriesId == null
-                            ? () {
-                                ref.read(searchControllerProvider.notifier).submit(series.name);
-                                context.go(AppRoutes.search);
-                              }
-                            : () => context.push(AppRoutes.series(series.seriesId!)),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: ChapterSpacing.sm),
-                  Text(
-                    [
-                      if (work.pageCount != null) l10n.bookPages(work.pageCount!),
-                      ?year,
-                    ].join(' · '),
-                    style: context.textTheme.bodySmall,
-                  ),
-                ],
+            for (final author in work.authors)
+              _LinkText(
+                text: author.name,
+                onTap: author.id == null
+                    ? null
+                    : () => context.push(AppRoutes.author('id:${author.id}')),
+              ),
+          ],
+        ),
+        if (series != null)
+          Center(
+            child: Consumer(
+              builder: (context, ref, _) => _LinkText(
+                text: series.position != null
+                    ? l10n.bookSeriesPosition(series.positionLabel ?? '', series.name)
+                    : l10n.bookInSeries(series.name),
+                muted: true,
+                // Without a series page (no Hardcover), search by its name.
+                onTap: series.seriesId == null
+                    ? () {
+                        ref.read(searchControllerProvider.notifier).submit(series.name);
+                        context.go(AppRoutes.search);
+                      }
+                    : () => context.push(AppRoutes.series(series.seriesId!)),
               ),
             ),
-          ],
+          ),
+        Text(
+          [if (work.pageCount != null) l10n.bookPages(work.pageCount!), ?year].join(' · '),
+          textAlign: TextAlign.center,
+          style: context.textTheme.bodySmall,
         ),
         const SizedBox(height: ChapterSpacing.xl),
         LibrarySection(work: work),
         if (work.description != null) ...[
           _Heading(l10n.bookAbout),
-          _ExpandableText(text: work.description!),
+          ChapterCard(child: _ExpandableText(text: work.description!)),
         ],
         if (work.genres.isNotEmpty) ...[
           const SizedBox(height: ChapterSpacing.lg),
@@ -148,14 +137,23 @@ class _WorkView extends StatelessWidget {
           ),
         ],
         _Heading(l10n.bookDetails),
-        _Fact(label: l10n.bookPublisher, value: edition?.publisher),
-        _Fact(
-          label: l10n.bookPublishedLabel,
-          value: edition?.publishedDate ?? work.firstPublishedDate,
+        ChapterCard(
+          child: Column(
+            children: [
+              _Fact(label: l10n.bookPublisher, value: edition?.publisher),
+              _Fact(
+                label: l10n.bookPublishedLabel,
+                value: edition?.publishedDate ?? work.firstPublishedDate,
+              ),
+              _Fact(label: l10n.bookIsbn, value: edition?.isbn13 ?? edition?.isbn10),
+              _Fact(
+                label: l10n.bookFormat,
+                value: edition == null ? null : _format(edition.format),
+              ),
+              _Fact(label: l10n.bookLanguage, value: edition?.language ?? work.language),
+            ],
+          ),
         ),
-        _Fact(label: l10n.bookIsbn, value: edition?.isbn13 ?? edition?.isbn10),
-        _Fact(label: l10n.bookFormat, value: edition == null ? null : _format(edition.format)),
-        _Fact(label: l10n.bookLanguage, value: edition?.language ?? work.language),
         if (work.editions.length > 1) ...[
           _Heading(l10n.bookEditions(work.editions.length)),
           for (final e in work.editions.take(12))
@@ -234,7 +232,7 @@ class _Heading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: ChapterSpacing.xl, bottom: ChapterSpacing.sm),
-    child: Semantics(header: true, child: Text(text, style: context.textTheme.titleLarge)),
+    child: Semantics(header: true, child: Text(text, style: context.textTheme.headlineMedium)),
   );
 }
 
@@ -304,23 +302,15 @@ class _DetailSkeleton extends StatelessWidget {
     label: AppLocalizations.of(context).loading,
     child: const Padding(
       padding: EdgeInsets.all(ChapterSpacing.gutter),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          LoadingSkeleton.cover(width: 116),
-          SizedBox(width: ChapterSpacing.lg),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                LoadingSkeleton(height: 24),
-                SizedBox(height: ChapterSpacing.sm),
-                LoadingSkeleton(width: 140),
-                SizedBox(height: ChapterSpacing.sm),
-                LoadingSkeleton(width: 90),
-              ],
-            ),
-          ),
+          LoadingSkeleton.cover(width: 176),
+          SizedBox(height: ChapterSpacing.xl),
+          LoadingSkeleton(height: 32, width: 220),
+          SizedBox(height: ChapterSpacing.sm),
+          LoadingSkeleton(width: 140),
+          SizedBox(height: ChapterSpacing.sm),
+          LoadingSkeleton(width: 90),
         ],
       ),
     ),

@@ -35,24 +35,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: ListView(
           padding: const EdgeInsets.all(ChapterSpacing.xl),
           children: [
-            const SizedBox(height: ChapterSpacing.xxl),
+            const SizedBox(height: ChapterSpacing.xl),
+            const Center(child: ChapterLogo(size: 72)),
+            const SizedBox(height: ChapterSpacing.xl),
             Text(l10n.onboardingTitle, style: context.textTheme.displaySmall),
             const SizedBox(height: ChapterSpacing.md),
             Text(l10n.onboardingBody, style: context.textTheme.bodyLarge),
             const SizedBox(height: ChapterSpacing.xl),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.consentAnalyticsTitle),
-              subtitle: Text(l10n.consentAnalyticsBody),
-              value: _analytics,
-              onChanged: (v) => setState(() => _analytics = v),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.consentCrashTitle),
-              subtitle: Text(l10n.consentCrashBody),
-              value: _crash,
-              onChanged: (v) => setState(() => _crash = v),
+            ChapterCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    title: Text(l10n.consentAnalyticsTitle),
+                    subtitle: Text(l10n.consentAnalyticsBody),
+                    value: _analytics,
+                    onChanged: (v) => setState(() => _analytics = v),
+                  ),
+                  SwitchListTile(
+                    title: Text(l10n.consentCrashTitle),
+                    subtitle: Text(l10n.consentCrashBody),
+                    value: _crash,
+                    onChanged: (v) => setState(() => _crash = v),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: ChapterSpacing.xxl),
             ChapterButton(

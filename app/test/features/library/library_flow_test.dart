@@ -51,6 +51,8 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, 'Reading'), findsOneWidget);
 
     // Log p. 187 of 374.
+    await tester.ensureVisible(find.text('Update progress'));
+    await settle(tester);
     await tester.tap(find.text('Update progress'));
     await settle(tester);
     await tester.enterText(find.byKey(const Key('progress-input')), '187');
@@ -83,7 +85,11 @@ void main() {
     await settle(tester);
     expect(find.text('Added to Want to Read'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Start reading'));
+    await settle(tester);
     await tester.tap(find.text('Start reading'));
+    await settle(tester);
+    await tester.ensureVisible(find.text('Update progress'));
     await settle(tester);
     await tester.tap(find.text('Update progress'));
     await settle(tester);
@@ -97,6 +103,8 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, 'Read'), findsOneWidget);
     expect(find.text('Read once'), findsOneWidget);
 
+    await tester.ensureVisible(find.byType(PopupMenuButton<String>));
+    await settle(tester);
     await tester.tap(find.byType(PopupMenuButton<String>));
     await settle(tester);
     await tester.tap(find.text('Remove from library'));
@@ -107,7 +115,7 @@ void main() {
     await unmountApp(tester);
   });
 
-  testWidgets('library grid does not overflow at 2x text size', (tester) async {
+  testWidgets('library list does not overflow at 2x text size', (tester) async {
     tester.view
       ..physicalSize = const Size(1080, 2340)
       ..devicePixelRatio = 2.625;
@@ -115,6 +123,12 @@ void main() {
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await openTheDeal(tester);
+    // At this text size the button starts below the part of the list that's built.
+    await tester.scrollUntilVisible(
+      find.text('Add to library'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.ensureVisible(find.text('Add to library'));
     await tester.tap(find.text('Add to library'));
     await settle(tester);
@@ -126,7 +140,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('Library'));
     await settle(tester);
-    expect(find.byType(BookGridCard), findsOneWidget);
+    expect(find.byType(BookListTile), findsOneWidget);
     expect(tester.takeException(), isNull);
     await unmountApp(tester);
   });

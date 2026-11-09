@@ -62,7 +62,7 @@ void main() {
     await settle(tester);
     open.stop();
 
-    final built = find.byType(BookGridCard).evaluate().length;
+    final built = find.byType(BookListTile).evaluate().length;
     expect(built, greaterThan(0));
     expect(built, lessThan(60), reason: 'only what is near the screen');
 
@@ -76,7 +76,7 @@ void main() {
     fling.stop();
     await settle(tester);
     expect(
-      find.byType(BookGridCard).evaluate().length,
+      find.byType(BookListTile).evaluate().length,
       lessThan(60),
       reason: 'old rows are released',
     );

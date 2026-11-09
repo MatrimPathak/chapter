@@ -45,6 +45,8 @@ class SignInScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: ChapterSpacing.xxxl),
+                      const Center(child: ChapterLogo()),
+                      const SizedBox(height: ChapterSpacing.xl),
                       Text(
                         l10n.appName,
                         style: context.textTheme.displayLarge,
@@ -53,10 +55,7 @@ class SignInScreen extends ConsumerWidget {
                       const SizedBox(height: ChapterSpacing.sm),
                       Text(
                         l10n.tagline,
-                        style: context.textTheme.titleLarge?.copyWith(
-                          color: colors.inkMuted,
-                          fontWeight: FontWeight.w400,
-                        ),
+                        style: ChapterTypography.quote(colors.inkMuted),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: ChapterSpacing.xxxl),

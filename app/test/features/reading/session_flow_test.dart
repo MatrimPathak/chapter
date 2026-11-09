@@ -76,7 +76,7 @@ void main() {
     tester.view.physicalSize = const Size(1080, 6000);
     addTearDown(tester.view.reset);
     await launch(tester);
-    await tester.tap(find.text('Read').last);
+    await tester.tap(find.text('Reading').last);
     await settle(tester);
     expect(find.text('What are you reading?'), findsOneWidget);
     await tester.ensureVisible(find.text('20 min'));
@@ -207,7 +207,7 @@ void main() {
     await tester.pageBack();
     await settle(tester);
     expect(find.byKey(const Key('active-session-bar')), findsOneWidget);
-    await tester.tap(find.text('Read').last);
+    await tester.tap(find.text('Reading').last);
     await settle(tester);
     expect(find.text('Session in progress'), findsOneWidget);
     await unmountApp(tester);
@@ -215,7 +215,7 @@ void main() {
 
   testWidgets('custom duration dialog sets the timer', (tester) async {
     await launch(tester);
-    await tester.tap(find.text('Read').last);
+    await tester.tap(find.text('Reading').last);
     await settle(tester);
     await tester.ensureVisible(find.text('Custom'));
     await tester.tap(find.text('Custom'));
@@ -236,7 +236,7 @@ void main() {
     addTearDown(() => debugDefaultTargetPlatformOverride = null);
     focus.accessState = FocusAccess.denied;
     await launch(tester);
-    await tester.tap(find.text('Read').last);
+    await tester.tap(find.text('Reading').last);
     await settle(tester);
     await tester.ensureVisible(find.text('Do Not Disturb while reading'));
     await tester.tap(find.text('Do Not Disturb while reading'));

@@ -46,6 +46,12 @@ final bookNotesProvider = StreamProvider.family<List<Note>, String>((ref, workId
   return ref.read(notesRepositoryProvider).watchNotes(workId);
 });
 
+/// Every note, newest first.
+final allNotesProvider = StreamProvider<List<Note>>((ref) {
+  if (ref.watch(currentUserIdProvider) == null) return Stream.value(const []);
+  return ref.read(notesRepositoryProvider).watchAllNotes();
+});
+
 /// Statistics over the whole local history, or `null` while it loads. Built in
 /// the widget rather than a derived provider (TD-27), and reused until any of
 /// the underlying lists actually changes.

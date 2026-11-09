@@ -15,21 +15,29 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.aboutTitle)),
       body: ListView(
+        padding: const EdgeInsets.all(ChapterSpacing.gutter),
         children: [
-          ListTile(
-            leading: const Icon(Icons.privacy_tip_outlined),
-            title: Text(l10n.aboutPrivacy),
-            onTap: () => context.push(AppRoutes.privacy),
-          ),
-          ListTile(
-            leading: const Icon(Icons.description_outlined),
-            title: Text(l10n.aboutLicences),
-            onTap: () => showLicensePage(context: context, applicationName: 'Chapter'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.menu_book_outlined),
-            title: Text(l10n.aboutBookData),
-            subtitle: Text(l10n.aboutBookDataBody),
+          ChapterCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: Text(l10n.aboutPrivacy),
+                  onTap: () => context.push(AppRoutes.privacy),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: Text(l10n.aboutLicences),
+                  onTap: () => showLicensePage(context: context, applicationName: 'Chapter'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.menu_book_outlined),
+                  title: Text(l10n.aboutBookData),
+                  subtitle: Text(l10n.aboutBookDataBody),
+                ),
+              ],
+            ),
           ),
         ],
       ),

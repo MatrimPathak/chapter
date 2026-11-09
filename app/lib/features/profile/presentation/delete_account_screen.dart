@@ -56,11 +56,18 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
       body: ListView(
         padding: const EdgeInsets.all(ChapterSpacing.gutter),
         children: [
-          Text(l10n.deleteBody, style: style),
-          const SizedBox(height: ChapterSpacing.md),
-          Text(l10n.deleteOtherDevices, style: context.textTheme.bodySmall),
-          const SizedBox(height: ChapterSpacing.md),
-          Text(l10n.deleteExportFirst, style: style),
+          ChapterCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.deleteBody, style: style),
+                const SizedBox(height: ChapterSpacing.md),
+                Text(l10n.deleteOtherDevices, style: context.textTheme.bodySmall),
+                const SizedBox(height: ChapterSpacing.md),
+                Text(l10n.deleteExportFirst, style: style),
+              ],
+            ),
+          ),
           const SizedBox(height: ChapterSpacing.lg),
           TextField(
             key: const Key('delete-word'),

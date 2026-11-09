@@ -67,23 +67,29 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
+    - assets/images/chapter_logo.png
     - assets/legal/privacy_policy.md
-    - assets/fonts/OFL-Literata.txt
-    - assets/fonts/OFL-Inter.txt
+    - assets/fonts/OFL-Newsreader.txt
+    - assets/fonts/OFL-PlusJakartaSans.txt
   fonts:
-    - family: Literata
+    - family: Newsreader
       fonts:
-        - asset: assets/fonts/Literata_400Regular.ttf
+        - asset: assets/fonts/Newsreader_400.ttf
           weight: 400
-        - asset: assets/fonts/Literata_500Medium.ttf
+        - asset: assets/fonts/Newsreader_400Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/Newsreader_500.ttf
           weight: 500
-        - asset: assets/fonts/Literata_600SemiBold.ttf
+        - asset: assets/fonts/Newsreader_600.ttf
           weight: 600
-    - family: Inter
+    - family: PlusJakartaSans
       fonts:
-        - asset: assets/fonts/Inter_400Regular.ttf
+        - asset: assets/fonts/PlusJakartaSans_400.ttf
           weight: 400
-        - asset: assets/fonts/Inter_500Medium.ttf
+        - asset: assets/fonts/PlusJakartaSans_500.ttf
           weight: 500
-        - asset: assets/fonts/Inter_600SemiBold.ttf
+        - asset: assets/fonts/PlusJakartaSans_600.ttf
           weight: 600
+        - asset: assets/fonts/PlusJakartaSans_700.ttf
+          weight: 700

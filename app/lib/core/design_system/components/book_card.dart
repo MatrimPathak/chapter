@@ -4,7 +4,9 @@ import '../theme/chapter_theme.dart';
 import '../tokens/chapter_tokens.dart';
 import 'badges.dart';
 import 'book_cover.dart';
+import 'chapter_button.dart';
 import 'chapter_progress.dart';
+import 'chapter_surfaces.dart';
 
 /// Presentation data for book cards. Feature code maps its models to this so
 /// the design system stays independent of domain types.
@@ -88,11 +90,23 @@ class BookGridCard extends StatelessWidget {
 
 /// Dense row for lists.
 class BookListTile extends StatelessWidget {
-  const BookListTile({required this.data, super.key, this.onTap, this.trailing});
+  const BookListTile({
+    required this.data,
+    super.key,
+    this.onTap,
+    this.trailing,
+    this.padding = const EdgeInsets.symmetric(
+      horizontal: ChapterSpacing.gutter,
+      vertical: ChapterSpacing.md,
+    ),
+  });
 
   final BookCardData data;
   final VoidCallback? onTap;
   final Widget? trailing;
+
+  /// Inside a [ChapterCard], use the card's own padding.
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -101,10 +115,7 @@ class BookListTile extends StatelessWidget {
       onTap: onTap,
       label: _semanticLabel(data),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: ChapterSpacing.gutter,
-          vertical: ChapterSpacing.md,
-        ),
+        padding: padding,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -161,19 +172,15 @@ class ContinueReadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.chapterColors;
-    return Material(
-      color: colors.surface,
-      borderRadius: BorderRadius.circular(ChapterRadius.md),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(ChapterSpacing.lg),
-          child: Row(
+    return ChapterCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              BookCover(title: data.title, author: data.author, imageUrl: data.coverUrl, width: 84),
+              BookCover(title: data.title, author: data.author, imageUrl: data.coverUrl, width: 96),
               const SizedBox(width: ChapterSpacing.lg),
               Expanded(
                 child: Column(
@@ -183,32 +190,37 @@ class ContinueReadingCard extends StatelessWidget {
                       data.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.headlineSmall,
+                      style: context.textTheme.headlineMedium,
                     ),
                     if (data.author != null) Text(data.author!, style: context.textTheme.bodySmall),
-                    const SizedBox(height: ChapterSpacing.md),
+                    const SizedBox(height: ChapterSpacing.lg),
                     ChapterProgressBar(fraction: data.progress ?? 0),
                     const SizedBox(height: ChapterSpacing.xs),
                     _MetaLine(data: data),
-                    const SizedBox(height: ChapterSpacing.sm),
-                    Wrap(
-                      spacing: ChapterSpacing.xs,
-                      children: [
-                        TextButton.icon(
-                          onPressed: onResume,
-                          icon: const Icon(Icons.play_arrow_rounded),
-                          label: Text(resumeLabel),
-                        ),
-                        if (secondaryLabel != null)
-                          TextButton(onPressed: onSecondary, child: Text(secondaryLabel!)),
-                      ],
-                    ),
                   ],
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: ChapterSpacing.lg),
+          Wrap(
+            spacing: ChapterSpacing.sm,
+            runSpacing: ChapterSpacing.sm,
+            children: [
+              ChapterButton(
+                label: resumeLabel,
+                onPressed: onResume,
+                icon: const Icon(Icons.play_arrow_rounded),
+              ),
+              if (secondaryLabel != null)
+                ChapterButton(
+                  label: secondaryLabel!,
+                  onPressed: onSecondary,
+                  variant: ChapterButtonVariant.secondary,
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

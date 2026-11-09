@@ -31,7 +31,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     null, // All
   ];
 
-  bool _grid = true;
+  bool _grid = false;
   bool _favoritesOnly = false;
   bool _wishlistOnly = false;
   LibrarySort _sort = LibrarySort.recent;
@@ -57,6 +57,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           body: l10n.libraryEmptyBody,
           actionLabel: l10n.navSearch,
           onAction: () => context.go(AppRoutes.search),
+          extraActions: [
+            ChapterButton(
+              label: l10n.searchScan,
+              variant: ChapterButtonVariant.secondary,
+              icon: const Icon(Icons.qr_code_scanner_rounded),
+              onPressed: () => context.push(AppRoutes.scan),
+            ),
+            ChapterButton(
+              label: l10n.homeImportLibrary,
+              variant: ChapterButtonVariant.text,
+              onPressed: () => context.push(AppRoutes.integrations),
+            ),
+          ],
         ),
       );
     }
@@ -133,6 +146,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ],
             ),
           ),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => context.go(AppRoutes.search),
+          icon: const Icon(Icons.add),
+          label: Text(l10n.libraryAddBook),
         ),
         body: items.when(
           loading: () => LoadingState(label: l10n.loading),
@@ -302,13 +320,24 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         },
       );
     }
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: ChapterSpacing.sm),
+    return ListView.separated(
+      // Leaves room to scroll the last book clear of the Add book button.
+      padding: const EdgeInsets.fromLTRB(
+        ChapterSpacing.gutter,
+        ChapterSpacing.md,
+        ChapterSpacing.gutter,
+        ChapterSpacing.xxxl * 2,
+      ),
       itemCount: items.length,
-      itemBuilder: (_, i) => BookListTile(
-        data: cardData(l10n, items[i]),
-        onTap: () => open(items[i]),
-        trailing: items[i].entry.isFavorite ? const Icon(Icons.favorite, size: 18) : null,
+      separatorBuilder: (_, _) => const SizedBox(height: ChapterSpacing.md),
+      itemBuilder: (_, i) => ChapterCard(
+        padding: EdgeInsets.zero,
+        child: BookListTile(
+          data: cardData(l10n, items[i]),
+          padding: const EdgeInsets.all(ChapterSpacing.lg),
+          onTap: () => open(items[i]),
+          trailing: items[i].entry.isFavorite ? const Icon(Icons.favorite, size: 18) : null,
+        ),
       ),
     );
   }

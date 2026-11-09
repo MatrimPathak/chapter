@@ -10,7 +10,7 @@
   "signInCancelled": "Sign-in was cancelled.",
   "navHome": "Home",
   "navLibrary": "Library",
-  "navRead": "Read",
+  "navRead": "Reading",
   "navSearch": "Search",
   "navProfile": "Profile",
   "greetingMorning": "Good morning, {name}",
@@ -314,6 +314,45 @@
       }
     }
   },
+  "homeAlsoReading": "Also in progress",
+  "homeThisWeek": "This week",
+  "homeWeekMinutes": "{minutes} min read this week",
+  "@homeWeekMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "homeStreak": "{days, plural, =1{1-day streak} other{{days}-day streak}}",
+  "@homeStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "homeUpNext": "Up next",
+  "homeRecentNote": "Recent note",
+  "homeNotePage": "p. {page}",
+  "@homeNotePage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "homeImportLibrary": "Import a library",
+  "libraryAddBook": "Add book",
+  "searchBookInHand": "Have a book in hand?",
+  "searchBookInHandBody": "Scan the barcode on the back cover to find it straight away.",
+  "homeViewAll": "View all",
+  "notesEmptyTitle": "No notes yet",
+  "notesEmptyBody": "Notes and quotes you add on a book's page will all appear here.",
+  "notesSearchHint": "Search your notes",
+  "profileInLibrary": "In library",
+  "profileThisYear": "Finished this year",
+  "profileStreak": "Day streak",
   "homeContinueReading": "Continue reading",
   "homeResume": "Update",
   "homeLastRead": "Last activity {when}",

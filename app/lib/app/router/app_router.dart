@@ -13,6 +13,7 @@ import '../../features/insights/presentation/insights_screen.dart';
 import '../../features/integrations/presentation/import_screens.dart';
 import '../../features/integrations/presentation/integrations_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
+import '../../features/notes/presentation/notes_screen.dart';
 import '../../features/profile/presentation/about_screen.dart';
 import '../../features/profile/presentation/delete_account_screen.dart';
 import '../../features/profile/presentation/onboarding_screen.dart';
@@ -79,6 +80,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const GoalsScreen(),
       ),
       GoRoute(
+        path: AppRoutes.notes,
+        parentNavigatorKey: _rootKey,
+        builder: (_, _) => const NotesScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.insights,
         parentNavigatorKey: _rootKey,
         builder: (_, _) => const InsightsScreen(),
@@ -113,8 +119,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         branches: [
           _branch(AppRoutes.home, const HomeScreen()),
           _branch(AppRoutes.library, const LibraryScreen()),
-          _branch(AppRoutes.read, const ReadScreen()),
           _branch(AppRoutes.search, const SearchScreen()),
+          _branch(AppRoutes.read, const ReadScreen()),
           _branch(AppRoutes.profile, const ProfileScreen()),
         ],
       ),

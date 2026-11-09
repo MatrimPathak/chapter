@@ -14,7 +14,16 @@ class SplashScreen extends StatelessWidget {
       body: Center(
         child: Semantics(
           label: l10n.loading,
-          child: Text(l10n.appName, style: context.textTheme.displayMedium),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ChapterLogo(),
+              const SizedBox(height: ChapterSpacing.lg),
+              Text(l10n.appName, style: context.textTheme.displayMedium),
+              const SizedBox(height: ChapterSpacing.xs),
+              Text(l10n.tagline, style: ChapterTypography.quote(context.chapterColors.inkMuted)),
+            ],
+          ),
         ),
       ),
     );

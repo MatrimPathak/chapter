@@ -114,15 +114,7 @@ class _TimerView extends ConsumerWidget {
               child: IntrinsicHeight(
                 child: Column(
                   children: [
-                    if (entry != null) ...[
-                      Text(
-                        entry.book.title,
-                        style: context.textTheme.titleLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                      if (entry.book.authorLine.isNotEmpty)
-                        Text(entry.book.authorLine, style: context.textTheme.bodyMedium),
-                    ],
+                    if (entry != null) _SessionBook(book: entry.book),
                     const Spacer(),
                     Semantics(
                       liveRegion: true,
@@ -130,7 +122,8 @@ class _TimerView extends ConsumerWidget {
                       child: ChapterProgressRing(
                         fraction: fraction.clamp(0.0, 1.0),
                         size: 260,
-                        strokeWidth: 10,
+                        strokeWidth: 6,
+                        color: context.chapterColors.highlight,
                         // The ring has a fixed size; large text scales down to fit inside it.
                         center: Padding(
                           padding: const EdgeInsets.all(ChapterSpacing.xl),
@@ -143,6 +136,8 @@ class _TimerView extends ConsumerWidget {
                                   formatClock(remaining),
                                   key: const Key('session-remaining'),
                                   style: context.textTheme.displayMedium?.copyWith(
+                                    fontFamily: ChapterTypography.sans,
+                                    fontWeight: FontWeight.w500,
                                     fontFeatures: const [FontFeature.tabularFigures()],
                                   ),
                                 ),
@@ -157,11 +152,10 @@ class _TimerView extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: ChapterSpacing.lg),
-                    Text(
-                      _isAudio(ref, session)
+                    ChapterPill(
+                      label: _isAudio(ref, session)
                           ? l10n.sessionListened(formatClock(elapsed))
                           : l10n.sessionElapsed(formatClock(elapsed)),
-                      style: context.textTheme.bodyMedium,
                     ),
                     if (session.focusModeOn) ...[
                       const SizedBox(height: ChapterSpacing.md),
@@ -192,7 +186,6 @@ class _TimerView extends ConsumerWidget {
                     _ControlRow(
                       primary: ChapterButton(
                         label: paused ? l10n.sessionResume : l10n.sessionPause,
-                        variant: ChapterButtonVariant.secondary,
                         expand: true,
                         icon: Icon(paused ? Icons.play_arrow_rounded : Icons.pause_rounded),
                         onPressed: () =>
@@ -200,6 +193,7 @@ class _TimerView extends ConsumerWidget {
                       ),
                       secondary: ChapterButton(
                         label: l10n.sessionEnd,
+                        variant: ChapterButtonVariant.secondary,
                         expand: true,
                         onPressed: () async {
                           final ok = await showChapterConfirmDialog(
@@ -350,7 +344,7 @@ class _SummaryViewState extends ConsumerState<_SummaryView> {
           if (s.recovered) _Banner(text: l10n.summaryRecovered, icon: Icons.restore),
           if (s.clock.clockAdjusted)
             _Banner(text: l10n.summaryClockAdjusted, icon: Icons.warning_amber_rounded),
-          if (entry != null) Text(entry.book.title, style: context.textTheme.titleLarge),
+          if (entry != null) _SessionBook(book: entry.book),
           const SizedBox(height: ChapterSpacing.lg),
           TextField(
             key: const Key('summary-minutes'),
@@ -363,39 +357,42 @@ class _SummaryViewState extends ConsumerState<_SummaryView> {
           ),
           const SizedBox(height: ChapterSpacing.md),
           Wrap(
-            spacing: ChapterSpacing.md,
+            spacing: ChapterSpacing.sm,
+            runSpacing: ChapterSpacing.sm,
             children: [
               if (s.startFraction != null || endFraction != null)
-                Text(
-                  l10n.summaryProgressChange(
+                ChapterPill(
+                  label: l10n.summaryProgressChange(
                     pct(s.startFraction ?? 0),
                     endFraction == null ? '…' : pct(endFraction),
                   ),
-                  style: context.textTheme.bodyMedium,
+                  tone: ChapterPillTone.accent,
                 ),
               if (pages != null)
-                Text(l10n.summaryPagesRead(pages), style: context.textTheme.bodyMedium),
+                ChapterPill(label: l10n.summaryPagesRead(pages), tone: ChapterPillTone.accent),
               if (pages != null && hours >= 1 / 60)
-                Text(
-                  l10n.summaryPagesPerHour((pages / hours).toStringAsFixed(0)),
-                  style: context.textTheme.bodyMedium,
+                ChapterPill(
+                  label: l10n.summaryPagesPerHour((pages / hours).toStringAsFixed(0)),
+                  tone: ChapterPillTone.highlight,
                 ),
             ],
           ),
           const SizedBox(height: ChapterSpacing.xl),
-          Text(l10n.summaryEndPosition, style: context.textTheme.titleMedium),
+          ChapterSectionHeader(title: l10n.summaryEndPosition),
           const SizedBox(height: ChapterSpacing.sm),
           if (!ready)
             const LoadingSkeleton(height: 120)
           else
-            ProgressForm(
-              key: ValueKey((metrics.format, metrics.pageCount, metrics.audioDurationSec)),
-              metrics: metrics,
-              initialFraction: s.startFraction ?? 0,
-              autofocus: false,
-              submitLabel: l10n.summarySave,
-              onChanged: (pos) => setState(() => _end = pos),
-              onSubmit: (pos) => unawaited(_save(pos)),
+            ChapterCard(
+              child: ProgressForm(
+                key: ValueKey((metrics.format, metrics.pageCount, metrics.audioDurationSec)),
+                metrics: metrics,
+                initialFraction: s.startFraction ?? 0,
+                autofocus: false,
+                submitLabel: l10n.summarySave,
+                onChanged: (pos) => setState(() => _end = pos),
+                onSubmit: (pos) => unawaited(_save(pos)),
+              ),
             ),
         ],
       ),
@@ -423,11 +420,43 @@ class _Banner extends StatelessWidget {
   final IconData icon;
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.only(bottom: ChapterSpacing.md),
-    child: ListTile(
-      leading: Icon(icon),
-      title: Text(text, style: context.textTheme.bodyMedium),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: ChapterSpacing.md),
+    child: ChapterCard(
+      child: Row(
+        children: [
+          Icon(icon),
+          const SizedBox(width: ChapterSpacing.md),
+          Expanded(child: Text(text, style: context.textTheme.bodyMedium)),
+        ],
+      ),
+    ),
+  );
+}
+
+/// The book being read, at the top of the timer and the summary.
+class _SessionBook extends StatelessWidget {
+  const _SessionBook({required this.book});
+
+  final BookSummary book;
+
+  @override
+  Widget build(BuildContext context) => ChapterCard(
+    child: Row(
+      children: [
+        BookCover(title: book.title, author: book.authorLine, imageUrl: book.coverUrl, width: 56),
+        const SizedBox(width: ChapterSpacing.lg),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(book.title, style: context.textTheme.headlineSmall),
+              if (book.authorLine.isNotEmpty)
+                Text(book.authorLine, style: context.textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ],
     ),
   );
 }

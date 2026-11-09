@@ -144,58 +144,89 @@ class _Body extends ConsumerWidget {
             ),
           ],
         ),
-        Wrap(
-          spacing: ChapterSpacing.md,
-          runSpacing: ChapterSpacing.md,
-          children: [
-            _Stat(label: l10n.insightsBooks, value: '${t.books}'),
-            _Stat(label: l10n.insightsPages, value: NumberFormat.decimalPattern().format(t.pages)),
-            _Stat(label: l10n.insightsHours, value: (t.seconds / 3600).toStringAsFixed(1)),
-            _Stat(label: l10n.insightsSessions, value: '${t.sessions}'),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = (constraints.maxWidth - ChapterSpacing.md) / 2;
+            return Wrap(
+              spacing: ChapterSpacing.md,
+              runSpacing: ChapterSpacing.md,
+              children: [
+                _Stat(width: width, label: l10n.insightsBooks, value: '${t.books}'),
+                _Stat(
+                  width: width,
+                  label: l10n.insightsPages,
+                  value: NumberFormat.decimalPattern().format(t.pages),
+                ),
+                _Stat(
+                  width: width,
+                  label: l10n.insightsHours,
+                  value: (t.seconds / 3600).toStringAsFixed(1),
+                ),
+                _Stat(width: width, label: l10n.insightsSessions, value: '${t.sessions}'),
+              ],
+            );
+          },
         ),
         _Heading(l10n.insightsCalendar),
-        ReadingCalendar(stats: stats, today: today, weekStartsOn: weekStart, initialYear: year),
-        _Heading(l10n.insightsMonthly),
-        if (stats.hasTrend(year))
-          _Bars(
-            label: l10n.insightsMonthlyLabel,
-            values: [for (final p in stats.monthly(year)) p.seconds / 60],
-            labels: [
-              for (var m = 1; m <= 12; m++) DateFormat.MMMMd().dateSymbols.NARROWMONTHS[m - 1],
-            ],
-            valueText: (v) => l10n.readMinutes(v.round()),
-          )
-        else
-          _Muted(notEnough),
-        _Heading(l10n.insightsWeekdays),
-        if (weekdays != null)
-          _Bars(
-            label: l10n.insightsWeekdaysLabel,
-            values: [for (final s in weekdays) s / 60],
-            // intl's list starts on Sunday; statistics start on Monday.
-            labels: [for (var d = 1; d <= 7; d++) DateFormat.E().dateSymbols.NARROWWEEKDAYS[d % 7]],
-            valueText: (v) => l10n.readMinutes(v.round()),
-          )
-        else
-          _Muted(notEnough),
-        _Heading(l10n.insightsAuthors),
-        if (authors != null) _Ranking(authors) else _Muted(notEnough),
-        _Heading(l10n.insightsGenres),
-        if (genres != null) _Ranking(genres) else _Muted(notEnough),
-        _Heading(l10n.insightsHabits),
-        _Fact(
-          l10n.insightsAverageSession,
-          average == null ? notEnough : l10n.readMinutes((average.inSeconds / 60).round()),
+        ChapterCard(
+          child: ReadingCalendar(
+            stats: stats,
+            today: today,
+            weekStartsOn: weekStart,
+            initialYear: year,
+          ),
         ),
-        _Fact(l10n.insightsPagesPerHour, pace == null ? notEnough : pace.toStringAsFixed(0)),
-        _Fact(l10n.insightsBooksPerMonth, rate == null ? notEnough : rate.toStringAsFixed(1)),
-        _Fact(l10n.insightsDaysInARow, '${streaks.current}'),
-        _Fact(
-          l10n.insightsLongestRun,
-          streaks.readingDays < StatsEngine.minDaysForLongestStreak
-              ? notEnough
-              : '${streaks.longest}',
+        _Heading(l10n.insightsMonthly),
+        ChapterCard(
+          child: stats.hasTrend(year)
+              ? _Bars(
+                  label: l10n.insightsMonthlyLabel,
+                  values: [for (final p in stats.monthly(year)) p.seconds / 60],
+                  labels: [
+                    for (var m = 1; m <= 12; m++)
+                      DateFormat.MMMMd().dateSymbols.NARROWMONTHS[m - 1],
+                  ],
+                  valueText: (v) => l10n.readMinutes(v.round()),
+                )
+              : _Muted(notEnough),
+        ),
+        _Heading(l10n.insightsWeekdays),
+        ChapterCard(
+          child: weekdays != null
+              ? _Bars(
+                  label: l10n.insightsWeekdaysLabel,
+                  values: [for (final s in weekdays) s / 60],
+                  // intl's list starts on Sunday; statistics start on Monday.
+                  labels: [
+                    for (var d = 1; d <= 7; d++) DateFormat.E().dateSymbols.NARROWWEEKDAYS[d % 7],
+                  ],
+                  valueText: (v) => l10n.readMinutes(v.round()),
+                )
+              : _Muted(notEnough),
+        ),
+        _Heading(l10n.insightsAuthors),
+        ChapterCard(child: authors != null ? _Ranking(authors) : _Muted(notEnough)),
+        _Heading(l10n.insightsGenres),
+        ChapterCard(child: genres != null ? _Ranking(genres) : _Muted(notEnough)),
+        _Heading(l10n.insightsHabits),
+        ChapterCard(
+          child: Column(
+            children: [
+              _Fact(
+                l10n.insightsAverageSession,
+                average == null ? notEnough : l10n.readMinutes((average.inSeconds / 60).round()),
+              ),
+              _Fact(l10n.insightsPagesPerHour, pace == null ? notEnough : pace.toStringAsFixed(0)),
+              _Fact(l10n.insightsBooksPerMonth, rate == null ? notEnough : rate.toStringAsFixed(1)),
+              _Fact(l10n.insightsDaysInARow, '${streaks.current}'),
+              _Fact(
+                l10n.insightsLongestRun,
+                streaks.readingDays < StatsEngine.minDaysForLongestStreak
+                    ? notEnough
+                    : '${streaks.longest}',
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -210,7 +241,7 @@ class _Heading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: ChapterSpacing.xl, bottom: ChapterSpacing.sm),
-    child: Semantics(header: true, child: Text(text, style: context.textTheme.titleMedium)),
+    child: Semantics(header: true, child: Text(text, style: context.textTheme.headlineMedium)),
   );
 }
 
@@ -224,8 +255,9 @@ class _Muted extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
+  const _Stat({required this.width, required this.label, required this.value});
 
+  final double width;
   final String label;
   final String value;
 
@@ -233,19 +265,16 @@ class _Stat extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     label: '$label: $value',
     excludeSemantics: true,
-    child: Container(
-      constraints: const BoxConstraints(minWidth: 130),
-      padding: const EdgeInsets.all(ChapterSpacing.md),
-      decoration: BoxDecoration(
-        color: context.chapterColors.surface,
-        borderRadius: BorderRadius.circular(ChapterRadius.md),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(value, style: context.textTheme.headlineSmall),
-          Text(label, style: context.textTheme.bodySmall),
-        ],
+    child: SizedBox(
+      width: width,
+      child: ChapterCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: context.textTheme.displaySmall),
+            Text(label, style: context.textTheme.bodySmall),
+          ],
+        ),
       ),
     ),
   );
@@ -322,7 +351,7 @@ class _Bars extends StatelessWidget {
                     Container(
                       height: max <= 0 ? 2 : (values[i] / max * _height).clamp(2.0, _height),
                       decoration: BoxDecoration(
-                        color: values[i] > 0 ? colors.accent : colors.line,
+                        color: values[i] > 0 ? colors.accent : colors.surfaceMuted,
                         borderRadius: BorderRadius.circular(ChapterRadius.sm),
                       ),
                     ),

@@ -55,36 +55,50 @@ class _SeriesView extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: ChapterSpacing.gutter),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Semantics(
-                header: true,
-                child: Text(series.name, style: context.textTheme.headlineMedium),
-              ),
-              const SizedBox(height: ChapterSpacing.xs),
-              Text(
-                '${l10n.seriesBooks(series.primaryCount)} · ${l10n.seriesReadingOrder}',
-                style: context.textTheme.bodySmall,
-              ),
-              if (series.description != null) ...[
-                const SizedBox(height: ChapterSpacing.md),
-                Text(series.description!, style: context.textTheme.bodyLarge),
+          child: ChapterCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Text(series.name, style: context.textTheme.displayMedium),
+                ),
+                const SizedBox(height: ChapterSpacing.xs),
+                Text(
+                  '${l10n.seriesBooks(series.primaryCount)} · ${l10n.seriesReadingOrder}',
+                  style: context.textTheme.bodySmall,
+                ),
+                if (series.description != null) ...[
+                  const SizedBox(height: ChapterSpacing.md),
+                  Text(series.description!, style: context.textTheme.bodyLarge),
+                ],
               ],
-            ],
+            ),
           ),
         ),
         const SizedBox(height: ChapterSpacing.md),
         for (final entry in series.entries)
-          BookListTile(
-            data: BookCardData(
-              title: entry.work.title,
-              author: entry.work.authors.firstOrNull,
-              coverUrl: entry.work.coverUrl,
-              caption: entry.isPrimary ? null : l10n.seriesNovella,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              ChapterSpacing.gutter,
+              0,
+              ChapterSpacing.gutter,
+              ChapterSpacing.md,
             ),
-            trailing: _PositionBadge(label: entry.positionLabel),
-            onTap: () => context.push(AppRoutes.book(workKeyOf(entry.work))),
+            child: ChapterCard(
+              padding: EdgeInsets.zero,
+              child: BookListTile(
+                padding: const EdgeInsets.all(ChapterSpacing.lg),
+                data: BookCardData(
+                  title: entry.work.title,
+                  author: entry.work.authors.firstOrNull,
+                  coverUrl: entry.work.coverUrl,
+                  caption: entry.isPrimary ? null : l10n.seriesNovella,
+                ),
+                trailing: _PositionBadge(label: entry.positionLabel),
+                onTap: () => context.push(AppRoutes.book(workKeyOf(entry.work))),
+              ),
+            ),
           ),
       ],
     );
