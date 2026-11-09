@@ -252,7 +252,11 @@ final sessionNotificationsProvider = Provider<SessionNotifications>((ref) {
   final l10n = AppLocalizations.supportedLocales.any((l) => l.languageCode == locale.languageCode)
       ? lookupAppLocalizations(Locale(locale.languageCode))
       : lookupAppLocalizations(const Locale('en'));
+  final db = ref.watch(appDatabaseProvider);
+  const permissionFlag = 'notification_permission_asked';
   return LocalSessionNotifications(
+    permissionAsked: () => db.hasFlag(permissionFlag),
+    markPermissionAsked: () => db.setFlag(permissionFlag),
     endTitle: l10n.sessionNotifEndTitle,
     endBody: l10n.sessionNotifEndBody,
     runningBody: l10n.sessionNotifRunning,

@@ -1,6 +1,6 @@
 # Chapter — Project Status
 
-_Last updated: 2026-11-06 (warning round; register in Chronicle doc 15)_
+_Last updated: 2026-11-09 (bug-fix round in progress; register in Chronicle doc 15)_
 
 This is Chapter's **central development tracker**. It is governed by the `chapter-phase-guard` skill (`.claude/skills/chapter-phase-guard/SKILL.md`): every phase gets a pre-phase and a post-phase update here, and all changes stay unstaged until you explicitly approve Git publishing. It is mirrored to Chronicle (`DOC-70718024`). The detailed specs live in `docs/` (canonical). There is deliberately no separate `CHAPTER.md`, to avoid duplicate trackers.
 
@@ -8,10 +8,10 @@ This is Chapter's **central development tracker**. It is governed by the `chapte
 
 | | |
 |---|---|
-| Last phase | **Phase 8 — Quality & Release: COMPLETED WITH WARNINGS** (approved by you 2026-11-05). All 8 roadmap phases are complete. |
-| Active phase | None. **Release is BLOCKED on owner items B1 and B3:** docs/07 |
-| Git publishing authorization | Granted by you on 2026-11-06 for the first publish only. Later changes need approval again. |
-| Repository | Git initialised on `main` (no commits, nothing staged). Public home: `MatrimPathak/chapter`. |
+| Last phase | **Stitch design integration: merged** as `aca4b9f` (PR #5, 2026-11-09). All 8 roadmap phases are complete. |
+| Active phase | **Bug-fix round: COMPLETED WITH WARNINGS, in review.** Release is BLOCKED on owner items: docs/07 |
+| Git publishing authorization | Granted for the bug-fix PR only ("Approved, open a PR"). Merge and functions deploy NOT GRANTED. |
+| Repository | Public at `MatrimPathak/chapter`. `main` at `aca4b9f`, four required CI checks. The bug-fix round is on branch `fix-app-bugs`, in a PR. |
 
 ---
 
@@ -432,11 +432,33 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ## E. Development history
 
+### 2026-11-09 — Bug-fix round (COMPLETED WITH WARNINGS, in review)
+
+- **Objectives:** four open issues the owner asked to fix: repeated notification prompt (`BUG-83003235`), "dune" ranking (`BUG-02975591`), missing series link (`BUG-42344944`), no pixel golden tests (`BUG-30759161`).
+- **Scope:** app and functions code and tests only. No new dependencies, no schema change.
+- **Acceptance criteria:** the permission is requested at most once per signed-in account on Android; exact title matches rank first, without reordering unrelated results; a book with a name-only series regains its link on its next refresh when Hardcover knows its ISBN; golden tests cover the design system in light, dark and 200 % text.
+- **Risks:** goldens are generated on Windows and CI runs on Linux, so font rendering may differ. Search and series changes need a functions deploy, which is not authorized, so they can only be tested locally.
+- **Done:** Android asks for notification permission at most once per signed-in account, and a system-settings change is honoured (`notification_permission.dart`, `AppDatabase.hasFlag`/`setFlag`). Search puts exact title matches first, then titles starting with the query, ignoring case, accents, punctuation and a leading article; other results and author or series searches keep their order. A work with a name-only series and no Hardcover id now refreshes at most daily and enriches through ISBN, so it can gain its series id. 24 pixel golden images cover buttons and fields, book cards, progress and badges, states, surfaces and the nav bar, in light and dark at 100 % and 200 % text.
+- **Checks:** `flutter analyze` clean; 510 of 510 app tests (481 before, 5 permission, 24 golden); after the final test-only lint fix, analyzer and golden tests re-run and pass. Functions: lint and build pass, 81 of 81 unit tests, Prettier clean. Golden images inspected by eye.
+- **Device check (notification prompt):** on the Android emulator with a production debug build, the prompt appeared on the first session and was declined. There was no prompt on a second session or on a third after a full app restart, while Android still allowed one. After granting through the system, a session showed its ongoing notification with no prompt. All test sessions were discarded, so nothing reached production.
+- **Not verified:** the permission change on a physical phone; the search and series changes on production (they need a functions deploy, not authorized); whether Hardcover knows an ISBN for *Chapterhouse Dune*; goldens on CI, which runs on Linux while the images were generated on Windows, so a 1 % pixel tolerance applies and may need adjusting. Cached searches keep their old order for up to a day after a deploy.
+- **Files:** modified `app/lib/app/providers.dart`, `app/lib/core/database/app_database.dart`, `app/lib/features/reading/data/local_session_notifications.dart`, `functions/src/catalog/service.ts`, `functions/src/catalog/service.test.ts`. New `app/lib/features/reading/application/notification_permission.dart`, `app/test/features/reading/notification_permission_test.dart`, `app/test/goldens/design_system_golden_test.dart`, 24 images in `app/test/goldens/images/`. No dependencies or schema changes.
+- **Git publishing authorization:** commit, push and PR approved by the owner ("Approved, open a PR"). Merge and functions deploy NOT GRANTED.
+
+### 2026-11-09 — Stitch design integration: merged (PR #5)
+
+- **Commit:** `df4f0aa` on local branch `stitch-design-integration`, from `main` at `33eedec`. 112 files changed as Git counts them (114 paths with 2 renames), 2,343 insertions, 904 deletions. Owner's instruction: "Commit the changes".
+- **Pushed and opened as [PR #5](https://github.com/MatrimPathak/chapter/pull/5)** at the owner's instruction ("Push and open a PR").
+- **Merged** by the owner on 2026-11-09 at 08:44 UTC as `aca4b9f` on `main`. The merged tree is identical to the reviewed branch at `0bab1c4`. The CI run on `main` had not finished when this was written.
+- **CI on `df4f0aa`:** all four required jobs passed. Codex reported no findings. CodeRabbit requested changes with two findings in `tool/apply_icon.ps1`, both confirmed.
+- **Review fix `0bab1c4` (Auto-fix):** icons are now written as 24-bit RGB, because App Store Connect rejects icons with an alpha channel (all 15 iOS icons were RGBA), and the script now stops on errors. 21 regenerated PNGs compared pixel by pixel: identical. All four required CI jobs passed on this commit. Both CodeRabbit threads were answered and resolved; its change request still showed at merge.
+- **Git publishing authorization:** covered this work only. Merged by the owner. Nothing further is authorized.
+
 ### 2026-11-09 — Stitch design integration: Phase F refinement (COMPLETED WITH WARNINGS)
 
 - **Done:** Barcode Scanner in a rounded frame with help below; onboarding, Connected services, About and Delete account on cards; global card theme; overflow tests for every listed screen on a small phone (320x568) and tablet (800x1280), in light and dark.
 - **Checks:** `flutter analyze` clean; 481 of 481 app tests. On the emulator with real data, in light and dark: goal, progress, saved session, quote; Home, Insights with calendar, Goals, Notes and Scanner render correctly.
-- **Chronicle:** brought up to date on 2026-11-09 at your instruction. It had fallen behind: Stitch work was recorded only here. New epics `EPIC-77959018` and `EPIC-36571515`, 24 new bug tickets, docs 16 to 26, register and status updated. Stories, sprints and release links were missed at first and added the same day: 16 stories, Sprint 8 (completed), Sprint 9 (active, awaiting your review), all linked to release v1.0.0. As read from Chronicle: 165 tickets, 36 open, of which 18 are bugs. No release is marked released because nothing has shipped.
+- **Chronicle:** brought up to date on 2026-11-09 at your instruction. It had fallen behind: Stitch work was recorded only here. New epics `EPIC-77959018` and `EPIC-36571515`, 24 new bug tickets, docs 16 to 26, register and status updated. Stories, sprints and release links were missed at first and added the same day: 16 stories, Sprint 8 (completed), Sprint 9 (completed after the merge), all linked to release v1.0.0. As read from Chronicle after the merge: 168 tickets, 27 open, of which 18 are bugs. No release is marked released because nothing has shipped.
 - **Release bundle:** `app-prod-release.aab`, 79.8 MB, signed with the upload key, built on the third attempt after the Gradle crash (W52). Never run.
 - **Not verified:** a release build on a device, Play Integrity, a real phone, TalkBack by a person, the Series page on a device, iOS. CI has not run this work. Tablet checked for overflow only.
 - **Left on production:** the test account holds *Chapterhouse Dune*, a 12-book goal, one session and one test quote.

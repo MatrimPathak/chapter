@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../../core/utils/clock.dart';
+import '../application/notification_permission.dart';
 import '../domain/session_ports.dart';
 
 /// [SessionNotifications] with `flutter_local_notifications`.
@@ -22,12 +23,18 @@ class LocalSessionNotifications implements SessionNotifications {
     required this.pausedBody,
     required this.channelName,
     required Clock clock,
+    required Future<bool> Function() permissionAsked,
+    required Future<void> Function() markPermissionAsked,
     FlutterLocalNotificationsPlugin? plugin,
   }) : _clock = clock,
+       _permissionAsked = permissionAsked,
+       _markPermissionAsked = markPermissionAsked,
        _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
   final Clock _clock;
+  final Future<bool> Function() _permissionAsked;
+  final Future<void> Function() _markPermissionAsked;
 
   /// Localized strings, resolved by the caller.
   final String endTitle;
@@ -64,7 +71,16 @@ class LocalSessionNotifications implements SessionNotifications {
   @override
   Future<bool> ensurePermission() async {
     await _init();
-    if (Platform.isAndroid) return await _android?.requestNotificationsPermission() ?? false;
+    if (Platform.isAndroid) {
+      final android = _android;
+      if (android == null) return false;
+      return askForPermissionOnce(
+        isAllowed: () async => await android.areNotificationsEnabled() ?? false,
+        ask: () async => await android.requestNotificationsPermission() ?? false,
+        wasAsked: _permissionAsked,
+        markAsked: _markPermissionAsked,
+      );
+    }
     if (Platform.isIOS) {
       return await _plugin
               .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
