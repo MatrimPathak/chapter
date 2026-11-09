@@ -8,10 +8,10 @@ This is Chapter's **central development tracker**. It is governed by the `chapte
 
 | | |
 |---|---|
-| Last phase | **Bug-fix round: merged and deployed** as `4902a65` (PR #7, 2026-11-09). All 8 roadmap phases are complete. |
-| Active phase | **Series page content: COMPLETED WITH WARNINGS, in review.** Release is BLOCKED on owner items: docs/07 |
-| Git publishing authorization | Granted for the series PR only ("Approved, open a PR"). Merge and functions deploy NOT GRANTED. |
-| Repository | Public at `MatrimPathak/chapter`. `main` at `4902a65`, four required CI checks. |
+| Last phase | **Series page content: merged and deployed** as `8dfa0c4` (PR #8, 2026-11-09). All 8 roadmap phases are complete. |
+| Active phase | None. Release is BLOCKED on owner items: docs/07 |
+| Git publishing authorization | **NOT GRANTED.** Approval covered PRs #1 to #5, #7 and #8 only. |
+| Repository | Public at `MatrimPathak/chapter`. `main` at `8dfa0c4`, four required CI checks. |
 
 ---
 
@@ -432,7 +432,14 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ## E. Development history
 
-### 2026-11-09 — Series page content (COMPLETED WITH WARNINGS, in review)
+### 2026-11-09 — Series page content: merged and deployed
+
+- **Merged** by the owner as `8dfa0c4` (PR #8). CI passed on `main`. All 8 functions deployed at the owner's instruction.
+- **Checked on the emulator against live Hardcover:** *Dune* shows 6 numbered books in order with the right author and covers, then *Hunters of Dune*, *Sandworms of Dune* and *A Dűne I.* as extras. The saved 99-book list was replaced.
+- **Still open:** those unnumbered sequels are labelled "Novella or extra", and a translation can appear when it has no position (logged in Chronicle).
+- **Git publishing authorization:** covered PR #8 and this deploy only. This entry is unstaged.
+
+### 2026-11-09 — Series page content (COMPLETED WITH WARNINGS)
 
 - **Objective:** `BUG-25548037`. Series pages list translations, box sets and companion books.
 - **Scope:** the Hardcover series query and how saved series refresh. Functions code and tests only.
