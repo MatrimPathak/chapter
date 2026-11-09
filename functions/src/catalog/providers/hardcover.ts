@@ -227,10 +227,16 @@ export class HardcoverProvider implements BookMetadataProvider {
       `query Series($id: Int!) {
         series(where: {id: {_eq: $id}}, limit: 1) {
           id name
-          book_series(order_by: {position: asc_nulls_last}) {
-            position
-            book { id title release_year image { url } contributions(limit: 3) { author { id name } } }
-          }
+          book_series(
+            distinct_on: position
+            order_by: [{position: asc}, {book: {users_count: desc}}]
+            where: {position: {_is_null: false}, ${SERIES_ENTRY_FILTER}}
+          ) { ${SERIES_ENTRY_FIELDS} }
+          unnumbered: book_series(
+            order_by: {book: {users_count: desc}}
+            limit: ${MAX_UNNUMBERED_SERIES_ENTRIES}
+            where: {position: {_is_null: true}, ${SERIES_ENTRY_FILTER}}
+          ) { ${SERIES_ENTRY_FIELDS} }
         }
       }`,
       { id },
@@ -242,33 +248,39 @@ export class HardcoverProvider implements BookMetadataProvider {
         return {
           ref: { provider: "hardcover", externalId },
           name,
-          entries: asArray(s.book_series)
-            .map((bs) => {
-              const rec = asRecord(bs);
-              const b = asRecord(rec?.book);
-              const bid = asNumber(b?.id);
-              const title = asString(b?.title);
-              if (!rec || !b || bid === undefined || !title) return undefined;
-              const position = asNumber(rec.position);
-              return {
-                work: {
-                  ref: {
-                    provider: "hardcover" as const,
-                    externalId: String(bid),
+          entries: companionsLast(
+            [...asArray(s.book_series), ...asArray(s.unnumbered)]
+              .map((bs) => {
+                const rec = asRecord(bs);
+                const b = asRecord(rec?.book);
+                const bid = asNumber(b?.id);
+                const title = asString(b?.title);
+                if (!rec || !b || bid === undefined || !title) return undefined;
+                const position = asNumber(rec.position);
+                return {
+                  work: {
+                    ref: {
+                      provider: "hardcover" as const,
+                      externalId: String(bid),
+                    },
+                    title,
+                    authors: authorsFrom(b.contributions),
+                    coverUrl: asString(asRecord(b.image)?.url),
+                    firstPublishedYear: asNumber(b.release_year),
                   },
-                  title,
-                  authors: authorsFrom(b.contributions),
-                  coverUrl: asString(asRecord(b.image)?.url),
-                  firstPublishedYear: asNumber(b.release_year),
-                },
-                position,
-                positionLabel:
-                  position === undefined ? undefined : String(position),
-                // Integer positions are main entries; 1.5 etc. are novellas.
-                isPrimary: position !== undefined && Number.isInteger(position),
-              };
-            })
-            .filter((e): e is NonNullable<typeof e> => e !== undefined),
+                  position,
+                  positionLabel:
+                    position === undefined ? undefined : String(position),
+                  // Positive integers are main entries; 1.5 etc. are novellas
+                  // and position 0 is a companion book.
+                  isPrimary:
+                    position !== undefined &&
+                    Number.isInteger(position) &&
+                    position > 0,
+                };
+              })
+              .filter((e): e is NonNullable<typeof e> => e !== undefined),
+          ),
         } satisfies RawSeries;
       },
     );
@@ -314,6 +326,15 @@ export class HardcoverProvider implements BookMetadataProvider {
     });
   }
 }
+
+/** Leaves out duplicate records, partial books and collections. */
+const SERIES_ENTRY_FILTER = `book: {canonical_id: {_is_null: true}, is_partial_book: {_eq: false}}, compilation: {_eq: false}`;
+
+const SERIES_ENTRY_FIELDS = `position
+  book { id title release_year image { url } contributions(limit: 3) { author { id name } } }`;
+
+/** Unnumbered books have no position to deduplicate on, so cap them. */
+const MAX_UNNUMBERED_SERIES_ENTRIES = 20;
 
 const EDITION_FIELDS = `id isbn_10 isbn_13 pages audio_seconds release_date edition_format title
   publisher { name } image { url }`;
@@ -424,6 +445,14 @@ function bookFromJson(
       .flatMap((e) => [e.isbn13, e.isbn10])
       .filter((i): i is string => !!i),
   };
+}
+
+/** Position 0 holds companion books, which shouldn't lead the reading order. */
+function companionsLast<T extends { position?: number }>(entries: T[]): T[] {
+  return [
+    ...entries.filter((e) => e.position !== 0),
+    ...entries.filter((e) => e.position === 0),
+  ];
 }
 
 function searchDocToHit(

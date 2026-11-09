@@ -298,6 +298,40 @@ describe("CatalogService", () => {
     });
   });
 
+  it("refreshes a series saved by an older query once, then reuses it", async () => {
+    let calls = 0;
+    const service = new CatalogService(
+      {
+        getSeries: async () => {
+          calls++;
+          return {
+            ok: true,
+            fetchedAt: new Date(),
+            data: {
+              ref: { provider: "hardcover", externalId: "9001" },
+              name: "Off-Campus",
+              entries: [],
+            },
+          };
+        },
+      } as unknown as MetadataOrchestrator,
+      env.store,
+      () => new Date("2026-11-04T10:00:00Z"),
+    );
+    env.store.series.set("s1", {
+      id: "s1",
+      name: "Off-Campus",
+      description: null,
+      entries: [],
+      primaryCount: 0,
+      providerIds: { hardcover: "9001" },
+      refreshedAt: "2026-11-04T09:00:00.000Z",
+    });
+    await service.getSeries("u1", { seriesId: "s1" });
+    await service.getSeries("u1", { seriesId: "s1" });
+    expect(calls).toBe(1);
+  });
+
   it("serves stale catalog data when every provider is down", async () => {
     const { work } = await env.service.lookupIsbn("u1", "9780349440842");
     env.advance(31 * 86_400_000);

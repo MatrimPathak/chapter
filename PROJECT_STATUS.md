@@ -8,10 +8,10 @@ This is Chapter's **central development tracker**. It is governed by the `chapte
 
 | | |
 |---|---|
-| Last phase | **Stitch design integration: merged** as `aca4b9f` (PR #5, 2026-11-09). All 8 roadmap phases are complete. |
-| Active phase | **Bug-fix round: COMPLETED WITH WARNINGS, in review.** Release is BLOCKED on owner items: docs/07 |
-| Git publishing authorization | Granted for the bug-fix PR only ("Approved, open a PR"). Merge and functions deploy NOT GRANTED. |
-| Repository | Public at `MatrimPathak/chapter`. `main` at `aca4b9f`, four required CI checks. The bug-fix round is on branch `fix-app-bugs`, in a PR. |
+| Last phase | **Bug-fix round: merged and deployed** as `4902a65` (PR #7, 2026-11-09). All 8 roadmap phases are complete. |
+| Active phase | **Series page content: COMPLETED WITH WARNINGS, in review.** Release is BLOCKED on owner items: docs/07 |
+| Git publishing authorization | Granted for the series PR only ("Approved, open a PR"). Merge and functions deploy NOT GRANTED. |
+| Repository | Public at `MatrimPathak/chapter`. `main` at `4902a65`, four required CI checks. |
 
 ---
 
@@ -432,7 +432,27 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ## E. Development history
 
-### 2026-11-09 — Bug-fix round (COMPLETED WITH WARNINGS, in review)
+### 2026-11-09 — Series page content (COMPLETED WITH WARNINGS, in review)
+
+- **Objective:** `BUG-25548037`. Series pages list translations, box sets and companion books.
+- **Scope:** the Hardcover series query and how saved series refresh. Functions code and tests only.
+- **Acceptance criteria:** one entry per position, excluding duplicates, partial books and collections; companions at position 0 come after the main books; saved series pick up the new list; *Dune* starts with *Dune*, *Dune Messiah*, *Children of Dune*.
+- **Risks:** the query can only be proven against live Hardcover after a deploy, and a deploy needs approval.
+- **Done:** Hardcover series query returns one book per position, the most-read first, excluding duplicates, partial books and collections, per Hardcover's docs. Position 0 companions come last and are not counted. Unnumbered books are fetched separately, most-read first, and capped at 20, so any beyond that are not shown. Saved series refresh once through `entriesVersion` when the query succeeds.
+- **Checks:** functions lint, build, typecheck and Prettier pass; 85 of 85 unit tests.
+- **Not verified:** the query against live Hardcover, which needs a deploy. If it fails, `getSeries` keeps serving a saved non-empty list, so the old entries can stay visible after the deploy. Position-0 prequels in other series also move to the end.
+- **Files:** `functions/src/catalog/providers/hardcover.ts`, `service.ts`, `types.ts`, `providers.test.ts`, `service.test.ts`.
+- **Git publishing authorization:** commit, push and PR approved by the owner ("Approved, open a PR"). Merge and functions deploy NOT GRANTED.
+
+### 2026-11-09 — Bug-fix round: merged and deployed
+
+- **Merged** by the owner as `4902a65` (PR #7). CI passed on `main`. Review fixes on the PR: a failed series retry waits a day (Codex), and it can no longer overwrite a concurrent refresh (CodeRabbit). Functions unit tests: 83 of 83.
+- **Deployed** all 8 functions to `chapter-reads-prod` at the owner's instruction.
+- **Checked on the emulator against production:** a Title search for "dune" lists *Dune* first; an uncached All search for "foundation" lists exact titles first; a book opened fresh from Hardcover reached its Series page, the first time that page has run on a device.
+- **Still open:** the cached All search for "dune" keeps its old order for up to a day. *Chapterhouse Dune* still has no series link, cause unconfirmed. The Series page lists translations, box sets and wrong-author entries. Both are logged in Chronicle.
+- **Git publishing authorization:** covered PR #7 and this deploy only.
+
+### 2026-11-09 — Bug-fix round (COMPLETED WITH WARNINGS)
 
 - **Objectives:** four open issues the owner asked to fix: repeated notification prompt (`BUG-83003235`), "dune" ranking (`BUG-02975591`), missing series link (`BUG-42344944`), no pixel golden tests (`BUG-30759161`).
 - **Scope:** app and functions code and tests only. No new dependencies, no schema change.
