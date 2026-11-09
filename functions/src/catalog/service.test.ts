@@ -179,6 +179,24 @@ describe("CatalogService", () => {
       expect(env.fetch.calls).toHaveLength(0);
     });
 
+    it("waits a day after a retry that failed in an outage", async () => {
+      const workId = await savedWithNameOnlySeries();
+      const threeDaysOn = new Date("2026-11-07T10:00:00Z");
+      const down = new CatalogService(
+        new MetadataOrchestrator([]),
+        env.store,
+        () => threeDaysOn,
+      );
+      const served = await down.getWork("u1", { workId });
+      expect(served.work.id).toBe(workId); // the stale copy is still served
+
+      env.advance(3 * 86_400_000); // providers are back, at the same moment
+      env.enableHardcover();
+      env.fetch.calls.length = 0;
+      await env.service.getWork("u1", { workId });
+      expect(env.fetch.calls).toHaveLength(0);
+    });
+
     it("leaves a linked work on its normal refresh schedule", async () => {
       env = build({ hardcover: true });
       const { work } = await env.service.lookupIsbn("u1", "9780349440842");

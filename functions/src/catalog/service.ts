@@ -205,8 +205,18 @@ export class CatalogService {
       r.ok ? [{ work: r.data, fetchedAt: r.fetchedAt }] : [],
     );
     if (candidates.length === 0) {
-      if (existing)
+      if (existing) {
+        // A failed series retry still waits a day, so an outage doesn't mean a
+        // provider call on every view. Serving the stale copy doesn't depend on it.
+        if (relink)
+          await this.store
+            .saveWork(
+              { ...existing, refreshedAt: this.now().toISOString() },
+              { authors: [], series: [] },
+            )
+            .catch(() => undefined);
         return { work: existing, editionId: existing.defaultEditionId }; // serve stale over nothing
+      }
       throw new CatalogError("unavailable", "Metadata providers unavailable");
     }
 
