@@ -223,6 +223,8 @@ export interface CatalogSeries {
     isPrimary: boolean;
   }>;
   primaryCount: number;
+  /** Which version of the series query built `entries`; absent before v2. */
+  entriesVersion?: number;
   providerIds: Partial<Record<ProviderId, string>>;
   refreshedAt: string;
 }

@@ -283,6 +283,58 @@ describe("HardcoverProvider (schema fixtures)", () => {
     ]);
   });
 
+  it("asks for one book per position and lists companions last", async () => {
+    const entry = (position: number, id: number, title: string) => ({
+      position,
+      book: { id, title },
+    });
+    const fetchSeries = fixtureFetch([
+      [
+        /hardcover/,
+        {
+          status: 200,
+          json: {
+            data: {
+              series: [
+                {
+                  id: 1,
+                  name: "Dune",
+                  book_series: [
+                    entry(0, 9, "The Road to Dune"),
+                    entry(1, 1, "Dune"),
+                    entry(1.5, 5, "A Novella"),
+                    entry(2, 2, "Dune Messiah"),
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      ],
+    ]);
+    const hc = new HardcoverProvider(
+      fetchSeries,
+      () => "tok",
+      TokenBucket.perMinute(60),
+    );
+    const res = await hc.getSeries("1", signal);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.data.entries.map((e) => [e.work.title, e.isPrimary])).toEqual([
+      ["Dune", true],
+      ["A Novella", false],
+      ["Dune Messiah", true],
+      ["The Road to Dune", false],
+    ]);
+    for (const part of [
+      "distinct_on: position",
+      "canonical_id",
+      "is_partial_book",
+      "compilation",
+    ])
+      expect(fetchSeries.bodies[0]).toContain(part);
+  });
+
   it("stops calling when the local budget is exhausted", async () => {
     const fetch = routes("hardcover_search.json");
     const hc = new HardcoverProvider(

@@ -27,6 +27,8 @@ const WORK_TTL = 30 * DAY;
 const SERIES_LINK_RETRY = DAY;
 const AUTHOR_TTL = 30 * DAY;
 const SERIES_TTL = 14 * DAY;
+/** Bump when the series query changes, so saved series pick it up. */
+const SERIES_ENTRIES_VERSION = 2;
 const SEARCH_TTL = DAY;
 const TRENDING_TTL = 6 * 3_600_000;
 
@@ -297,7 +299,11 @@ export class CatalogService {
           ).get(`series:${refKey(target.ref)}`)
         : undefined);
     const existing = seriesId ? await this.store.getSeries(seriesId) : null;
-    if (existing && this.isFresh(existing.refreshedAt, SERIES_TTL))
+    if (
+      existing &&
+      existing.entriesVersion === SERIES_ENTRIES_VERSION &&
+      this.isFresh(existing.refreshedAt, SERIES_TTL)
+    )
       return existing;
 
     const ref = target.ref ?? firstRef(existing?.providerIds);
@@ -333,6 +339,7 @@ export class CatalogService {
       // Reading order is the provider's position order, not publication order.
       entries: entries.map((e, i) => ({ ...e, work: annotated.results[i]! })),
       primaryCount: entries.filter((e) => e.isPrimary).length,
+      entriesVersion: SERIES_ENTRIES_VERSION,
       providerIds: { ...existing?.providerIds, [ref.provider]: ref.externalId },
       refreshedAt: this.now().toISOString(),
     };
