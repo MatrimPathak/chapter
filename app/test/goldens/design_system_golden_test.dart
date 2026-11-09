@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io' show Platform;
+
 import 'package:chapter/core/design_system/design_system.dart';
 import 'package:chapter/core/sync/sync_status.dart';
 import 'package:flutter/material.dart';
@@ -6,33 +9,23 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/pump_app.dart';
 
-/// Regenerate after an intended visual change:
-/// `flutter test --update-goldens test/goldens`
+/// Exact pixel comparison of the design system, with the app's real fonts.
 ///
-/// Goldens are generated on Windows and CI runs on Linux. Text is drawn in
-/// Flutter's block test font because real fonts render differently per OS, so
-/// these images check layout, colour and shape. Fonts are checked by the theme
-/// tests. Text still lands up to 2 % of pixels differently between the two, so
-/// small visual changes can pass; these catch larger regressions only.
-class _TolerantComparator extends LocalFileComparator {
-  _TolerantComparator(super.testFile);
+/// Font rendering differs per OS, so the images are the ones made on Linux and
+/// these tests run only there, as CI does. After an intended visual change,
+/// regenerate them on Linux with the Flutter version in `ci.yml`:
+/// `flutter test --update-goldens test/goldens`
+bool get _onLinux => Platform.isLinux;
 
-  static const _maxDiff = 0.025;
-
-  @override
-  Future<bool> compare(Uint8List imageBytes, Uri golden) async {
-    final result = await GoldenFileComparator.compareLists(
-      imageBytes,
-      await getGoldenBytes(golden),
-    );
-    final passed = result.passed || result.diffPercent <= _maxDiff;
-    if (!passed) {
-      final failure = await generateFailureOutput(result, golden, basedir);
-      result.dispose();
-      throw FlutterError(failure);
+/// Golden tests otherwise draw every glyph as a box.
+Future<void> _loadFonts() async {
+  final manifest = jsonDecode(await rootBundle.loadString('FontManifest.json')) as List<dynamic>;
+  for (final entry in manifest.cast<Map<String, dynamic>>()) {
+    final loader = FontLoader(entry['family'] as String);
+    for (final font in (entry['fonts'] as List<dynamic>).cast<Map<String, dynamic>>()) {
+      loader.addFont(rootBundle.load(font['asset'] as String));
     }
-    result.dispose();
-    return true;
+    await loader.load();
   }
 }
 
@@ -141,14 +134,7 @@ final _scenes = <String, Widget>{
 };
 
 void main() {
-  late GoldenFileComparator previous;
-
-  setUpAll(() {
-    previous = goldenFileComparator;
-    final dir = (previous as LocalFileComparator).basedir;
-    goldenFileComparator = _TolerantComparator(dir.resolve('design_system_golden_test.dart'));
-  });
-  tearDownAll(() => goldenFileComparator = previous);
+  setUpAll(_loadFonts);
 
   for (final MapEntry(key: name, value: scene) in _scenes.entries) {
     for (final (brightness, scale) in themeVariants) {
@@ -175,7 +161,7 @@ void main() {
         await tester.pump();
         expect(tester.takeException(), isNull);
         await expectLater(find.byKey(key), matchesGoldenFile('images/${name}_$variant.png'));
-      });
+      }, skip: !_onLinux);
     }
   }
 }
