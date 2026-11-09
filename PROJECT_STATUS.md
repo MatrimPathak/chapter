@@ -432,11 +432,20 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ## E. Development history
 
+### 2026-11-09 — Stitch design integration: merged (PR #5)
+
+- **Commit:** `df4f0aa` on local branch `stitch-design-integration`, from `main` at `33eedec`. 112 files changed as Git counts them (114 paths with 2 renames), 2,343 insertions, 904 deletions. Owner's instruction: "Commit the changes".
+- **Pushed and opened as [PR #5](https://github.com/MatrimPathak/chapter/pull/5)** at the owner's instruction ("Push and open a PR").
+- **Merged** by the owner on 2026-11-09 at 08:44 UTC as `aca4b9f` on `main`. The merged tree is identical to the reviewed branch at `0bab1c4`. The CI run on `main` had not finished when this was written.
+- **CI on `df4f0aa`:** all four required jobs passed. Codex reported no findings. CodeRabbit requested changes with two findings in `tool/apply_icon.ps1`, both confirmed.
+- **Review fix `0bab1c4` (Auto-fix):** icons are now written as 24-bit RGB, because App Store Connect rejects icons with an alpha channel (all 15 iOS icons were RGBA), and the script now stops on errors. 21 regenerated PNGs compared pixel by pixel: identical. All four required CI jobs passed on this commit. Both CodeRabbit threads were answered and resolved; its change request still showed at merge.
+- **Git publishing authorization:** covered this work only. Merged by the owner. Nothing further is authorized.
+
 ### 2026-11-09 — Stitch design integration: Phase F refinement (COMPLETED WITH WARNINGS)
 
 - **Done:** Barcode Scanner in a rounded frame with help below; onboarding, Connected services, About and Delete account on cards; global card theme; overflow tests for every listed screen on a small phone (320x568) and tablet (800x1280), in light and dark.
 - **Checks:** `flutter analyze` clean; 481 of 481 app tests. On the emulator with real data, in light and dark: goal, progress, saved session, quote; Home, Insights with calendar, Goals, Notes and Scanner render correctly.
-- **Chronicle:** brought up to date on 2026-11-09 at your instruction. It had fallen behind: Stitch work was recorded only here. New epics `EPIC-77959018` and `EPIC-36571515`, 24 new bug tickets, docs 16 to 26, register and status updated. Stories, sprints and release links were missed at first and added the same day: 16 stories, Sprint 8 (completed), Sprint 9 (active, awaiting your review), all linked to release v1.0.0. As read from Chronicle: 165 tickets, 36 open, of which 18 are bugs. No release is marked released because nothing has shipped.
+- **Chronicle:** brought up to date on 2026-11-09 at your instruction. It had fallen behind: Stitch work was recorded only here. New epics `EPIC-77959018` and `EPIC-36571515`, 24 new bug tickets, docs 16 to 26, register and status updated. Stories, sprints and release links were missed at first and added the same day: 16 stories, Sprint 8 (completed), Sprint 9 (completed after the merge), all linked to release v1.0.0. As read from Chronicle after the merge: 167 tickets, 27 open, of which 18 are bugs. No release is marked released because nothing has shipped.
 - **Release bundle:** `app-prod-release.aab`, 79.8 MB, signed with the upload key, built on the third attempt after the Gradle crash (W52). Never run.
 - **Not verified:** a release build on a device, Play Integrity, a real phone, TalkBack by a person, the Series page on a device, iOS. CI has not run this work. Tablet checked for overflow only.
 - **Left on production:** the test account holds *Chapterhouse Dune*, a 12-book goal, one session and one test quote.
