@@ -438,9 +438,9 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 - **Scope:** the Hardcover series query and how saved series refresh. Functions code and tests only.
 - **Acceptance criteria:** one entry per position, excluding duplicates, partial books and collections; companions at position 0 come after the main books; saved series pick up the new list; *Dune* starts with *Dune*, *Dune Messiah*, *Children of Dune*.
 - **Risks:** the query can only be proven against live Hardcover after a deploy, and a deploy needs approval.
-- **Done:** Hardcover series query returns one book per position, the most-read first, excluding duplicates, partial books and collections, per Hardcover's docs. Position 0 companions come last and are not counted. Saved series refresh once through `entriesVersion`.
+- **Done:** Hardcover series query returns one book per position, the most-read first, excluding duplicates, partial books and collections, per Hardcover's docs. Position 0 companions come last and are not counted. Unnumbered books are fetched separately, most-read first, and capped at 20, so any beyond that are not shown. Saved series refresh once through `entriesVersion` when the query succeeds.
 - **Checks:** functions lint, build, typecheck and Prettier pass; 85 of 85 unit tests.
-- **Not verified:** the query against live Hardcover, which needs a deploy. Position-0 prequels in other series also move to the end.
+- **Not verified:** the query against live Hardcover, which needs a deploy. If it fails, `getSeries` keeps serving a saved non-empty list, so the old entries can stay visible after the deploy. Position-0 prequels in other series also move to the end.
 - **Files:** `functions/src/catalog/providers/hardcover.ts`, `service.ts`, `types.ts`, `providers.test.ts`, `service.test.ts`.
 - **Git publishing authorization:** commit, push and PR approved by the owner ("Approved, open a PR"). Merge and functions deploy NOT GRANTED.
 
