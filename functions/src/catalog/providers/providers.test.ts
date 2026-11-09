@@ -305,6 +305,10 @@ describe("HardcoverProvider (schema fixtures)", () => {
                     entry(1.5, 5, "A Novella"),
                     entry(2, 2, "Dune Messiah"),
                   ],
+                  unnumbered: [
+                    { position: null, book: { id: 7, title: "A Guide" } },
+                    { position: null, book: { id: 8, title: "An Atlas" } },
+                  ],
                 },
               ],
             },
@@ -324,10 +328,15 @@ describe("HardcoverProvider (schema fixtures)", () => {
       ["Dune", true],
       ["A Novella", false],
       ["Dune Messiah", true],
+      ["A Guide", false],
+      ["An Atlas", false],
       ["The Road to Dune", false],
     ]);
     for (const part of [
       "distinct_on: position",
+      "position: {_is_null: false}",
+      "unnumbered: book_series",
+      "position: {_is_null: true}",
       "canonical_id",
       "is_partial_book",
       "compilation",
