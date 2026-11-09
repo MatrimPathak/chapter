@@ -1,6 +1,7 @@
 # Writes every app icon size from tool/icon_source.png, the icon from the Stitch project.
 # Run from app/ in Windows PowerShell:  powershell -File tool/apply_icon.ps1
 # To change the icon, replace icon_source.png and run this again. File names stay the same.
+$ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 # Separates the Stitch artwork into the book (foreground) and its green ground (background).
@@ -133,7 +134,8 @@ $g.DrawImage($src, (New-Object System.Drawing.Rectangle 0, 0, 1024, 1024),
 $g.Dispose()
 
 function Save-Scaled($size, $file, $scale = 1.0) {
-    $bmp = New-Object System.Drawing.Bitmap $size, $size
+    # No alpha channel: App Store Connect rejects icons that have one.
+    $bmp = New-Object System.Drawing.Bitmap $size, $size, ([System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
     $gr = [System.Drawing.Graphics]::FromImage($bmp)
     $gr.InterpolationMode = 'HighQualityBicubic'; $gr.PixelOffsetMode = 'HighQuality'
     $gr.Clear($bg)
