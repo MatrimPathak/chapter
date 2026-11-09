@@ -64,12 +64,13 @@ class _Card extends ConsumerWidget {
     return Card(
       key: ValueKey('integration-${id.name}'),
       margin: const EdgeInsets.only(bottom: ChapterSpacing.md),
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.all(ChapterSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Semantics(header: true, child: Text(title, style: context.textTheme.titleMedium)),
+            Semantics(header: true, child: Text(title, style: context.textTheme.headlineSmall)),
             const SizedBox(height: ChapterSpacing.xs),
             Text(body, style: context.textTheme.bodyMedium),
             if (unavailable) ...[

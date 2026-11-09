@@ -21,6 +21,7 @@ abstract final class AppRoutes {
   static const session = '/session';
 
   static const goals = '/goals';
+  static const notes = '/notes';
   static const deleteAccount = '/delete-account';
   static const about = '/about';
   static const privacy = '/about/privacy';

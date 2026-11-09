@@ -22,7 +22,10 @@ import 'features/profile/data/account_ports.dart';
 Future<void> bootstrap(AppConfig config, FirebaseOptions options) async {
   WidgetsFlutterBinding.ensureInitialized();
   // Shown under About, Open source licences.
-  for (final (name, file) in const [('Literata', 'OFL-Literata'), ('Inter', 'OFL-Inter')]) {
+  for (final (name, file) in const [
+    ('Newsreader', 'OFL-Newsreader'),
+    ('Plus Jakarta Sans', 'OFL-PlusJakartaSans'),
+  ]) {
     LicenseRegistry.addLicense(() async* {
       yield LicenseEntryWithLineBreaks([
         name,

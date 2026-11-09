@@ -432,11 +432,78 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ## E. Development history
 
+### 2026-11-09 — Stitch design integration: Phase F refinement (COMPLETED WITH WARNINGS)
+
+- **Done:** Barcode Scanner in a rounded frame with help below; onboarding, Connected services, About and Delete account on cards; global card theme; overflow tests for every listed screen on a small phone (320x568) and tablet (800x1280), in light and dark.
+- **Checks:** `flutter analyze` clean; 481 of 481 app tests. On the emulator with real data, in light and dark: goal, progress, saved session, quote; Home, Insights with calendar, Goals, Notes and Scanner render correctly.
+- **Chronicle:** brought up to date on 2026-11-09 at your instruction. It had fallen behind: Stitch work was recorded only here. New epics `EPIC-77959018` and `EPIC-36571515`, 24 new bug tickets, docs 16 to 26, register and status updated. Stories, sprints and release links were missed at first and added the same day: 16 stories, Sprint 8 (completed), Sprint 9 (active, awaiting your review), all linked to release v1.0.0. As read from Chronicle: 165 tickets, 36 open, of which 18 are bugs. No release is marked released because nothing has shipped.
+- **Release bundle:** `app-prod-release.aab`, 79.8 MB, signed with the upload key, built on the third attempt after the Gradle crash (W52). Never run.
+- **Not verified:** a release build on a device, Play Integrity, a real phone, TalkBack by a person, the Series page on a device, iOS. CI has not run this work. Tablet checked for overflow only.
+- **Left on production:** the test account holds *Chapterhouse Dune*, a 12-book goal, one session and one test quote.
+
+### 2026-11-09 — Stitch design integration: Phase E secondary screens (COMPLETED WITH WARNINGS)
+
+- **Done:** Goals with ring and cards; Insights with a two-column stat grid and sections on cards, including the calendar; Author with a centred portrait and works on cards; Series on cards; new Notes screen (`/notes`, `NotesScreen`) listing every note with search and type filters, opened from Profile and Home; Profile with a centred header, totals and grouped settings; Splash and Sign-in with the Stitch logo (`assets/images/chapter_logo.png`, `ChapterLogo`).
+- **Checks:** `flutter analyze` clean. Full test run 424 passed, 1 failed (the theme test looking up a heading that had scrolled away); fixed and that file passes, full suite not re-run after that test-only fix. New test covers the Notes screen. Seen on the emulator: Android launch screen with the new icon (the in-app Splash and Sign-in were not caught), Profile, empty Notes, empty Goals, empty Insights, Author, in light or dark. Phase D's dark timer and summary now also seen. Session recovery worked on the device: an abandoned session came back as a summary.
+- **Not seen with real data on a device:** Goals with a goal, Insights with reading history and the calendar, Notes with notes (covered by tests), and the Series page (this book had no Hardcover series link, so its series name opens a search).
+- **Not restyled beyond the theme:** Barcode Scanner, onboarding consent, Connected services, imports, About, Delete account. They pick up the new colours and type only.
+- **Differences from Stitch, on purpose:** no archetype, peak hour, format breakdown, tags, Obsidian, cloud backup, follow author, or series progress. Author's works are listed without per-book add buttons.
+- **Emulator:** had to be cold-booted after going offline twice with a stale snapshot.
+
+### 2026-11-09 — Stitch design integration: Phase D reading experience (COMPLETED WITH WARNINGS)
+
+- **Done:** focus timer with the book on a card, a thin terracotta ring, sans-serif digits, Pause as the main action; session summary with the book card, stat pills and the position form on a card; Reading tab sections on cards; reading history on cards; update-progress sheet with new -10, -1, +1, +10 page buttons. Session, recovery and Do Not Disturb logic unchanged.
+- **Checks:** `flutter analyze` clean; 421 of 421 app tests, plus 3 new page-button tests (added after that run). Built with the upload key; timer, end, summary and discard exercised on the emulator in light. Dark: only the Reading tab was seen.
+- **Differences from Stitch, on purpose:** no soundscapes, dimming, page-turn sounds or photo capture. The session summary keeps the editable minutes field, which Stitch doesn't show. Summary has no large "Session completed" hero; Stitch's stat tiles are pills, which fit real values and large text.
+- **Not tested:** the timer and summary in dark mode (Android's notification prompt blocked the run, then the emulator went offline with little memory free; moved to Phase F); saving a session on production in this phase; the Do Not Disturb flow on the new layout on a device.
+- **Left on the emulator:** one unsaved test session, and the app set to Dark. Local to the emulator; the session can be discarded next time it's opened.
+- **Noticed:** Android asks for notification permission at each session start after being declined, until it stops asking on its own. Existing behaviour.
+
+### 2026-11-08 — Stitch design integration: Phase C primary screens (COMPLETED WITH WARNINGS)
+
+- **Home:** larger current-book card with Read and Update, other books in progress, goal rings, this week's reading bars with streak, up next, latest note, sync status, and an empty state with Search, Scan and Import. Real data only; empty sections are hidden. New `allNotesProvider`, on a new `watchAllNotes`.
+- **Library:** shelves as pills with counts, list view on cards as the default (grid still one tap away), Add book button, empty state with Search, Scan and Import. Filters, sort and favourites unchanged.
+- **Search:** results on cards, "Have a book in hand?" scan card, section headings. Controller and providers unchanged.
+- **Book Details:** centred large cover and title, actions before progress, progress, About and details on cards. Library logic unchanged.
+- **Checks:** `flutter analyze` clean; 421 of 421 app tests. Five tests assumed the old layout (buttons above the fold, grid default) and now scroll first or look for the list. Built with the upload key; compared with Stitch on the emulator in light and dark with a real book. Not pixel-perfect.
+- **Differences from Stitch, on purpose:** other in-progress books stack vertically instead of a side-scrolling row, so they keep their Read and Update actions and large text still fits. No quote banner, no per-item delete on recent searches (no backend). Trending stays a cover row; per-book "add" buttons in search results are left to the book page.
+- **Observed:** a production search for "dune" now ranks *Chapterhouse: Dune* first; that's the order the catalog returned, and I haven't looked into why. Left on production: *Chapterhouse Dune* on the test account's Reading shelf.
+
+### 2026-11-08 — Stitch design integration: Phase B navigation (COMPLETED)
+
+- **Done:** tabs are Home, Library, Search, Reading, Profile, with only the current tab highlighted; the always-on Read disc is gone. Filter chips and selectors use forest green; explicit page transitions. Launch screen matches the paper colour in light and dark.
+- **App icon from Stitch, as real adaptive layers:** `tool/apply_icon.ps1` splits `tool/icon_source.png` into a transparent foreground (book and ribbon, inside the 66dp safe circle), a separate background (the green gradient) and a monochrome layer for Android 13 themed icons. iOS, legacy Android and store graphics come from the same file. Replaces `tool/generate_icons.py`.
+- **Checks:** `flutter analyze` clean; 421 of 421 app tests. Built with the upload key; tab order, labels and selection seen on the emulator. A Gradle JVM crash ("GC Thread", access violation) stopped one build; the same build then passed, W52 again.
+- **Not yet:** the icon's look on a launcher with themed icons on. A hairline of the ribbon's edge remains in the monochrome layer.
+
+### 2026-11-07 — Stitch design integration (IN PROGRESS: Phase A foundation done)
+
+- **Second Stitch run:** 65 screens listed, 44 new. **Of 13 screens named "(Dark)", only "Add to Library Sheet (Dark)" renders dark;** the others use the light palette, and their HTML has no dark tokens. Some are mislabelled ("Barcode Scanner (Dark)" shows an author page). The new screens also include excluded features: soundscapes, photo text capture, voice, tags, haptics. No screens came back by name for: Reading tab, reading history, notes and insights empty states, new Profile, sync states, connected services, imports, export, delete account, sign out, About, privacy policy, component sheet. Dark mode therefore follows the tokens and the one real dark sheet.
+- **Phase A done:** Newsreader and Plus Jakarta Sans bundled (static files from Google Fonts, SIL OFL), Literata and Inter removed; colours, type scale, radii and shadows from Stitch, light and dark; theme remapped; new shared `ChapterCard`, `ChapterSectionHeader`, `ChapterStatTile`, `ChapterQuote`, `ChapterPill`; contrast test extended to the new colours.
+- **Phase A checks:** `flutter analyze` clean. Full test run 419 passed, 2 failed, both my new test's own finder, fixed: design-system tests then 47 of 47. Full suite not re-run after that test-only fix. Built with the upload key and seen on the emulator in light and dark: fonts load, tokens apply, no crash.
+- **Phase A leftovers:** app icon not replaced yet. Filter chips and the appearance selector still use terracotta where Stitch uses forest green. The Read tab still has its always-on disc (Phase B). Screens keep their old layouts until phases C to E.
+
+### 2026-11-07 — Stitch design integration: inspection
+
+- **Objective:** apply the Stitch project "Chapter Reading Companion UX/UI" (`11303033065343118952`, your choice) to the existing app. Integration, not a rewrite: repositories, providers, sync, Firebase and tests stay.
+- **Retrieved:** all 21 listed screens (20 designs and the app icon) with screenshots and HTML, the theme and its design brief. 17 hidden instances are icon concepts. The older "Book Tracker Flutter App" project is not used.
+- **Phases:** A foundation, B navigation, C primary screens, D reading, E secondary screens, F refinement. Each gets its own checks.
+- **Acceptance:** every implemented screen compared with its Stitch reference on a rendered device; real data only; `flutter analyze` clean; all tests pass; Android build works; light and dark checked.
+- **Findings:** the design brief's palette (`#F7F4EE`, `#405B4B`) differs from what the screens render (`#FCF9F8`, `#294335`). The "Quiet Reading Room (Dark Theme)" screen renders light, so **no dark design exists**. The header logo is a broken image in the exports. Many designed features have no backend.
+- **Risks:** about 6,800 lines of screen code and 43 test files depend on it; widget tests find text, so copy changes break them. New fonts must be bundled. Colour changes must pass the contrast test.
+- **Dependencies:** your decisions on features with no backend, wording and dark theme.
+
 ### 2026-11-07 — Next steps after Firebase production
+
+- **Published and deployed:** PR #4, head `c19682e`, merged by you as `33eedec`; all four CI checks and CodeRabbit passed on the head commit. All 8 functions deployed from `main`. Open Dependabot alerts: 0. Review also caught a breaker gap, fixed before merge: a malformed search counted as healthy.
+- **W9 verified through the app after the deploy:** series searches for "wheel of time" and "hunger games" return the right books in order, which only Hardcover can answer. Title, author and ISBN searches return results too, though the app can't show which provider answered those. "stormlight archive" and "harry potter" still showed no results by series: empty responses cached before the fix, which expire within a day (`SEARCH_TTL`).
+- **Sweep:** logs show `sweepDeletedAccounts` starting on schedule; what it did wasn't checked.
+- **Sign-in on a fresh emulator boot failed once,** from Google's service timing out; the retry worked. Not seen on a phone.
+- **Left on production:** a new, empty Chapter account for your Google account, from this test.
 
 - **Account deletion tested on production (W50):** at your request, your account on `chapter-reads-prod` through the app: the server asked for a recent sign-in, you were re-picked in Google's dialog, the app returned to sign-in, its local database file was gone, and the Auth export no longer listed an account. Both calls logged `auth` and `app` VALID. One run. Firestore documents not yet seen from outside the app; the sweep hasn't been observed.
 - **Dependabot alerts:** all 8 were development-only; deployed functions use `@grpc/grpc-js` 1.14.7, and `npm audit --omit=dev` was already clean. Fixed: `vitest` 3 to 4.1.12, which drops `tinypool`; overrides for `@grpc/grpc-js` under `@firebase/firestore`, which pins `~1.9`, and `minimatch` under `@typescript-eslint/typescript-estree`, which asks for `^10`. Both overrides go past what those packages declare; tests pass, but revisit when upstream moves. `npm audit` reports 0. Lint, typecheck, build, 67 unit, 67 rules and 9 integration tests pass. No redeploy needed. Local only, not published.
-- **Hardcover bug found live (W9):** every search narrowed to title, author, ISBN or series got `results: null` with status 200, because we sent fewer fields without our own `typos`. Our code read that as "0 results": series search always came back empty, and the other three silently fell through to Open Library. Fixed in `hardcover.ts`: one `typos` value per field, and a response with no hits list now counts as failed. 5 new tests; 72 unit tests pass. Confirmed with direct calls using your token: all four narrowed searches return results when `typos` is sent. **Not deployed; production still has the bug.** Rules and integration tests last ran before this fix.
+- **Hardcover bug found live (W9):** every search narrowed to title, author, ISBN or series got `results: null` with status 200, because we sent fewer fields without our own `typos`. Our code read that as "0 results": series search always came back empty, and the other three silently fell through to Open Library. Fixed in `hardcover.ts`: one `typos` value per field, and a response with no hits list now counts as failed. 5 new tests; 72 unit tests pass. Confirmed with direct calls using your token: all four narrowed searches return results when `typos` is sent.
 - **Google Books (W10):** your key works: a direct ISBN lookup returned status 200 and 1 result. Not observed through the app.
 - **Release bundle:** `app-prod-release.aab`, version `0.1.0+1`, signed with the upload key, 79.6 MB, on the second try: the first died with "daemon disappeared" while other work was running. Built but never run. `release_check.py` still fails on the privacy policy (3 markers) and the 0.x version. Local build output only.
 

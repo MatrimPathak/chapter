@@ -24,10 +24,12 @@ void main() {
     WidgetTester tester, {
     required Brightness brightness,
     double scale = 1,
+    Size size = const Size(1080, 2340),
+    double ratio = 2.625,
   }) async {
     tester.view
-      ..physicalSize = const Size(1080, 2340)
-      ..devicePixelRatio = 2.625;
+      ..physicalSize = size
+      ..devicePixelRatio = ratio;
     tester.platformDispatcher.platformBrightnessTestValue = brightness;
     tester.platformDispatcher.textScaleFactorTestValue = scale;
     addTearDown(tester.view.reset);
@@ -59,6 +61,8 @@ void main() {
     );
     addTearDown(() => unmountApp(tester));
     await tester.scrollUntilVisible(find.text('Start reading'), 200);
+    await tester.ensureVisible(find.text('Start reading'));
+    await settle(tester);
     await tester.tap(find.text('Start reading'));
     await settle(tester);
   }
@@ -68,14 +72,14 @@ void main() {
   final screens = <String, List<String>>{
     'Home': ['Home'],
     'Library': ['Library'],
-    'Read': ['Read'],
+    'Reading': ['Reading'],
     'Search': ['Search'],
     'Profile': ['Profile'],
     'Goals': ['Profile', 'Goals'],
     'Insights': ['Profile', 'Insights'],
     'Connected services': ['Profile', 'Connected services'],
     'Book page': ['Library', 'The Deal'],
-    'Timer': ['Read', 'Start reading'],
+    'Timer': ['Reading', 'Start reading'],
     'Delete account': ['Profile', 'Delete account'],
     'About': ['Profile', 'About Chapter'],
     'Privacy policy': ['Profile', 'About Chapter', 'Privacy policy'],
@@ -112,6 +116,23 @@ void main() {
         await unmountApp(tester);
       });
     });
+  }
+
+  // A small phone (320 x 568) and a tablet (800 x 1280), in both themes.
+  for (final (device, size) in const [
+    ('small phone', Size(640, 1136)),
+    ('tablet', Size(1600, 2560)),
+  ]) {
+    for (final brightness in Brightness.values) {
+      screens.forEach((name, path) {
+        testWidgets('$name on a $device in ${brightness.name}: no overflow', (tester) async {
+          await launch(tester, brightness: brightness, size: size, ratio: 2);
+          await open(tester, path);
+          expect(tester.takeException(), isNull);
+          await unmountApp(tester);
+        });
+      });
+    }
   }
 
   screens.forEach((name, path) {

@@ -133,7 +133,6 @@ void main() {
         home: Scaffold(
           bottomNavigationBar: ChapterNavBar(
             selectedIndex: 0,
-            emphasizedIndex: 2,
             onSelected: (i) => selected = i,
             items: const [
               ChapterNavItem(label: 'Home', icon: Icons.home_outlined, selectedIcon: Icons.home),

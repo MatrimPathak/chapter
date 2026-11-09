@@ -75,10 +75,7 @@ class GoalsScreen extends ConsumerWidget {
                       top: ChapterSpacing.xl,
                       bottom: ChapterSpacing.sm,
                     ),
-                    child: Semantics(
-                      header: true,
-                      child: Text(l10n.goalsHistory, style: context.textTheme.titleMedium),
-                    ),
+                    child: ChapterSectionHeader(title: l10n.goalsHistory),
                   ),
                   for (final g in history) GoalCard(goal: g, progress: stats.goalProgress(g)),
                 ],
@@ -101,27 +98,48 @@ class GoalCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final value = goalValueText(l10n, goal, progress);
     final period = goalPeriodText(context, goal);
-    return Card(
-      margin: const EdgeInsets.only(bottom: ChapterSpacing.md),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: compact
-            ? () => context.push(AppRoutes.goals)
-            : () => unawaited(_showGoalSheet(context, ref, goal: goal)),
-        child: Padding(
-          padding: const EdgeInsets.all(ChapterSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value, style: context.textTheme.titleMedium),
-              Text(period, style: context.textTheme.bodySmall),
-              const SizedBox(height: ChapterSpacing.sm),
-              ChapterProgressBar(fraction: progress.fraction, semanticLabel: '$value, $period'),
-            ],
-          ),
-        ),
-      ),
+    final details = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(value, style: context.textTheme.headlineSmall),
+        Text(period, style: context.textTheme.bodySmall),
+      ],
     );
+    final card = ChapterCard(
+      onTap: compact
+          ? () => context.push(AppRoutes.goals)
+          : () => unawaited(_showGoalSheet(context, ref, goal: goal)),
+      child: compact
+          ? Row(
+              children: [
+                ChapterProgressRing(
+                  fraction: progress.fraction,
+                  size: 56,
+                  semanticLabel: '$value, $period',
+                  center: Text(
+                    '${(progress.fraction * 100).round()}%',
+                    style: context.textTheme.labelMedium,
+                  ),
+                ),
+                const SizedBox(width: ChapterSpacing.lg),
+                Expanded(child: details),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                details,
+                const SizedBox(height: ChapterSpacing.sm),
+                ChapterProgressBar(fraction: progress.fraction, semanticLabel: '$value, $period'),
+              ],
+            ),
+    );
+    return compact
+        ? card
+        : Padding(
+            padding: const EdgeInsets.only(bottom: ChapterSpacing.md),
+            child: card,
+          );
   }
 }
 

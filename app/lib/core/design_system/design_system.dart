@@ -8,6 +8,7 @@ export 'components/chapter_button.dart';
 export 'components/chapter_nav_bar.dart';
 export 'components/chapter_overlays.dart';
 export 'components/chapter_progress.dart';
+export 'components/chapter_surfaces.dart';
 export 'components/chapter_text_field.dart';
 export 'components/rating_stars.dart';
 export 'components/states.dart';

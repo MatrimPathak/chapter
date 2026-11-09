@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import '../tokens/chapter_colors.dart';
@@ -37,18 +38,20 @@ abstract final class ChapterTheme {
       onPrimary: c.onAccent,
       primaryContainer: c.accentSoft,
       onPrimaryContainer: c.ink,
-      secondary: c.inkMuted,
-      onSecondary: c.paper,
+      secondary: c.highlight,
+      onSecondary: c.onHighlight,
+      secondaryContainer: c.highlightSoft,
+      onSecondaryContainer: c.onHighlightSoft,
       error: c.error,
       onError: c.onError,
       surface: c.paper,
       onSurface: c.ink,
       onSurfaceVariant: c.inkMuted,
-      surfaceContainerLowest: c.paper,
+      surfaceContainerLowest: c.surfaceRaised,
       surfaceContainerLow: c.surface,
       surfaceContainer: c.surface,
-      surfaceContainerHigh: c.surfaceRaised,
-      surfaceContainerHighest: c.surfaceRaised,
+      surfaceContainerHigh: c.surfaceMuted,
+      surfaceContainerHighest: c.surfaceMuted,
       outline: c.line,
       outlineVariant: c.line,
     );
@@ -65,6 +68,73 @@ abstract final class ChapterTheme {
       extensions: [ChapterThemeExtension(c)],
       splashFactory: InkSparkle.splashFactory,
       materialTapTargetSize: MaterialTapTargetSize.padded,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
+      tabBarTheme: TabBarThemeData(
+        dividerColor: Colors.transparent,
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicator: BoxDecoration(
+          color: c.accent,
+          borderRadius: BorderRadius.circular(ChapterRadius.pill),
+        ),
+        labelColor: c.onAccent,
+        unselectedLabelColor: c.inkMuted,
+        labelStyle: text.labelLarge,
+        unselectedLabelStyle: text.labelLarge,
+        splashBorderRadius: BorderRadius.circular(ChapterRadius.pill),
+        labelPadding: const EdgeInsets.symmetric(horizontal: ChapterSpacing.lg),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: c.accent,
+        foregroundColor: c.onAccent,
+        elevation: 2,
+        shape: const StadiumBorder(),
+      ),
+      cardTheme: CardThemeData(
+        color: brightness == Brightness.dark ? c.surface : c.surfaceRaised,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ChapterRadius.lg),
+          side: BorderSide(color: c.line.withValues(alpha: 0.5)),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: c.surfaceRaised,
+        selectedColor: c.accent,
+        secondarySelectedColor: c.accent,
+        disabledColor: c.surfaceMuted,
+        checkmarkColor: c.onAccent,
+        side: WidgetStateBorderSide.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? BorderSide.none : BorderSide(color: c.line),
+        ),
+        labelStyle: text.labelLarge?.copyWith(
+          color: WidgetStateColor.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? c.onAccent : c.ink,
+          ),
+        ),
+        shape: const StadiumBorder(),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateColor.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? c.accent : c.surfaceRaised,
+          ),
+          foregroundColor: WidgetStateColor.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? c.onAccent : c.ink,
+          ),
+          iconColor: WidgetStateColor.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? c.onAccent : c.ink,
+          ),
+          side: WidgetStatePropertyAll(BorderSide(color: c.line)),
+          textStyle: WidgetStatePropertyAll(text.labelLarge),
+        ),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: c.paper,
         foregroundColor: c.ink,
@@ -86,7 +156,8 @@ abstract final class ChapterTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: c.ink,
-          side: BorderSide(color: c.line),
+          backgroundColor: c.surfaceMuted,
+          side: BorderSide.none,
           minimumSize: const Size(64, ChapterSizes.minTouchTarget),
           shape: shape,
           textStyle: text.labelLarge,
@@ -101,7 +172,7 @@ abstract final class ChapterTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: c.surface,
+        fillColor: c.surfaceRaised,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: ChapterSpacing.lg,
           vertical: ChapterSpacing.md,
@@ -109,7 +180,11 @@ abstract final class ChapterTheme {
         hintStyle: text.bodyLarge?.copyWith(color: c.inkMuted),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ChapterRadius.md),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: c.line),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(ChapterRadius.md),
+          borderSide: BorderSide(color: c.line),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ChapterRadius.md),
@@ -122,18 +197,19 @@ abstract final class ChapterTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: c.paper,
-        indicatorColor: c.accentSoft,
+        indicatorColor: c.highlight,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => text.labelMedium?.copyWith(
-            color: states.contains(WidgetState.selected) ? c.ink : c.inkMuted,
+            color: states.contains(WidgetState.selected) ? c.highlight : c.inkMuted,
           ),
         ),
         iconTheme: WidgetStateProperty.resolveWith(
-          (states) =>
-              IconThemeData(color: states.contains(WidgetState.selected) ? c.accent : c.inkMuted),
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected) ? c.onHighlight : c.inkMuted,
+          ),
         ),
       ),
       bottomSheetTheme: BottomSheetThemeData(
@@ -141,7 +217,7 @@ abstract final class ChapterTheme {
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(ChapterRadius.lg)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(ChapterRadius.xl)),
         ),
       ),
       dialogTheme: DialogThemeData(
@@ -153,7 +229,7 @@ abstract final class ChapterTheme {
       ),
       switchTheme: SwitchThemeData(
         trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? c.accent : c.line,
+          (s) => s.contains(WidgetState.selected) ? c.accent : c.surfaceMuted,
         ),
         thumbColor: WidgetStateProperty.resolveWith(
           (s) => s.contains(WidgetState.selected) ? c.onAccent : c.inkMuted,
@@ -162,8 +238,8 @@ abstract final class ChapterTheme {
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: c.accent,
-        linearTrackColor: c.line,
-        circularTrackColor: c.line,
+        linearTrackColor: c.surfaceMuted,
+        circularTrackColor: c.surfaceMuted,
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: c.ink,

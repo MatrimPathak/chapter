@@ -10,13 +10,17 @@ class ChapterProgressBar extends StatelessWidget {
   const ChapterProgressBar({
     required this.fraction,
     super.key,
-    this.height = 4,
+    this.height = 6,
     this.semanticLabel,
+    this.color,
   });
 
   final double fraction;
   final double height;
   final String? semanticLabel;
+
+  /// Defaults to the accent.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +36,11 @@ class ChapterProgressBar extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              ColoredBox(color: colors.line),
+              ColoredBox(color: colors.surfaceMuted),
               FractionallySizedBox(
                 alignment: AlignmentDirectional.centerStart,
                 widthFactor: value,
-                child: ColoredBox(color: colors.accent),
+                child: ColoredBox(color: color ?? colors.accent),
               ),
             ],
           ),
@@ -55,6 +59,7 @@ class ChapterProgressRing extends StatelessWidget {
     this.strokeWidth = 5,
     this.center,
     this.semanticLabel,
+    this.color,
   });
 
   final double fraction;
@@ -62,6 +67,9 @@ class ChapterProgressRing extends StatelessWidget {
   final double strokeWidth;
   final Widget? center;
   final String? semanticLabel;
+
+  /// Defaults to the accent. The session timer uses the highlight.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +83,8 @@ class ChapterProgressRing extends StatelessWidget {
         child: CustomPaint(
           painter: _RingPainter(
             fraction: value,
-            track: colors.line,
-            fill: colors.accent,
+            track: colors.surfaceMuted,
+            fill: color ?? colors.accent,
             strokeWidth: strokeWidth,
           ),
           child: center == null ? null : Center(child: ExcludeSemantics(child: center)),

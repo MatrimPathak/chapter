@@ -20,9 +20,6 @@ class ScaffoldWithNav extends ConsumerStatefulWidget {
 
   final StatefulNavigationShell shell;
 
-  /// Index of the emphasised Read tab.
-  static const readIndex = 2;
-
   @override
   ConsumerState<ScaffoldWithNav> createState() => _ScaffoldWithNavState();
 }
@@ -54,7 +51,6 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
           const ActiveSessionBar(),
           ChapterNavBar(
             selectedIndex: shell.currentIndex,
-            emphasizedIndex: ScaffoldWithNav.readIndex,
             onSelected: (index) => shell.goBranch(
               index,
               // Re-tapping the active tab returns to its root.
@@ -72,14 +68,14 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
                 selectedIcon: Icons.auto_stories_rounded,
               ),
               ChapterNavItem(
-                label: l10n.navRead,
-                icon: Icons.timer_outlined,
-                selectedIcon: Icons.timer_rounded,
-              ),
-              ChapterNavItem(
                 label: l10n.navSearch,
                 icon: Icons.search_rounded,
                 selectedIcon: Icons.search_rounded,
+              ),
+              ChapterNavItem(
+                label: l10n.navRead,
+                icon: Icons.hourglass_empty_rounded,
+                selectedIcon: Icons.hourglass_bottom_rounded,
               ),
               ChapterNavItem(
                 label: l10n.navProfile,

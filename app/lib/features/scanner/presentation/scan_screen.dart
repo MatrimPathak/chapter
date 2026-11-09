@@ -70,10 +70,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     });
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
         title: Text(l10n.scanTitle),
         actions: [
           if (_camera != null)
@@ -84,57 +81,78 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
             ),
         ],
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (widget.cameraBuilder != null)
-            widget.cameraBuilder!(context, _onDetect)
-          else
-            MobileScanner(
-              controller: _camera,
-              onDetect: (capture) {
-                final raw = capture.barcodes.firstOrNull?.rawValue;
-                if (raw != null) _onDetect(raw);
-              },
-              errorBuilder: (context, error) => _CameraUnavailable(
-                permissionDenied: error.errorCode == MobileScannerErrorCode.permissionDenied,
-                onManual: _enterManually,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(ChapterSpacing.gutter),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 3,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(ChapterRadius.lg),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      const ColoredBox(color: Colors.black),
+                      if (widget.cameraBuilder != null)
+                        widget.cameraBuilder!(context, _onDetect)
+                      else
+                        MobileScanner(
+                          controller: _camera,
+                          onDetect: (capture) {
+                            final raw = capture.barcodes.firstOrNull?.rawValue;
+                            if (raw != null) _onDetect(raw);
+                          },
+                          errorBuilder: (context, error) => _CameraUnavailable(
+                            permissionDenied:
+                                error.errorCode == MobileScannerErrorCode.permissionDenied,
+                            onManual: _enterManually,
+                          ),
+                        ),
+                      const _Viewfinder(),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          const _Viewfinder(),
-          Positioned(
-            left: ChapterSpacing.xl,
-            right: ChapterSpacing.xl,
-            bottom: ChapterSpacing.xxl,
-            child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Semantics(
-                    liveRegion: true,
-                    child: Text(
-                      state is ScanLookingUp
-                          ? l10n.scanLookingUp(state.isbn)
-                          : l10n.scanInstructions,
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.bodyLarge?.copyWith(color: Colors.white),
+              const SizedBox(height: ChapterSpacing.lg),
+              // Scrolls when large text wouldn't otherwise leave room for it.
+              Flexible(
+                flex: 2,
+                child: SingleChildScrollView(
+                  child: ChapterCard(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            state is ScanLookingUp
+                                ? l10n.scanLookingUp(state.isbn)
+                                : l10n.scanInstructions,
+                            textAlign: TextAlign.center,
+                            style: context.textTheme.bodyLarge,
+                          ),
+                        ),
+                        if (state is ScanLookingUp) ...[
+                          const SizedBox(height: ChapterSpacing.md),
+                          const Center(child: CircularProgressIndicator()),
+                        ],
+                        const SizedBox(height: ChapterSpacing.lg),
+                        ChapterButton(
+                          label: l10n.scanEnterManually,
+                          variant: ChapterButtonVariant.secondary,
+                          onPressed: state is ScanLookingUp ? null : _enterManually,
+                        ),
+                      ],
                     ),
                   ),
-                  if (state is ScanLookingUp) ...[
-                    const SizedBox(height: ChapterSpacing.md),
-                    const CircularProgressIndicator(color: Colors.white),
-                  ],
-                  const SizedBox(height: ChapterSpacing.lg),
-                  ChapterButton(
-                    label: l10n.scanEnterManually,
-                    variant: ChapterButtonVariant.secondary,
-                    onPressed: state is ScanLookingUp ? null : _enterManually,
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -312,8 +330,8 @@ class _Viewfinder extends StatelessWidget {
   Widget build(BuildContext context) => IgnorePointer(
     child: Center(
       child: Container(
-        width: 280,
-        height: 160,
+        width: 240,
+        height: 140,
         decoration: BoxDecoration(
           border: Border.all(color: Colors.white70, width: 2),
           borderRadius: BorderRadius.circular(ChapterRadius.md),

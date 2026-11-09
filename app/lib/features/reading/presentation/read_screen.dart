@@ -54,9 +54,10 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
         padding: const EdgeInsets.all(ChapterSpacing.gutter),
         children: [
           if (active != null)
-            Card(
+            ChapterCard(
+              padding: EdgeInsets.zero,
               child: ListTile(
-                leading: const Icon(Icons.timer_outlined),
+                leading: const Icon(Icons.hourglass_bottom_rounded),
                 title: Text(l10n.readInProgress),
                 subtitle: Text(titles[active.workId] ?? ''),
                 trailing: TextButton(
@@ -67,36 +68,42 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
             )
           else if (candidates.isEmpty)
             EmptyState(
-              icon: Icons.timer_outlined,
+              icon: Icons.hourglass_empty_rounded,
               title: l10n.readEmptyTitle,
               body: l10n.readNoReadingBooks,
               actionLabel: l10n.navLibrary,
               onAction: () => context.go(AppRoutes.library),
             )
           else ...[
-            Text(l10n.readPickBook, style: context.textTheme.titleMedium),
+            ChapterSectionHeader(title: l10n.readPickBook),
             const SizedBox(height: ChapterSpacing.sm),
-            RadioGroup<String>(
-              groupValue: workId,
-              onChanged: (v) => setState(() => _workId = v),
-              child: Column(
-                children: [
-                  for (final c in candidates.take(8))
-                    RadioListTile<String>(
-                      contentPadding: EdgeInsets.zero,
-                      value: c.entry.workId,
-                      title: Text(c.entry.book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(
-                        c.entry.book.authorLine,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+            ChapterCard(
+              padding: EdgeInsets.zero,
+              child: RadioGroup<String>(
+                groupValue: workId,
+                onChanged: (v) => setState(() => _workId = v),
+                child: Column(
+                  children: [
+                    for (final c in candidates.take(8))
+                      RadioListTile<String>(
+                        value: c.entry.workId,
+                        title: Text(
+                          c.entry.book.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          c.entry.book.authorLine,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: ChapterSpacing.lg),
-            Text(l10n.readDuration, style: context.textTheme.titleMedium),
+            const SizedBox(height: ChapterSpacing.xl),
+            ChapterSectionHeader(title: l10n.readDuration),
             const SizedBox(height: ChapterSpacing.sm),
             Wrap(
               spacing: ChapterSpacing.sm,
@@ -119,24 +126,24 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: ChapterSpacing.md),
-            if (platformSupportsDnd)
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.readFocusMode),
-                subtitle: Text(l10n.readFocusModeBody),
-                value: _focus,
-                onChanged: (v) => setState(() => _focus = v),
-              )
-            else
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.do_not_disturb_on_outlined),
-                title: Text(l10n.readFocusIosTitle),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => unawaited(showFocusGuide(context)),
-              ),
-            const SizedBox(height: ChapterSpacing.md),
+            const SizedBox(height: ChapterSpacing.lg),
+            ChapterCard(
+              padding: EdgeInsets.zero,
+              child: platformSupportsDnd
+                  ? SwitchListTile(
+                      title: Text(l10n.readFocusMode),
+                      subtitle: Text(l10n.readFocusModeBody),
+                      value: _focus,
+                      onChanged: (v) => setState(() => _focus = v),
+                    )
+                  : ListTile(
+                      leading: const Icon(Icons.do_not_disturb_on_outlined),
+                      title: Text(l10n.readFocusIosTitle),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => unawaited(showFocusGuide(context)),
+                    ),
+            ),
+            const SizedBox(height: ChapterSpacing.lg),
             ChapterButton(
               key: const Key('read-start'),
               label: l10n.readStart,
@@ -159,12 +166,17 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
           const MusicCard(),
           if (recent.isNotEmpty) ...[
             const SizedBox(height: ChapterSpacing.xl),
-            Semantics(
-              header: true,
-              child: Text(l10n.readRecent, style: context.textTheme.titleMedium),
+            ChapterSectionHeader(title: l10n.readRecent),
+            const SizedBox(height: ChapterSpacing.sm),
+            ChapterCard(
+              padding: const EdgeInsets.symmetric(horizontal: ChapterSpacing.lg),
+              child: Column(
+                children: [
+                  for (final r in recent.take(10))
+                    SessionHistoryTile(session: r, title: titles[r.workId]),
+                ],
+              ),
             ),
-            for (final r in recent.take(10))
-              SessionHistoryTile(session: r, title: titles[r.workId]),
           ],
         ],
       ),

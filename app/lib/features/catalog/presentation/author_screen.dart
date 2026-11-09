@@ -58,55 +58,51 @@ class _AuthorView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: ChapterSpacing.gutter),
           sliver: SliverList.list(
             children: [
-              Row(
-                children: [
-                  ExcludeSemantics(
-                    child: CircleAvatar(
-                      radius: 44,
-                      backgroundColor: colors.accentSoft,
-                      foregroundImage: author.photoUrl == null
-                          ? null
-                          : CachedNetworkImageProvider(author.photoUrl!),
-                      child: Text(initial, style: context.textTheme.headlineLarge),
-                    ),
+              Center(
+                child: ExcludeSemantics(
+                  child: CircleAvatar(
+                    radius: 64,
+                    backgroundColor: colors.accentSoft,
+                    foregroundImage: author.photoUrl == null
+                        ? null
+                        : CachedNetworkImageProvider(author.photoUrl!),
+                    child: Text(initial, style: context.textTheme.headlineLarge),
                   ),
-                  const SizedBox(width: ChapterSpacing.lg),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Semantics(
-                          header: true,
-                          child: Text(author.name, style: context.textTheme.headlineMedium),
-                        ),
-                        if (dates != null) Text(dates, style: context.textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
+              const SizedBox(height: ChapterSpacing.lg),
+              Semantics(
+                header: true,
+                child: Text(
+                  author.name,
+                  textAlign: TextAlign.center,
+                  style: context.textTheme.displayMedium,
+                ),
+              ),
+              if (dates != null)
+                Text(dates, textAlign: TextAlign.center, style: context.textTheme.bodySmall),
               if (author.photoUrl != null && author.photoCredit != null)
                 Padding(
                   padding: const EdgeInsets.only(top: ChapterSpacing.xs),
                   child: Text(
                     l10n.authorPhotoCredit(author.photoCredit!),
+                    textAlign: TextAlign.center,
                     style: context.textTheme.labelSmall,
                   ),
                 ),
               const SizedBox(height: ChapterSpacing.lg),
-              Text(
-                author.bio ?? l10n.authorNoBio,
-                style: author.bio == null
-                    ? context.textTheme.bodyMedium?.copyWith(color: colors.inkMuted)
-                    : context.textTheme.bodyLarge,
+              ChapterCard(
+                child: Text(
+                  author.bio ?? l10n.authorNoBio,
+                  style: author.bio == null
+                      ? context.textTheme.bodyMedium?.copyWith(color: colors.inkMuted)
+                      : context.textTheme.bodyLarge,
+                ),
               ),
               if (author.works.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: ChapterSpacing.xl, bottom: ChapterSpacing.md),
-                  child: Semantics(
-                    header: true,
-                    child: Text(l10n.authorWorks, style: context.textTheme.titleLarge),
-                  ),
+                  child: ChapterSectionHeader(title: l10n.authorWorks),
                 ),
             ],
           ),
@@ -118,19 +114,15 @@ class _AuthorView extends StatelessWidget {
             ChapterSpacing.gutter,
             ChapterSpacing.xxxl,
           ),
-          sliver: SliverGrid.builder(
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 128,
-              mainAxisSpacing: ChapterSpacing.lg,
-              crossAxisSpacing: ChapterSpacing.lg,
-              childAspectRatio: 0.5,
-            ),
+          sliver: SliverList.separated(
             itemCount: author.works.length,
+            separatorBuilder: (_, _) => const SizedBox(height: ChapterSpacing.md),
             itemBuilder: (context, i) {
               final w = author.works[i];
-              return LayoutBuilder(
-                builder: (context, constraints) => BookGridCard(
-                  coverWidth: constraints.maxWidth,
+              return ChapterCard(
+                padding: EdgeInsets.zero,
+                child: BookListTile(
+                  padding: const EdgeInsets.all(ChapterSpacing.lg),
                   data: BookCardData(
                     title: w.title,
                     coverUrl: w.coverUrl,

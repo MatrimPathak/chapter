@@ -315,7 +315,7 @@ void main() {
 
   testWidgets('Spotify: links open with no account; a failure stays a message', (tester) async {
     await launch(tester);
-    await tester.tap(find.text('Read').last);
+    await tester.tap(find.text('Reading').last);
     await settle(tester);
     await tester.tap(find.byKey(const Key('music-card')));
     await settle(tester);
@@ -462,7 +462,7 @@ void main() {
           await settle(tester);
           expect(find.text('The Deal'), findsWidgets);
 
-          await tester.tap(find.text('Read').last);
+          await tester.tap(find.text('Reading').last);
           await settle(tester);
           expect(
             find.byKey(const Key('music-card')),

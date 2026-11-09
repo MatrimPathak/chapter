@@ -507,6 +507,13 @@ class _ProgressFormState extends State<ProgressForm> {
     }
   }
 
+  /// The -10, -1, +1, +10 page buttons.
+  void _nudge(int delta) {
+    final current = int.tryParse(_text.text.trim()) ?? (_fraction * (m.pageCount ?? 0)).round();
+    _text.text = '${(current + delta).clamp(0, m.pageCount ?? 0)}';
+    _onText('');
+  }
+
   void _onText(String _) {
     final pos = _parse();
     final f = pos == null ? null : ProgressMapper.toFraction(pos, m);
@@ -576,6 +583,24 @@ class _ProgressFormState extends State<ProgressForm> {
               const ApproximateBadge(),
               const SizedBox(width: ChapterSpacing.sm),
               Expanded(child: Text(l10n.progressApproxHint, style: context.textTheme.bodySmall)),
+            ],
+          ),
+        ],
+        if (_mode == _Mode.page) ...[
+          const SizedBox(height: ChapterSpacing.md),
+          Row(
+            children: [
+              for (final delta in const [-10, -1, 1, 10]) ...[
+                if (delta != -10) const SizedBox(width: ChapterSpacing.sm),
+                Expanded(
+                  child: OutlinedButton(
+                    key: Key('progress-nudge-$delta'),
+                    style: OutlinedButton.styleFrom(padding: EdgeInsets.zero),
+                    onPressed: () => _nudge(delta),
+                    child: Text(delta > 0 ? '+$delta' : '\u2212${-delta}'),
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -738,25 +763,6 @@ class LibrarySection extends ConsumerWidget {
         ],
         if (entry.status == ReadingStatus.reading) ...[
           const SizedBox(height: ChapterSpacing.lg),
-          if (progress != null) ...[
-            ChapterProgressBar(fraction: progress.fraction),
-            const SizedBox(height: ChapterSpacing.xs),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    progressLabel(l10n, progress.fraction, position, metrics),
-                    style: context.textTheme.bodyMedium,
-                  ),
-                ),
-                if (position?.isApproximate ?? false) const ApproximateBadge(),
-              ],
-            ),
-            if (_pagesLeft(progress.fraction, metrics) case final left?)
-              Text(l10n.progressPagesLeft(left), style: context.textTheme.bodySmall),
-            _FinishEstimate(readThroughId: entry.activeReadThroughId!),
-          ],
-          const SizedBox(height: ChapterSpacing.sm),
           ChapterButton(
             label: metrics.isAudio ? l10n.audioStartSession : l10n.bookStartSession,
             expand: true,
@@ -770,6 +776,36 @@ class LibrarySection extends ConsumerWidget {
             variant: ChapterButtonVariant.secondary,
             onPressed: () => unawaited(showProgressSheet(context, ref, entry.workId)),
           ),
+          if (progress != null) ...[
+            const SizedBox(height: ChapterSpacing.md),
+            ChapterCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          progressLabel(l10n, progress.fraction, position, metrics),
+                          style: context.textTheme.titleMedium,
+                        ),
+                      ),
+                      if (position?.isApproximate ?? false) const ApproximateBadge(),
+                    ],
+                  ),
+                  const SizedBox(height: ChapterSpacing.sm),
+                  ChapterProgressBar(
+                    fraction: progress.fraction,
+                    color: context.chapterColors.highlight,
+                  ),
+                  const SizedBox(height: ChapterSpacing.xs),
+                  if (_pagesLeft(progress.fraction, metrics) case final left?)
+                    Text(l10n.progressPagesLeft(left), style: context.textTheme.bodySmall),
+                  _FinishEstimate(readThroughId: entry.activeReadThroughId!),
+                ],
+              ),
+            ),
+          ],
         ] else if (entry.status == ReadingStatus.wantToRead) ...[
           const SizedBox(height: ChapterSpacing.sm),
           ChapterButton(
@@ -1191,11 +1227,14 @@ class _BookSessions extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: ChapterSpacing.lg),
-        Semantics(
-          header: true,
-          child: Text(l10n.sessionHistoryTitle, style: context.textTheme.titleMedium),
+        ChapterSectionHeader(title: l10n.sessionHistoryTitle),
+        const SizedBox(height: ChapterSpacing.sm),
+        ChapterCard(
+          padding: const EdgeInsets.symmetric(horizontal: ChapterSpacing.lg),
+          child: Column(
+            children: [for (final s in sessions.take(5)) SessionHistoryTile(session: s)],
+          ),
         ),
-        for (final s in sessions.take(5)) SessionHistoryTile(session: s),
       ],
     );
   }

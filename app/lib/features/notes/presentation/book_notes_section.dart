@@ -82,7 +82,7 @@ class _Heading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: ChapterSpacing.xl, bottom: ChapterSpacing.sm),
-    child: Semantics(header: true, child: Text(text, style: context.textTheme.titleLarge)),
+    child: Semantics(header: true, child: Text(text, style: context.textTheme.headlineMedium)),
   );
 }
 

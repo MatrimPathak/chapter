@@ -28,6 +28,11 @@ void main() {
         'accent text on accentSoft': (c.accent, c.accentSoft, 3.0),
         'ink on accentSoft': (c.ink, c.accentSoft, 4.5),
         'error on paper': (c.error, c.paper, 4.5),
+        'ink on raised surface': (c.ink, c.surfaceRaised, 4.5),
+        'muted on raised surface': (c.inkMuted, c.surfaceRaised, 4.5),
+        'onHighlight on highlight': (c.onHighlight, c.highlight, 4.5),
+        'highlight on paper': (c.highlight, c.paper, 4.5),
+        'onHighlightSoft on highlightSoft': (c.onHighlightSoft, c.highlightSoft, 4.5),
         'ink on cover placeholders': (c.ink, c.coverPlaceholders.first, 4.5),
       };
       pairs.forEach((label, pair) {
