@@ -197,6 +197,28 @@ describe("CatalogService", () => {
       expect(env.fetch.calls).toHaveLength(0);
     });
 
+    it("doesn't overwrite a refresh that lands during a failed retry", async () => {
+      const workId = await savedWithNameOnlySeries();
+      const stored = env.store.works.get(workId)!;
+      const linked = {
+        ...stored,
+        refreshedAt: "2026-11-07T09:59:00Z",
+        series: [{ ...stored.series[0]!, seriesId: "series-1" }],
+      };
+      const racing = new CatalogService(
+        {
+          getWork: async () => {
+            env.store.works.set(workId, linked); // another request finishes first
+            return { ok: false };
+          },
+        } as unknown as MetadataOrchestrator,
+        env.store,
+        () => new Date("2026-11-07T10:00:00Z"),
+      );
+      await racing.getWork("u1", { workId });
+      expect(env.store.works.get(workId)).toEqual(linked);
+    });
+
     it("leaves a linked work on its normal refresh schedule", async () => {
       env = build({ hardcover: true });
       const { work } = await env.service.lookupIsbn("u1", "9780349440842");

@@ -69,6 +69,22 @@ afterAll(async () => {
 });
 
 describe("FirestoreCatalogStore", () => {
+  it("touches refreshedAt only when the work is unchanged", async () => {
+    const saved = work("w1", "9780349440842", "e1");
+    await store.saveWork(saved, { authors: [], series: [] });
+    const later = "2026-11-05T00:00:00.000Z";
+
+    await store.touchWorkIfUnchanged("w1", "2020-01-01T00:00:00.000Z", later);
+    expect((await store.getWork("w1"))?.refreshedAt).toBe(saved.refreshedAt);
+
+    await store.touchWorkIfUnchanged("w1", saved.refreshedAt, later);
+    expect(await store.getWork("w1")).toEqual({ ...saved, refreshedAt: later });
+
+    await expect(
+      store.touchWorkIfUnchanged("missing", saved.refreshedAt, later),
+    ).resolves.toBeUndefined();
+  });
+
   it("saves a work with indexes and stubs in one transaction", async () => {
     await store.saveWork(work("w1", "9780349440842", "e1"), {
       authors: [

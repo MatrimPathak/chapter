@@ -210,9 +210,10 @@ export class CatalogService {
         // provider call on every view. Serving the stale copy doesn't depend on it.
         if (relink)
           await this.store
-            .saveWork(
-              { ...existing, refreshedAt: this.now().toISOString() },
-              { authors: [], series: [] },
+            .touchWorkIfUnchanged(
+              existing.id,
+              existing.refreshedAt,
+              this.now().toISOString(),
             )
             .catch(() => undefined);
         return { work: existing, editionId: existing.defaultEditionId }; // serve stale over nothing
