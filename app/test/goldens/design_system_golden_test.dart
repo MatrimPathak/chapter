@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:chapter/core/design_system/design_system.dart';
 import 'package:chapter/core/sync/sync_status.dart';
 import 'package:flutter/material.dart';
@@ -11,12 +9,14 @@ import '../helpers/pump_app.dart';
 /// Regenerate after an intended visual change:
 /// `flutter test --update-goldens test/goldens`
 ///
-/// Goldens are generated on Windows and CI runs on Linux, where text can
-/// differ by a few edge pixels, so a small share of changed pixels is allowed.
+/// Goldens are generated on Windows and CI runs on Linux. Text is drawn in
+/// Flutter's block test font because real fonts render differently per OS, so
+/// these images check layout, colour and shape. Fonts are checked by the theme
+/// tests. A small share of changed pixels is allowed for edge antialiasing.
 class _TolerantComparator extends LocalFileComparator {
   _TolerantComparator(super.testFile);
 
-  static const _maxDiff = 0.01;
+  static const _maxDiff = 0.005;
 
   @override
   Future<bool> compare(Uint8List imageBytes, Uri golden) async {
@@ -32,18 +32,6 @@ class _TolerantComparator extends LocalFileComparator {
     }
     result.dispose();
     return true;
-  }
-}
-
-/// Golden tests otherwise draw every glyph as a box.
-Future<void> _loadFonts() async {
-  final manifest = jsonDecode(await rootBundle.loadString('FontManifest.json')) as List<dynamic>;
-  for (final entry in manifest.cast<Map<String, dynamic>>()) {
-    final loader = FontLoader(entry['family'] as String);
-    for (final font in (entry['fonts'] as List<dynamic>).cast<Map<String, dynamic>>()) {
-      loader.addFont(rootBundle.load(font['asset'] as String));
-    }
-    await loader.load();
   }
 }
 
@@ -154,8 +142,7 @@ final _scenes = <String, Widget>{
 void main() {
   late GoldenFileComparator previous;
 
-  setUpAll(() async {
-    await _loadFonts();
+  setUpAll(() {
     previous = goldenFileComparator;
     final dir = (previous as LocalFileComparator).basedir;
     goldenFileComparator = _TolerantComparator(dir.resolve('design_system_golden_test.dart'));
