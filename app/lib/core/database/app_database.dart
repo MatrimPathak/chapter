@@ -79,6 +79,15 @@ class AppDatabase extends _$AppDatabase {
     },
   );
 
+  /// Whether a local, unsynced flag has been set.
+  Future<bool> hasFlag(String key) async =>
+      await (select(syncMeta)..where((t) => t.key.equals(key))).getSingleOrNull() != null;
+
+  /// Sets a local, unsynced flag. Flags live in `sync_meta`, which is not exported.
+  Future<void> setFlag(String key) async {
+    await into(syncMeta).insertOnConflictUpdate(SyncMetaCompanion.insert(key: key, value: '1'));
+  }
+
   static String safeFileName(String uid) => uid.replaceAll(RegExp('[^A-Za-z0-9_-]'), '_');
 
   static final _sessionsWorkStarted = Index(

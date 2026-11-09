@@ -23,6 +23,8 @@ import {
 
 const DAY = 86_400_000;
 const WORK_TTL = 30 * DAY;
+/** How soon to retry linking a work whose series has only a name. */
+const SERIES_LINK_RETRY = DAY;
 const AUTHOR_TTL = 30 * DAY;
 const SERIES_TTL = 14 * DAY;
 const SEARCH_TTL = DAY;
@@ -99,7 +101,9 @@ export class CatalogService {
 
     const outcome = await this.orchestrator.search({ ...query, text }, page);
     const response: SearchResponse = {
-      results: dedupeHits(outcome.hits).map(summaryOfHit),
+      results: rankedForQuery(dedupeHits(outcome.hits), query.field, text).map(
+        summaryOfHit,
+      ),
       page: page.page,
       hasMore: outcome.hits.length >= page.pageSize,
       provider: outcome.provider,
@@ -178,7 +182,11 @@ export class CatalogService {
         ) ?? null;
 
     const existing = workId ? await this.store.getWork(workId) : null;
-    if (existing && this.isFresh(existing.refreshedAt, WORK_TTL))
+    const relink = existing !== null && lacksSeriesLink(existing);
+    if (
+      existing &&
+      this.isFresh(existing.refreshedAt, relink ? SERIES_LINK_RETRY : WORK_TTL)
+    )
       return { work: existing, editionId: existing.defaultEditionId };
     if (!existing && !target.ref)
       throw new CatalogError("not-found", "Unknown work");
@@ -197,13 +205,24 @@ export class CatalogService {
       r.ok ? [{ work: r.data, fetchedAt: r.fetchedAt }] : [],
     );
     if (candidates.length === 0) {
-      if (existing)
+      if (existing) {
+        // A failed series retry still waits a day, so an outage doesn't mean a
+        // provider call on every view. Serving the stale copy doesn't depend on it.
+        if (relink)
+          await this.store
+            .touchWorkIfUnchanged(
+              existing.id,
+              existing.refreshedAt,
+              this.now().toISOString(),
+            )
+            .catch(() => undefined);
         return { work: existing, editionId: existing.defaultEditionId }; // serve stale over nothing
+      }
       throw new CatalogError("unavailable", "Metadata providers unavailable");
     }
 
     // Enrich from the other providers through a hard identifier (ISBN).
-    if (!existing) await this.enrichViaIsbn(candidates);
+    if (!existing || relink) await this.enrichViaIsbn(candidates);
 
     const work = await this.resolveAndSave(candidates, undefined, existing?.id);
     return { work, editionId: work.defaultEditionId };
@@ -496,6 +515,40 @@ function dedupeHits(hits: RawWorkHit[]): RawWorkHit[] {
     seen.add(key);
     return true;
   });
+}
+
+/** A series known only by name, which Hardcover could still give an id to. */
+function lacksSeriesLink(work: CatalogWork): boolean {
+  return !work.providerIds.hardcover && work.series.some((s) => !s.seriesId);
+}
+
+function comparableTitle(title: string): string {
+  return title
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/^(the|a|an) /, "");
+}
+
+/**
+ * Puts exact title matches first, then titles starting with the query. Other
+ * results keep the provider's order, as does everything for non-title searches.
+ */
+export function rankedForQuery(
+  hits: RawWorkHit[],
+  field: SearchQuery["field"],
+  text: string,
+): RawWorkHit[] {
+  const query = comparableTitle(text);
+  if (!query || (field !== "all" && field !== "title")) return hits;
+  const tier = (hit: RawWorkHit) => {
+    const title = comparableTitle(hit.title);
+    if (title === query) return 0;
+    return title.startsWith(`${query} `) ? 1 : 2;
+  };
+  return [...hits].sort((a, b) => tier(a) - tier(b));
 }
 
 function summaryOfHit(h: RawWorkHit): WorkSummary {

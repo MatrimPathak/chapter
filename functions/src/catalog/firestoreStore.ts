@@ -66,6 +66,18 @@ export class FirestoreCatalogStore implements CatalogStore {
     return snap.exists ? (snap.data() as CatalogWork) : null;
   }
 
+  async touchWorkIfUnchanged(
+    id: string,
+    expected: string,
+    refreshedAt: string,
+  ): Promise<void> {
+    const ref = this.db.collection(C.works).doc(id);
+    await this.db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (snap.get("refreshedAt") === expected) tx.update(ref, { refreshedAt });
+    });
+  }
+
   async saveWork(
     work: CatalogWork,
     stubs: { authors: Stub[]; series: Stub[] },

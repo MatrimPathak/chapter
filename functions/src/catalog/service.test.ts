@@ -6,7 +6,12 @@ import { GoogleBooksProvider } from "./providers/googleBooks";
 import { HardcoverProvider } from "./providers/hardcover";
 import { OpenLibraryProvider } from "./providers/openLibrary";
 import { TokenBucket } from "./rateLimiter";
-import { CatalogError, CatalogService, RATE_LIMITS } from "./service";
+import {
+  CatalogError,
+  CatalogService,
+  RATE_LIMITS,
+  rankedForQuery,
+} from "./service";
 import { MemoryCatalogStore } from "./store";
 
 const OL_ROUTES = [
@@ -27,10 +32,11 @@ function build({ hardcover = false, google = false } = {}) {
     [/api\.hardcover\.app/, "hardcover_isbn.json"],
   ]);
   const store = new MemoryCatalogStore();
+  let hardcoverOn = hardcover;
   const orchestrator = new MetadataOrchestrator([
     new HardcoverProvider(
       fetch,
-      () => (hardcover ? "tok" : ""),
+      () => (hardcoverOn ? "tok" : ""),
       TokenBucket.perMinute(60),
     ),
     new OpenLibraryProvider(fetch),
@@ -41,6 +47,7 @@ function build({ hardcover = false, google = false } = {}) {
     service,
     store,
     fetch,
+    enableHardcover: () => (hardcoverOn = true),
     advance: (ms: number) => (clock = new Date(clock.getTime() + ms)),
   };
 }
@@ -130,6 +137,165 @@ describe("CatalogService", () => {
     });
     expect(env.store.works.size).toBe(2);
     expect(other.work.title).toBe("The Deal");
+  });
+
+  describe("a series known only by name", () => {
+    async function savedWithNameOnlySeries() {
+      const ref = {
+        provider: "openLibrary",
+        externalId: "OL42430111W",
+      } as const;
+      const { work } = await env.service.getWork("u1", { ref });
+      env.store.works.set(work.id, {
+        ...work,
+        series: [
+          {
+            seriesId: null,
+            name: "Off-Campus",
+            position: null,
+            positionLabel: null,
+            isPrimary: false,
+          },
+        ],
+      });
+      return work.id;
+    }
+
+    it("gains its id from Hardcover on the next refresh", async () => {
+      const workId = await savedWithNameOnlySeries();
+      env.enableHardcover();
+      env.advance(2 * 86_400_000);
+      const { work } = await env.service.getWork("u1", { workId });
+      expect(work.id).toBe(workId);
+      expect(work.series[0]?.seriesId).toBeTruthy();
+      expect(work.providerIds.hardcover).toBeTruthy();
+    });
+
+    it("is retried at most daily", async () => {
+      const workId = await savedWithNameOnlySeries();
+      env.enableHardcover();
+      env.fetch.calls.length = 0;
+      await env.service.getWork("u1", { workId });
+      expect(env.fetch.calls).toHaveLength(0);
+    });
+
+    it("waits a day after a retry that failed in an outage", async () => {
+      const workId = await savedWithNameOnlySeries();
+      const threeDaysOn = new Date("2026-11-07T10:00:00Z");
+      const down = new CatalogService(
+        new MetadataOrchestrator([]),
+        env.store,
+        () => threeDaysOn,
+      );
+      const served = await down.getWork("u1", { workId });
+      expect(served.work.id).toBe(workId); // the stale copy is still served
+
+      env.advance(3 * 86_400_000); // providers are back, at the same moment
+      env.enableHardcover();
+      env.fetch.calls.length = 0;
+      await env.service.getWork("u1", { workId });
+      expect(env.fetch.calls).toHaveLength(0);
+    });
+
+    it("doesn't overwrite a refresh that lands during a failed retry", async () => {
+      const workId = await savedWithNameOnlySeries();
+      const stored = env.store.works.get(workId)!;
+      const linked = {
+        ...stored,
+        refreshedAt: "2026-11-07T09:59:00Z",
+        series: [{ ...stored.series[0]!, seriesId: "series-1" }],
+      };
+      const racing = new CatalogService(
+        {
+          getWork: async () => {
+            env.store.works.set(workId, linked); // another request finishes first
+            return { ok: false };
+          },
+        } as unknown as MetadataOrchestrator,
+        env.store,
+        () => new Date("2026-11-07T10:00:00Z"),
+      );
+      await racing.getWork("u1", { workId });
+      expect(env.store.works.get(workId)).toEqual(linked);
+    });
+
+    it("leaves a linked work on its normal refresh schedule", async () => {
+      env = build({ hardcover: true });
+      const { work } = await env.service.lookupIsbn("u1", "9780349440842");
+      env.advance(2 * 86_400_000);
+      env.fetch.calls.length = 0;
+      await env.service.getWork("u1", { workId: work.id });
+      expect(env.fetch.calls).toHaveLength(0);
+    });
+  });
+
+  describe("title ranking", () => {
+    const hit = (title: string, id: string) => ({
+      ref: { provider: "hardcover" as const, externalId: id },
+      title,
+      authors: [],
+    });
+    const titles = (hits: Array<{ title: string }>) => hits.map((h) => h.title);
+    const dune = [
+      hit("Chapterhouse: Dune", "1"),
+      hit("The Road to Dune", "2"),
+      hit("Dune Messiah", "3"),
+      hit("Dune", "4"),
+    ];
+
+    it("puts the exact title first, then titles starting with the query", () => {
+      expect(titles(rankedForQuery(dune, "all", "dune"))).toEqual([
+        "Dune",
+        "Dune Messiah",
+        "Chapterhouse: Dune",
+        "The Road to Dune",
+      ]);
+    });
+
+    it("ignores case, accents, punctuation and a leading article", () => {
+      const hits = [hit("Other", "1"), hit("The Café!", "2")];
+      expect(titles(rankedForQuery(hits, "title", "cafe"))[0]).toBe(
+        "The Café!",
+      );
+    });
+
+    it("keeps the provider's order when nothing matches", () => {
+      const hits = rankedForQuery(dune, "all", "frank herbert");
+      expect(titles(hits)).toEqual(titles(dune));
+    });
+
+    it("doesn't reorder author or series searches", () => {
+      expect(titles(rankedForQuery(dune, "author", "dune"))).toEqual(
+        titles(dune),
+      );
+      expect(titles(rankedForQuery(dune, "series", "dune"))).toEqual(
+        titles(dune),
+      );
+    });
+
+    it("doesn't treat a longer word as a prefix match", () => {
+      const hits = [hit("Other", "1"), hit("Dunes of Mars", "2")];
+      expect(titles(rankedForQuery(hits, "all", "dune"))).toEqual(titles(hits));
+    });
+
+    it("applies to search responses", async () => {
+      const service = new CatalogService(
+        {
+          search: async () => ({
+            hits: dune,
+            provider: "hardcover",
+            degraded: false,
+          }),
+        } as unknown as MetadataOrchestrator,
+        env.store,
+      );
+      const res = await service.search(
+        "u1",
+        { text: "dune", field: "all" },
+        { page: 1, pageSize: 20 },
+      );
+      expect(res.results[0]?.title).toBe("Dune");
+    });
   });
 
   it("serves stale catalog data when every provider is down", async () => {

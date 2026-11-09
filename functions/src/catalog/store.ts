@@ -33,6 +33,16 @@ export interface CatalogStore {
     stubs: { authors: Stub[]; series: Stub[] },
   ): Promise<void>;
 
+  /**
+   * Sets only `refreshedAt`, and only if it still equals [expected], so it
+   * can never overwrite a refresh that landed in the meantime.
+   */
+  touchWorkIfUnchanged(
+    id: string,
+    expected: string,
+    refreshedAt: string,
+  ): Promise<void>;
+
   getAuthor(id: string): Promise<CatalogAuthor | null>;
   saveAuthor(author: CatalogAuthor): Promise<void>;
   getSeries(id: string): Promise<CatalogSeries | null>;
@@ -126,6 +136,15 @@ export class MemoryCatalogStore implements CatalogStore {
         });
       }
     }
+  }
+
+  async touchWorkIfUnchanged(
+    id: string,
+    expected: string,
+    refreshedAt: string,
+  ) {
+    const work = this.works.get(id);
+    if (work?.refreshedAt === expected) work.refreshedAt = refreshedAt;
   }
 
   async getAuthor(id: string) {
