@@ -12,6 +12,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../library/presentation/library_providers.dart';
 import '../../library/presentation/library_screen.dart';
 import '../domain/shelf.dart';
+import 'shelf_screen.dart';
 import 'shelf_sheets.dart';
 
 /// The books on [shelfId]. Favorites follows the heart on each book.
@@ -74,17 +75,34 @@ class ShelvesScreen extends ConsumerWidget {
       );
     }
 
+    Future<void> newShelf() async {
+      final repo = ref.read(shelfRepositoryProvider);
+      final name = await promptShelfName(context);
+      if (name != null) await repo.create(name);
+    }
+
+    // Nothing to show yet: one invitation instead of an empty Favourites row.
+    if (shelves.isEmpty && booksOnShelf(favoritesShelfId, all, links).isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.navShelves), actions: const [SearchAction()]),
+        body: EmptyState(
+          key: const Key('shelves-empty'),
+          icon: Icons.collections_bookmark_outlined,
+          title: l10n.shelvesEmptyTitle,
+          body: l10n.shelvesEmptyBody,
+          actionLabel: l10n.shelfNew,
+          onAction: () => unawaited(newShelf()),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.navShelves), actions: const [SearchAction()]),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('new-shelf'),
         icon: const Icon(Icons.add),
         label: Text(l10n.shelfNew),
-        onPressed: () async {
-          final repo = ref.read(shelfRepositoryProvider);
-          final name = await promptShelfName(context);
-          if (name != null) await repo.create(name);
-        },
+        onPressed: () => unawaited(newShelf()),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
@@ -147,7 +165,11 @@ class _ShelfSection extends StatelessWidget {
           ),
           const SizedBox(height: ChapterSpacing.sm),
           if (books.isEmpty)
-            Text(l10n.shelfEmpty, style: context.textTheme.bodyMedium)
+            _EmptyShelfRow(
+              key: ValueKey('shelf-empty-$id'),
+              label: id == favoritesShelfId ? l10n.shelfFavoritesEmpty : l10n.shelfAddBooks,
+              onTap: () => unawaited(showAddBooksSheet(context, id)),
+            )
           else
             SizedBox(
               height: bookRowHeight(context),
@@ -163,6 +185,44 @@ class _ShelfSection extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Stands in for the book row on an empty shelf, and opens Add books.
+class _EmptyShelfRow extends StatelessWidget {
+  const _EmptyShelfRow({required this.label, required this.onTap, super.key});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(ChapterSpacing.lg),
+      side: BorderSide(color: scheme.outlineVariant),
+    );
+    return Material(
+      color: Colors.transparent,
+      shape: shape,
+      child: InkWell(
+        customBorder: shape,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: ChapterSpacing.lg,
+            vertical: ChapterSpacing.xl,
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.add_rounded, color: scheme.primary),
+              const SizedBox(width: ChapterSpacing.md),
+              Expanded(child: Text(label, style: context.textTheme.bodyMedium)),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -52,6 +52,7 @@ void main() {
       status: ReadingStatus.reading,
     );
     await repo.recordProgress(theDeal.id, const ReadingPosition.page(page: 120));
+    await repo.setFavorite(theDeal.id, favorite: true); // so Shelves has a View all
     await pumpChapterApp(
       tester,
       auth: FakeAuthRepository(initialUser: FakeAuthRepository.testUser),
