@@ -21,7 +21,7 @@
 | Secret | Location |
 |---|---|
 | Hardcover token, Google Books key | Cloud Secret Manager (`defineSecret`), only available to the catalog functions |
-| Spotify client secret (if Tier B) | Secret Manager. The token exchange happens server-side, and refresh tokens are stored in `private_integrations/{uid}` (no client access). |
+| Spotify client ID and secret (Tier B) | Secret Manager. The token exchange happens server-side, and tokens are stored in `private_integrations/{uid}/services/spotify` (no client access), and Unlink deletes them. The public `spotifyOAuthCallback` is protected by single-use `state`. |
 | Firebase options (API key, etc.) | In the client, by design. These are identifiers, not secrets, and are protected by rules and App Check. |
 
 The repository includes a `.gitignore` for `google-services.json`, `GoogleService-Info.plist` and any service-account JSON. A pre-commit secret scan (`gitleaks`) is recommended.
@@ -67,6 +67,8 @@ Every row is covered in `functions/test/rules/firestore.rules.test.ts`, which ru
 | `.../sessionTombstones/{id}` | ✅ | create only | ❌ | ❌ | ❌ | ✅ |
 | `.../notes/{id}` | ✅ | ✅ valid only | ❌ (tombstone) | ❌ | ❌ | ✅ |
 | `.../goals/{id}` | ✅ | ✅ valid only | ❌ (tombstone) | ❌ | ❌ | ✅ |
+| `.../shelves/{id}` | ✅ | ✅ valid only | ❌ (tombstone) | ❌ | ❌ | ✅ |
+| `.../shelfBooks/{shelfId_workId}` | ✅ | ✅ valid only | ❌ (tombstone) | ❌ | ❌ | ✅ |
 | `users/{uid}/<anything else>` | ❌ | ❌ | ❌ | ❌ | ❌ | n/a |
 | `users` (listing) | ❌ | | | ❌ | ❌ | |
 | `catalog_*` (5 collections) | ✅ signed in | ❌ | ❌ | same | ❌ | n/a |

@@ -216,7 +216,33 @@ class LwwLibraryRepository implements LibraryRepository {
     final rt = ReadThrough.fromFields(readThroughId, (await _store.read(path)).fields);
     if (rt == null || rt.outcome != ReadThroughOutcome.finished) return;
     final at = finish.resolve(_clock.now());
-    await _store.write(path, {'finishedAt': at == null ? null : _iso(at)});
+    final started = rt.startedAt;
+    await _store.write(path, {
+      'finishedAt': at == null ? null : _iso(at),
+      // A read can't end before it began, so an earlier finish moves the start.
+      if (at != null && started != null && at.isBefore(started)) 'startedAt': _iso(at),
+    });
+    _onLocalWrite();
+  }
+
+  @override
+  Future<void> setStartDate(String readThroughId, DateTime date) async {
+    final path = '$readThroughsPath/$readThroughId';
+    final rt = ReadThrough.fromFields(readThroughId, (await _store.read(path)).fields);
+    if (rt == null) return;
+    final finished = rt.finishedAt;
+    var start = date;
+    if (finished != null) {
+      DateTime day(DateTime t) {
+        final local = t.toLocal();
+        return DateTime(local.year, local.month, local.day);
+      }
+
+      if (day(date).isAfter(day(finished))) return;
+      // Same day: the picker stores midday, which may be after the finish.
+      if (date.isAfter(finished)) start = finished;
+    }
+    await _store.write(path, {'startedAt': _iso(start)});
     _onLocalWrite();
   }
 
@@ -422,7 +448,11 @@ class LwwLibraryRepository implements LibraryRepository {
       if (UserEdition.fromFields(edition.editionId, existing.fields) == null) {
         b.write('$editionsPath/${edition.editionId}', _editionFields(edition));
       }
-      b.write('$libraryPath/$workId', {LibraryFields.activeEditionId: edition.editionId});
+      b.write('$libraryPath/$workId', {
+        LibraryFields.activeEditionId: edition.editionId,
+        // Library, home and the book page all show the edition being read.
+        if (edition.coverUrl != null) LibraryFields.coverUrl: edition.coverUrl,
+      });
     });
     _onLocalWrite();
   }

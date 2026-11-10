@@ -7,6 +7,7 @@ import '../../../app/providers.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/integration.dart';
+import '../domain/spotify.dart';
 
 /// One integration's status. The provider is the boundary: anything it does
 /// wrong becomes "unavailable" on its own card and goes no further.
@@ -27,6 +28,16 @@ final integrationStatusProvider = StreamProvider.family<IntegrationStatus, Integ
   }
 }, retry: (_, _) => null);
 
+/// This user's Spotify link. Any failure means "not shown", never an error.
+final spotifyStatusProvider = FutureProvider<SpotifyStatus>((ref) async {
+  if (ref.watch(currentUserIdProvider) == null) return SpotifyStatus.hidden;
+  try {
+    return await ref.watch(spotifyRemoteProvider).status();
+  } on Object {
+    return SpotifyStatus.hidden;
+  }
+}, retry: (_, _) => null);
+
 /// Opens [uri]; a failure only shows a message.
 Future<void> openExternal(BuildContext context, WidgetRef ref, Uri uri) async {
   final l10n = AppLocalizations.of(context);
@@ -40,7 +51,7 @@ Future<void> openExternal(BuildContext context, WidgetRef ref, Uri uri) async {
   if (!opened) messenger.showSnackBar(SnackBar(content: Text(l10n.integrationLinkFailed)));
 }
 
-/// The Spotify links. Spotify opens them; Chapter never sees an account.
+/// The Spotify links. Spotify opens them, linked account or not.
 Future<void> showMusicSheet(BuildContext context, WidgetRef ref) {
   final l10n = AppLocalizations.of(context);
   return showChapterSheet<void>(
@@ -50,7 +61,12 @@ Future<void> showMusicSheet(BuildContext context, WidgetRef ref) {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l10n.musicBody, style: context.textTheme.bodyMedium),
+        Text(
+          ref.read(spotifyStatusProvider).value?.state == SpotifyLinkState.linked
+              ? l10n.musicBodyLinked
+              : l10n.musicBody,
+          style: context.textTheme.bodyMedium,
+        ),
         const SizedBox(height: ChapterSpacing.sm),
         for (final (label, query) in [
           (l10n.musicLinkReading, ExternalLinks.readingSearch),

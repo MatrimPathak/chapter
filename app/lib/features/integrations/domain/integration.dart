@@ -71,6 +71,8 @@ abstract final class ExternalLinks {
 
   /// Searches, not curated playlists: real playlist links can replace these
   /// once someone has chosen some.
+  static final spotifyHome = Uri.parse('https://open.spotify.com');
+
   static const readingSearch = 'music for reading';
   static const classicalSearch = 'classical for reading';
   static const ambientSearch = 'ambient reading';

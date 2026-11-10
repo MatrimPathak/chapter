@@ -38,6 +38,49 @@ class BookCardData {
 }
 
 /// Cover-first card for grids.
+/// Height for a sideways row of [BookGridCard]s, growing with the text size so
+/// titles aren't cut off at large settings.
+double bookRowHeight(BuildContext context, {double coverWidth = 104}) =>
+    coverWidth * 1.5 + 20 + MediaQuery.textScalerOf(context).scale(60);
+
+/// One option in a sideways row of books or editions, outlined when chosen.
+class BookChoiceCard extends StatelessWidget {
+  const BookChoiceCard({
+    required this.selected,
+    required this.onTap,
+    required this.child,
+    this.width = 100,
+    super.key,
+  });
+
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget child;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          width: width,
+          padding: const EdgeInsets.all(ChapterSpacing.xs),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(ChapterSpacing.sm),
+            border: Border.all(color: selected ? color : Colors.transparent, width: 2),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 class BookGridCard extends StatelessWidget {
   const BookGridCard({required this.data, super.key, this.onTap, this.coverWidth = 104});
 

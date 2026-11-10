@@ -10,8 +10,9 @@ This is Chapter's **central development tracker**. It is governed by the `chapte
 |---|---|
 | Last phase | **Bug-fix round: merged and deployed** as `4902a65` (PR #7, 2026-11-09). All 8 roadmap phases are complete. |
 | Active phase | **Series page content: COMPLETED WITH WARNINGS, in review.** Release is BLOCKED on owner items: docs/07 |
+| Last Spotify work | **Spotify account linking (Tier B): COMPLETED WITH WARNINGS, in review.** Built and tested with fakes. Live testing waits on your Spotify Client ID and secret. See the pre-phase record below. |
 | Git publishing authorization | Granted for the series PR only ("Approved, open a PR"). Merge and functions deploy NOT GRANTED. |
-| Repository | Public at `MatrimPathak/chapter`. `main` at `4902a65`, four required CI checks. |
+| Repository | Public at `MatrimPathak/chapter`. `main` at `8dfa0c4`, four required CI checks. |
 
 ---
 
@@ -46,7 +47,7 @@ Statuses: NOT STARTED · PLANNED · IN PROGRESS · IN REVIEW · COMPLETED · BLO
 | # | Module | Phase | Status | Notes |
 |---|---|---|---|---|
 | 1 | Authentication & onboarding | 2 | COMPLETED WITH WARNINGS | Code complete and tested. Verified end to end on the Android emulator with the Auth emulator. Real Google/Apple sign-in BLOCKED on B1. |
-| 2 | Book discovery & search | 3 | COMPLETED WITH WARNINGS | Live via Open Library. Hardcover and Google Books are implemented but disabled until secrets exist (W9, W10). |
+| 2 | Book discovery & search | 3 | COMPLETED WITH WARNINGS | Hardcover is primary and was verified live on production 2026-11-07 (W9, `BUG-06768893`), with Open Library then Google Books as fallbacks. Your Google Books key worked in a direct test but hasn't been seen through the app (W10). |
 | 3 | Personal library | 4 | COMPLETED WITH WARNINGS | Add (detail + scanner), statuses, favourite, remove (tombstone), Library tab with shelves, grid/list, sort, favourites filter and search. Author/genre/series filters and progress sort added in Phase 6. Wishlist UI still deferred (W18). |
 | 4 | Book & edition management | 4 | COMPLETED WITH WARNINGS | Owned editions, active-edition switch, overrides in the model. Override and calibration editing UI deferred (W18). |
 | 5 | ISBN barcode scanning | 3 | COMPLETED WITH WARNINGS | Scan, validation, lookup and confirmation done. Physical-device test pending (W12). "Add to library" (owned by default) and duplicate detection added in Phase 4. |
@@ -54,14 +55,14 @@ Statuses: NOT STARTED · PLANNED · IN PROGRESS · IN REVIEW · COMPLETED · BLO
 | 7 | Reading sessions & focus timer | 5 | COMPLETED WITH WARNINGS | Durable timer, recovery, end alert, editable summary, history, Android DND. Verified on the Android emulator. iOS code is written but has never been compiled (W22). |
 | 8 | Reading goals | 6 | COMPLETED | Year, month, custom; books, pages, minutes; history kept; progress computed, never stored. |
 | 9 | Reading calendar & insights | 6 | COMPLETED WITH WARNINGS | StatsEngine with thresholds, calendar, bars, rankings, neutral streaks. Unprofiled on large histories (W31). |
-| 10 | Author & series management | 3 (pages), 6 (organization) | IN PROGRESS | Author and series pages done (Phase 3). Series entities need Hardcover (W11). Library can filter by author and series (Phase 6). |
+| 10 | Author & series management | 3 (pages), 6 (organization) | IN PROGRESS | Author and series pages done (Phase 3). Series entities come from Hardcover, connected in production since 2026-11-07. Library can filter by author and series (Phase 6). |
 | 11 | Personal notes & ratings | 6 | COMPLETED WITH WARNINGS | Notes with page anchors and conflict copies; half-star rating and review. |
 | 12 | Audible integration | 7 | COMPLETED WITH WARNINGS | Manual only, because there is no public API: audiobook edition, time progress, listening labels, store link. Goodreads, StoryGraph and Kindle clippings imports are also in this phase; none tested with real export files (W35). |
-| 13 | Spotify integration | 7 | COMPLETED WITH WARNINGS | Search links only. Web API (Tier B) not built; it needs your Spotify developer app, a Premium account and secrets. |
+| 13 | Spotify integration | 7 | COMPLETED WITH WARNINGS | Search links, plus Web API account linking (Tier B). Tier B is deployed; linking and now playing are confirmed with a real account through the local emulators, production linking is untested (see "Spotify account linking" pre-phase record). |
 | 14 | Offline synchronization | 2 (core) → 8 | COMPLETED WITH WARNINGS | Soak-tested across three simulated devices in Phase 8. Phase 2 core done (outbox, HLC, per-field LWW, SyncEngine, Firestore transaction push). Phase 4 adds collection pull with persisted cursors, atomic multi-document batches and append-only creates. |
 | 15 | Profile & settings | 2 (prefs), 8 (export/deletion) | COMPLETED WITH WARNINGS | Export and deletion done in Phase 8. Phase 2 part done: identity, theme, consents, sync status, sign-out. Export and deletion in Phase 8. |
 
-Open blockers and spikes: **B3 store accounts, release key and App Check registration** (yours; docs/07) · Hardcover production permission and token `SPIKE-88083021` (Hardcover stays disabled until resolved) · iOS build pipeline `SPIKE-29567026` · B1 Firebase projects · B2 Android licenses.
+Open blockers and spikes: **B3 store accounts, release key and App Check registration** (yours; docs/07) · Hardcover production-use permission `SPIKE-88083021` (token is set and Hardcover is live; written permission or a documented terms position is still open before public release) · iOS build pipeline `SPIKE-29567026` · B1 Firebase projects · B2 Android licenses.
 
 ## D. Technical decisions
 
@@ -69,7 +70,7 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 |---|---|---|---|---|
 | TD-1 | 2026-11-04 | Metadata / Firebase | Providers implemented in Cloud Functions (TypeScript); Blaze plan accepted; secrets in Secret Manager | docs/02 D1 |
 | TD-2 | 2026-11-04 | Auth | Android + iOS for v1; Sign in with Apple on iOS (App Store 4.8) | docs/01 §8 |
-| TD-3 | 2026-11-04 | Navigation | Home · Library · **Read** · Search · Profile | docs/02 §6 |
+| TD-3 | 2026-11-04, changed 2026-11-10 | Navigation | Home · Library · Shelves · Reading · Profile, with Search as a top-bar icon on every tab | docs/02 §6 |
 | TD-4 | 2026-11-04 | Offline sync | Drift as the single source of truth; transactional outbox + HLC; Firestore offline persistence disabled | docs/02 D2–D3 |
 | TD-5 | 2026-11-04 | Data model | Append-only ProgressEvents and Sessions; ReadThroughs for rereads; per-field LWW for library entries | docs/03 §4 |
 | TD-6 | 2026-11-04 | Book/Edition | Work and Edition are separate aggregates; progress belongs to the work as a fraction; cross-format mapping is labelled approximate | docs/02 D5, docs/03 §7 |
@@ -116,7 +117,107 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 | TD-49 | 2026-11-05 | Backup | Android cloud backup and device transfer are off. The server holds the synced copy, and a restore could bring back deleted accounts. Unsynced changes don't survive a phone change | AndroidManifest.xml |
 | TD-52 | 2026-11-06 | Toolchain | Flutter 3.47.9, Dart 3.13. Needed for `google_sign_in_ios` 6.4.0, whose GoogleSignIn 10 resolves the shared-library conflict with Firebase 13 under Swift Package Manager | pubspec.yaml, ci.yml |
 | TD-22 | 2026-11-04 | Metadata | Open Library author works come from search sorted by editions; bios and descriptions are cleaned of HTML and Markdown; page count falls back to a print edition | docs/04 §1.5 |
+| TD-55 | 2026-11-09 | Editions | A book page shows the edition you arrived at, then your own, then an English default. Only owned editions are listed | book_detail_screen.dart |
+| TD-53 | 2026-11-09 | Spotify | Authorization Code flow with the client secret, server-side, instead of PKCE. A leaked stored refresh token is useless without the secret | functions/src/spotify |
+| TD-54 | 2026-11-09 | Metadata | Open Library and Google Books are off by your decision until you ask for them; Hardcover only | functions/src/catalog/callables.ts |
 | TD-11 | 2026-11-04 | Process | Tracked in Flowboard/Chronicle; `docs/` canonical; lifecycle governed by `chapter-phase-guard`; no Git staging or publishing without explicit approval | this file |
+
+## Shelves plan (pre-phase record)
+
+**Status:** COMPLETED WITH WARNINGS (2026-11-10). Built and checked on the simulator against the emulators. Warning: production rules and functions are deployed from PR #9, which isn't merged, so production is ahead of `main` (see Actual result). Publishing NOT GRANTED.
+
+**Objectives:** group books into shelves you name, with Favorites built in, and give Shelves its own tab.
+
+**Scope:** bottom bar becomes Home, Library, Shelves, Reading, Profile; Search moves to a top-bar icon on every tab. Library tabs start with All and lose the heart filter. Shelves screen: Favorites first (from the heart, can't be renamed or deleted), each shelf with name, count, a row of up to 5 books and View all; + New shelf. Shelf page: name, count, status breakdown, all books with sort, search and grid/list; Rename and Delete. Deleting a shelf never removes books from the library. Book page ⋮ menu: Add to shelf with checkboxes; a book can be on several shelves.
+
+**Data:** `users/{uid}/shelves/{id}` and `users/{uid}/shelfBooks/{shelfId_workId}`, following the goals repository. No local database migration.
+
+**Acceptance criteria:** AC1 create, rename and delete shelves, with library untouched by a delete. AC2 add and remove a book on several shelves. AC3 Favorites follows the heart and can't be renamed or deleted. AC4 shelves sync, and rules allow only the owner's valid documents. AC5 Search works from every tab. AC6 analyzer, formatting, Flutter, server, rules and integration tests pass.
+
+**Risks:** production needs a Firestore rules deploy with your approval, or shelves won't sync there.
+
+**Actual result:** all of the scope above, plus these additions you asked for during the build:
+- Add books sheet on the shelf page, ticking library books on or off without leaving it, as a list or a grid (remembered). On Favourites a tick sets the heart.
+- Sort and grid/list are remembered, in `users/{uid}`: one setting for Library, one shared by all shelf pages (`librarySort`, `libraryGrid`, `shelfSort`, `shelfGrid`, `addBooksGrid`).
+- "My order" sort on shelf pages: drag by the handle in list view, hold and drag a cover in grid view. Each shelf keeps its own order (`position` on `shelfBooks`). Dragging is off while searching the shelf.
+- Reading tab's "What are you reading?" lists only books in Reading (Want to Read removed).
+
+**Files:** new `app/lib/features/shelves/` (domain, data, presentation), `app/lib/app/router/search_action.dart`, `app/test/features/shelves/shelves_flow_test.dart`. Changed: providers, routes, router, nav bar, Home, Library screen and sheets, Reading, Profile, user preferences and profile repository, `app_en.arb`, `firebase/firestore.rules`, rules and deleteAccount tests, discovery, library, session and accessibility tests, `docs/05-security-and-offline.md`.
+
+**Rules deployed:** `firebase deploy --only firestore:rules --project chapter-reads-prod` released on 2026-11-10 with your approval, from the uncommitted working tree. The change only adds allowed fields and collections. Functions and indexes were not deployed.
+
+**Published 2026-11-10 with your approval:** commit `61aa095` "Add Shelves, Spotify linking and edition fixes" pushed to `origin/claude/ios-simulator-dev-build-75f2e1`. Not merged; `main` is still `8dfa0c4`, so the deployed rules are ahead of `main`. The two untracked `app/ios/.../swiftpm/` folders were left out.
+
+**Functions and indexes deployed 2026-11-10 with your approval:** `firebase deploy --only functions,firestore:indexes --project chapter-reads-prod`, from commit `61aa095`, after you set `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`. All 16 functions updated or created in asia-south1. Open Library and Google Books stay off in production too. The Firebase CLI doesn't exclude `functions/.secret.local` from the source upload, so that file was moved aside for the deploy and restored; do the same next time, or add it to the `ignore` list in `firebase.json`.
+
+**Still to do:** the Redirect URI `https://asia-south1-chapter-reads-prod.cloudfunctions.net/spotifyOAuthCallback` is in the Spotify app. A real Spotify account linked on 2026-11-10 through the local emulators (dev build on the iOS Simulator): login, consent, callback, tokens stored server-side, "Linked as" shown in Profile. Now playing showed the real track, artist and cover on the session timer. Not yet tested: playlist and pause/play controls with real music, and linking against production. A production test on iOS is blocked until iOS has `GoogleService-Info.plist`, an iOS client ID and URL scheme for Google sign-in, and App Attest registration. Merge the branch to `main`. Ship a new app build.
+
+**Moved after commit `61aa095`:** Link Spotify is now on the Spotify card in Connected services, at your request, and no longer in Profile. The card's Open button now goes straight to open.spotify.com instead of showing the list of playlists; the Music for reading sheet on the Reading tab is unchanged.
+
+**Release order:** the rules deploy must come before the app. The profile rule only accepts listed fields, so a new app against old rules would have every profile write rejected, not just shelves.
+
+**Spelling:** the built-in shelf reads "Favourites", matching the app's existing wording.
+
+**Verification (2026-11-10, final code):** `flutter analyze` clean; `dart format` clean; `flutter test` 573 passed, 24 skipped; functions format, lint and typecheck clean; 150 server tests, 77 rules tests and 15 integration tests passed on an isolated emulator. On the iOS Simulator against the local emulators: new tabs and Search icon, Library on All, create and delete a shelf (book stayed in the library), Add to shelf, Add books list view, drag in grid and list, and the order synced to the emulator. Not exercised on the simulator: Rename, and the Add books grid (covered by tests or code paths only). A very fast simulated flick on the list handle didn't register; a normal-speed drag did.
+
+**Known limits:** sort and layout are shared by all shelf pages, while each shelf keeps its own My order. Grid dragging has no screen-reader route (list view does). The test library shows A Court of Thorns and Roses twice, as two separate entries; this predates Shelves.
+
+## Spotify account linking plan (pre-phase record) — Tier B
+
+**Status:** COMPLETED WITH WARNINGS. Planned 2026-11-09 at your request; you approved building it for your Spotify app's 5 allow-listed accounts the same day. AC1 to AC8 are covered by automated tests with a fake Spotify. The live part of AC9 waits on your Client ID and secret. · **Tracking IDs:** none yet.
+
+**Git check before planning:** branch `claude/ios-simulator-dev-build-75f2e1` at `8dfa0c4`, nothing staged; two untracked `swiftpm/` folders under `app/ios` from the iOS build. Publishing NOT GRANTED.
+
+**Objectives:** offer every user a Link Spotify button (only 5 allow-listed Spotify accounts can complete it while the app is in Development mode), so linked users can see what's playing during a reading session, and start one of their playlists, without affecting anyone else or any core reading feature.
+
+**Scope (in), built in this order:**
+1. **Link and unlink, from a Link Spotify button in Settings (the Profile tab, Account section).** Tapping it opens Spotify's own login. Once linked, the row shows the Spotify display name with Unlink, or Reconnect if the sign-in has expired. Server-side sign-in and token storage sit behind it.
+2. **Now playing** on the session timer, with cover art, title, artist, Spotify attribution and a link back to Spotify.
+3. **Playback:** choose one of your playlists and start it on your active device, plus pause and resume. Depends on 2, because Spotify's policy requires cover art and metadata whenever playback happens.
+
+**Scope (out):** public release to all users (Extended Quota is not reachable, see Risks); in-app audio; listening history or music statistics of any kind; curated playlists (TD-43); changes to Audible or Kindle.
+
+**Expected implementation:**
+- **Server (`functions/src/spotify/`):** callables `spotifyStatus`, `spotifyBeginLink`, `spotifyDisconnect`, `spotifyNowPlaying`, `spotifyListPlaylists`, `spotifyPlay`, `spotifyPause`, using the existing pattern (`requireUid`, App Check outside the emulator, `REGION`, zod validation). One public HTTPS function, `spotifyOAuthCallback`, is the redirect target. New secrets `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`.
+- **Sign-in flow:** `spotifyBeginLink` creates a single-use `state` bound to the uid (10-minute expiry) and returns the authorize URL. The app opens it with the existing `url_launcher`. The callback checks `state`, exchanges the code server-side, checks the account with one API call, stores the tokens and shows a "return to Chapter" page. The app re-reads `spotifyStatus` when it resumes. No new app dependency, URL scheme or manifest change.
+- **Storage:** tokens under `private_integrations/{uid}`, which clients can't reach (docs/05) and `deleteAccount` already removes. The device only ever receives status and now-playing data.
+- **Who sees the button (your decision, 2026-11-09):** Link Spotify is shown to every signed-in user, with no Chapter-side allow-list or feature flag. The owner's Spotify app is in Development mode, so only the 5 accounts on Spotify's allow-list can complete linking. Anyone else gets a clear message after Spotify's login and no tokens are kept.
+- **App:** a `SpotifyIntegration` behind the existing `Integration` boundary; the Link Spotify row in `ProfileScreen`'s Account section, the only place to link or unlink; now-playing card in `_TimerView`; polling every 15 s only while the timer is visible, stopped when backgrounded; new strings in `app_en.arb`; `musicBody` and `integrationSpotifyBody` replaced only for linked users.
+- **Docs:** docs/04 §4, docs/05, `docs/store/data-safety.md` and the privacy policy.
+
+**Proposed decisions (become TD entries on approval):**
+- Use Spotify's Authorization Code flow with the client secret, server-side, instead of the PKCE named in docs/04. The exchange never happens on the device, and a leaked stored refresh token is then useless without the secret, which docs/05 already keeps in Secret Manager.
+- Redirect through HTTPS and loopback only. Spotify's redirect rules require HTTPS except for explicit loopback addresses and don't list custom schemes.
+- Playlists come from the user's own library, needing `playlist-read-private` and `playlist-read-collaborative`, because no curated playlists exist.
+- Scopes are otherwise limited to `user-read-currently-playing`, `user-read-playback-state` and `user-modify-playback-state`.
+- Spotify data is never written to sessions, the local database, insights, analytics or logs. Spotify's policy forbids derived listening metrics and requires deletion on disconnect.
+
+**Acceptance criteria:**
+- AC1: An allow-listed user taps Link Spotify in Settings, logs in on Spotify's page and returns to a row showing their Spotify name. Tests prove tokens never reach the client and that rules deny client access to the new paths.
+- AC2: Every signed-in user sees Link Spotify in Settings. Users who haven't linked keep today's Spotify links and wording elsewhere in the app.
+- AC3: A Spotify account missing from the developer allow-list gets a clear message and no tokens are kept (Spotify returns 403 for these accounts).
+- AC4: Now playing shows cover art, title, artist, Spotify attribution and a link back. Polling stops when the timer isn't visible.
+- AC5: Start, pause and resume work on an active device. No active device and no Premium each show their own message.
+- AC6: Unlink in Settings deletes the tokens immediately, and account deletion removes all Spotify data (test).
+- AC7: An expired or revoked sign-in (`invalid_grant`) shows Reconnect in Settings and nothing else breaks.
+- AC8: Spotify errors, `QUOTA_EXCEEDED` and offline time affect only the music card. Sessions still start and save.
+- AC9: `flutter analyze`, format, `flutter test`, functions lint, typecheck, unit, rules and integration tests pass, and a real Spotify account works end to end on the iOS simulator and the Android emulator.
+
+**Dependencies (owner items):**
+- A Spotify developer app on a Premium account, with its Client ID and secret set by you as local and production secrets.
+- Redirect URIs registered in that app: `http://127.0.0.1:5001/demo-chapter/asia-south1/spotifyOAuthCallback` for development, and the production function URL once deployed. The Android emulator also needs `adb reverse tcp:5001 tcp:5001`.
+- The Spotify email and Firebase account of each person to enable (5 at most), with each added to the Spotify allow-list by you.
+- Separate approval for any functions deploy.
+
+**Risks:**
+- **Button is public, linking is not.** Extended Quota is open only to registered organizations with at least 250k monthly active users, so linking fails for everyone beyond the 5 allow-listed accounts. In a store release most users would hit that message, and an app reviewer could too, so this needs a decision before release (docs/07).
+- **Reconnecting every 6 months.** Spotify's refresh tokens last 6 months from authorization, and refreshing doesn't extend them.
+- **Premium can't be detected in advance.** Spotify removed `product` from the profile in February 2026, so playback failures are handled when they happen.
+- **Unpublished quotas.** Development quotas are shared per developer account and their limits aren't published; the 15 s polling interval may need adjusting.
+- **Monetization.** Spotify's policy bars selling access, e-commerce, ads or sponsorships in an app with streaming control. If Chapter ever charges or shows ads, playback (item 3) must be reviewed first.
+- **Public callback endpoint.** `spotifyOAuthCallback` can't use App Check, so single-use `state` is its protection. It gets dedicated tests.
+
+**Existing blockers:** the owner items above. Unverified until implementation: the exact callback URL format in production, and how Spotify's sign-in page behaves when opened from the app.
 
 ## Phase 8 plan (pre-phase record) — Quality & Release
 
@@ -431,6 +532,31 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 - **B2:** Android SDK licenses are not accepted. Fix with `flutter doctor --android-licenses` (interactive, so you need to run it).
 
 ## E. Development history
+
+### 2026-11-09 — Editions on the book page (COMPLETED WITH WARNINGS)
+
+- **Reported by you:** a scanned or searched ISBN showed the right cover, then the book page showed a different edition and ISBN. The page listed every catalog edition. You want English shown by preference.
+- **Done:** the book route carries the edition (`?edition=`), and ISBN search returns `matchedEditionId` with that edition's cover. The page uses the requested edition, then your library's edition, then an English default, and Add to library starts from it. The list is now "Your editions": owned copies only, while the book is in your library. `CatalogWork.defaultEdition` and the server's new `preferredEditionId` both prefer English.
+- **Files:** `functions/src/catalog/{merge,service,types}.ts`, `functions/src/catalog/preferredEdition.test.ts`, `app/lib/app/router/{routes,app_router}.dart`, `app/lib/features/catalog/domain/catalog_models.dart`, `app/lib/features/catalog/presentation/book_detail_screen.dart`, `app/lib/features/library/presentation/library_sheets.dart`, `app/lib/features/scanner/presentation/scan_screen.dart`, `app/lib/features/search/presentation/search_screen.dart`, `app/lib/l10n/app_en.arb`, `app/test/features/catalog/{default_edition,book_page_sections}_test.dart`, `app/test/features/library/library_flow_test.dart`, `functions/src/catalog/providers/hardcover.ts`.
+- **Also added at your request:** "In this series" and "About the author" on the book page; the book-level subtitle is no longer shown because providers can store it in any language (it read "Flammen und Finsternis" on an English book); edition language now comes from Hardcover (`language { code3 }`), so the English preference works on Hardcover data.
+- **One edition everywhere (your request, 2026-11-09):** the series row scrolls sideways. A scanned, searched or owned edition is the one shown; otherwise the book page keeps the cover that was tapped and describes the matching edition. Adding a book or changing its edition saves that edition's cover to the library. Library entries added earlier keep their old cover until the edition is changed or the book re-added.
+- **Author page:** Hardcover lists translations as separate books, so the author query now keeps books whose main edition is English, most popular first (`functions/src/catalog/providers/hardcover.ts`). Authors with no English main edition show no books; box sets still appear.
+- **Later requests:** author pages hide box sets and bundles, matched by title because Hardcover's `compilation` flag marks single books such as The Assassin's Blade. The Library sort has "Series order": each series together in reading order, books outside a series last.
+- **Editions and dates (your request):** a book can have any number of owned editions (paperback, hardcover, Kindle, Audible) through Add edition under "Your editions", and each can be removed. Change edition lists hand-added editions too. Every read shows a Started date you can set or correct, including while reading; choosing a finish before the start moves the start back to match, and a start date can't follow the finish. Your editions scrolls sideways. Start and finish dates sit side by side, and rating and review are at the bottom of the book page. The title appears in the app bar once it scrolls away, the heart and menu are app bar actions, and Remove from library sits after reading progress. Home and Insights bars show pages read rather than minutes, so manual progress moves them; total reading time remains in Insights. Home keeps the full card for the latest book only; other books in progress are a sideways row. Change edition is a sideways row too, English editions only when any exist, with the current one first. The Add to library sheet uses the same row. Up next on Home and What are you reading? on the Reading tab are sideways rows. The This week card opens Insights, and the Continue reading card shows pages. These rows grow with text size, and sheets scroll when they get too tall. Books not yet started have no dates. Add edition lists the catalog's editions of the chosen format (English only when any exist), and picking one fills in its pages or length and saves its publisher, ISBN and cover; The editions appear in a sideways row of covers. "Not listed here" is for entering one by hand. ISBN lookups now fetch all of a book's editions instead of saving one, books already saved with one edition refresh themselves, and editions Hardcover leaves unlabelled appear under Paperback and Hardcover.
+- **Verified live on the iOS simulator, through Hardcover:** ISBN 9781526641168 opens with its own cover, ISBN and publisher, and the English series name.
+- **Known limits:** series names and descriptions come from the provider and aren't translated. Production's saved catalog can still hold Open Library data until it is cleared or refreshed. Search results aren't filtered by language. Barcode scan was checked by code reading and tests, not by scanning on the simulator (no camera). The server part needs a functions deploy (NOT GRANTED).
+
+### 2026-11-09 — Spotify account linking (COMPLETED WITH WARNINGS)
+
+- **Built:** Link Spotify in Profile, Account section (moved to Connected services on 2026-11-10), for every signed-in user once the secrets are set (Link, Reconnect, Unlink). Server-side login with single-use `state`, tokens only under `private_integrations/{uid}/services/`. Now playing on the timer, with cover art, title, artist, attribution and link back. Playlist picker, play, pause and resume.
+- **Files created:** `functions/src/spotify/{api,service,store,callables,service.test}.ts`, `functions/test/integration/spotifyStore.test.ts`, `app/lib/features/integrations/domain/spotify.dart`, `app/lib/features/integrations/data/spotify_remote.dart`, `app/lib/features/integrations/presentation/spotify_widgets.dart`, `app/test/features/integrations/spotify_test.dart`.
+- **Files modified:** `functions/src/index.ts`, `functions/src/catalog/http.ts` (PUT), `functions/src/catalog/callables.ts` (fallback switches), `functions/package.json` (integration tests run serially), `functions/test/rules/firestore.rules.test.ts`, `functions/test/integration/deleteAccount.test.ts`, `app/lib/app/providers.dart`, `app/lib/app/app.dart` (keyboard), `app/lib/l10n/app_en.arb`, `app/lib/features/integrations/presentation/{integrations_providers,integrations_screen}.dart`, `app/lib/features/profile/presentation/profile_screen.dart`, `app/lib/features/reading/presentation/session_screen.dart`, `app/assets/legal/privacy_policy.md`, docs/04, docs/05, docs/07, `docs/store/data-safety.md`. No dependencies added.
+- **Also changed at your request:** Open Library and Google Books are off through `FALLBACK_PROVIDERS` in `functions/src/catalog/callables.ts`. Takes effect in production only after a functions deploy, which is NOT GRANTED. Tapping empty space now closes the keyboard.
+- **Verification:** see the final report for the last run. Live on the iOS simulator: keyboard dismissal; emulator search with providers off (no provider, known ISBNs still answer from the saved catalog); `spotifyStatus` reports unavailable without secrets.
+- **Not verified:** any real Spotify login, now playing or playback, because no Client ID or secret exists yet (AC9). The Link Spotify row itself hasn't been seen on a device, since it stays hidden without secrets. The production callback URL is unconfirmed.
+- **Deviations:** scope `user-read-playback-state` dropped as unused. No Chapter-side allow-list, your decision.
+- **Known limitations:** W59: Spotify requires its logo (Spotify Marks) for attribution; the card uses the text "On Spotify" until the official asset is added. W60: functions won't deploy until `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` exist (docs/07). W61: with both fallbacks off, local development needs `HARDCOVER_TOKEN` in `functions/.secret.local` (set 2026-11-09, local catalog cleared so books refetch from Hardcover). Hardcover has no trending source. W62 fixed the same day: see the Editions entry.
+- **Next:** your Spotify credentials and live testing.
 
 ### 2026-11-09 — Series page content (COMPLETED WITH WARNINGS, in review)
 

@@ -20,13 +20,15 @@ WHAT CHAPTER SENDS TO OTHERS
 
 Book lookups. Searches and ISBNs go to our servers, which ask book data services (Open Library, and Hardcover and Google Books where enabled). Your account details aren't included in these requests. Our servers cache book information, which is public data about books, not about you.
 
+Spotify. Only if you choose to link your Spotify account: Chapter keeps your Spotify login tokens and display name on our servers, shows your playlists and what's playing, and can start or pause music on your devices. We don't store what you listen to or build statistics from it. Unlinking in Profile deletes the tokens and name straight away, and so does deleting your account.
+
 Google Firebase. Chapter's sign-in, database and server functions run on Firebase, provided by Google, which processes your data on our behalf.
 
 Analytics. Off unless you turn it on, during setup or in Profile. Analytics events never include book titles, notes or searches.
 
 Crash reports. On by default, and you can turn them off during setup or in Profile. A crash report contains the type of error, where in the code it happened and basic device details, not the content of your library or notes.
 
-Links. Spotify and Audible links open in those services, under their own privacy policies. Chapter doesn't connect to your accounts there and can't see what you do.
+Links. Spotify and Audible links open in those services, under their own privacy policies. Opening a link doesn't connect Chapter to your account there. Chapter can't see what you do on Audible, or on Spotify unless you choose to link your account, as described above.
 
 Chapter doesn't sell your data, show ads or share your reading with other people. There are no public profiles.
 

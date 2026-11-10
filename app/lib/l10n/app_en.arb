@@ -12,6 +12,24 @@
   "navLibrary": "Library",
   "navRead": "Reading",
   "navSearch": "Search",
+  "navShelves": "Shelves",
+  "shelfFavorites": "Favourites",
+  "shelfNew": "New shelf",
+  "shelfViewAll": "View all",
+  "shelfSortManual": "My order",
+  "shelfDragHintList": "Drag the handle to move a book.",
+  "shelfDragHintGrid": "Hold a cover, then drag it to move the book.",
+  "shelfMoveBook": "Move book",
+  "shelfAddBooks": "Add books",
+  "shelfLibraryEmpty": "Add a book to your library first.",
+  "shelfSearchHint": "Search this shelf",
+  "shelfEmpty": "No books on this shelf yet.",
+  "shelfName": "Shelf name",
+  "shelfSave": "Save",
+  "shelfRename": "Rename",
+  "shelfDelete": "Delete shelf",
+  "shelfDeleteBody": "The shelf goes away. Your books stay in your library.",
+  "shelfAddTo": "Add to shelf",
   "navProfile": "Profile",
   "greetingMorning": "Good morning, {name}",
   "@greetingMorning": {
@@ -316,10 +334,10 @@
   },
   "homeAlsoReading": "Also in progress",
   "homeThisWeek": "This week",
-  "homeWeekMinutes": "{minutes} min read this week",
-  "@homeWeekMinutes": {
+  "homeWeekPages": "{count, plural, =1{1 page read this week} other{{count} pages read this week}}",
+  "@homeWeekPages": {
     "placeholders": {
-      "minutes": {
+      "count": {
         "type": "int"
       }
     }
@@ -369,10 +387,10 @@
   "librarySortTitle": "Title",
   "librarySortAuthor": "Author",
   "librarySortAdded": "Date added",
+  "librarySortSeries": "Series order",
   "librarySort": "Sort",
   "libraryGridView": "Grid view",
   "libraryListView": "List view",
-  "libraryFavoritesOnly": "Favourites only",
   "libraryShelfEmpty": "Nothing on this shelf yet.",
   "libraryNoMatches": "No books match your search.",
   "scanAddToLibrary": "Add to library",
@@ -492,9 +510,9 @@
   "insightsSessions": "Sessions",
   "insightsCalendar": "Calendar",
   "insightsMonthly": "By month",
-  "insightsMonthlyLabel": "Reading time by month",
+  "insightsMonthlyLabel": "Pages read by month",
   "insightsWeekdays": "By weekday",
-  "insightsWeekdaysLabel": "Reading time by weekday",
+  "insightsWeekdaysLabel": "Pages read by weekday",
   "insightsAuthors": "Most-read authors",
   "insightsGenres": "Most-read genres",
   "insightsHabits": "Habits",
@@ -648,7 +666,7 @@
   "integrationAudible": "Audible",
   "integrationAudibleBody": "Chapter can’t read your Audible progress automatically: Audible doesn’t offer a public API. On a book’s page, add an audiobook edition and log your time yourself.",
   "integrationSpotify": "Spotify",
-  "integrationSpotifyBody": "Links that open music for reading in Spotify. No account link: Chapter can’t see or control what you play.",
+  "integrationSpotifyBody": "Open Spotify to play something while you read.",
   "musicTitle": "Music for reading",
   "musicBody": "These open in Spotify. Chapter doesn’t connect to your account.",
   "importCsvTitle": "Import your books",
@@ -837,5 +855,66 @@
       }
     }
   },
-  "insightsChooseYear": "Choose a year"
+  "insightsChooseYear": "Choose a year",
+  "musicBodyLinked": "These open in Spotify.",
+  "bookYourEditions": "Your editions",
+  "editionAdd": "Add edition",
+  "editionAddTitle": "Add an edition you own",
+  "editionAdded": "Edition added",
+  "editionNotListed": "Not listed here",
+  "editionPagesOptional": "Pages (optional)",
+  "editionPagesInvalid": "Enter a page count, or leave it empty.",
+  "editionRemove": "Remove edition",
+  "editionRemoveBody": "This edition will no longer be listed as one you own. Your reading history stays.",
+  "startedOn": "Started {date}",
+  "@startedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "startedNoDate": "Start date not set",
+  "startChangeDate": "Change start date",
+  "bookInThisSeries": "In this series",
+  "bookAboutAuthor": "About the author",
+  "bookThisBook": "This book",
+  "bookViewAuthor": "View author",
+  "seriesBookNumber": "Book {number}",
+  "@seriesBookNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "spotifyLink": "Link Spotify",
+  "spotifyLinkBody": "Log in with your Spotify account to see what’s playing while you read.",
+  "spotifyLinkedAs": "Linked as {name}",
+  "@spotifyLinkedAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "spotifyLinked": "Linked",
+  "spotifyReconnect": "Reconnect Spotify",
+  "spotifyReconnectBody": "Your Spotify login has expired.",
+  "spotifyUnlink": "Unlink",
+  "spotifyUnlinkTitle": "Unlink Spotify?",
+  "spotifyUnlinkBody": "Chapter will delete its access to your Spotify account and stop showing what’s playing.",
+  "spotifyLinkFailed": "Couldn’t reach Spotify. Try again.",
+  "spotifyNothingPlaying": "Nothing playing on Spotify",
+  "spotifyChoosePlaylist": "Choose a playlist",
+  "spotifyPlaylistsTitle": "Your playlists",
+  "spotifyPlaylistsEmpty": "No playlists in your Spotify library yet.",
+  "spotifyPlaylistsFailed": "Couldn’t load your playlists.",
+  "spotifyOnSpotify": "On Spotify",
+  "spotifyOpenTrack": "Open in Spotify",
+  "spotifyPlay": "Play",
+  "spotifyPause": "Pause",
+  "spotifyNoDevice": "Open Spotify on one of your devices, then try again.",
+  "spotifyPremiumRequired": "Controlling playback needs Spotify Premium.",
+  "spotifyCommandFailed": "Spotify couldn’t do that. Try again."
 }

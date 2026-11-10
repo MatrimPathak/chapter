@@ -156,7 +156,7 @@ void main() {
         's$i',
         30,
         at: now.subtract(Duration(days: i, hours: 1)),
-        page: 10 + i * 10,
+        page: 100 - i * 10, // i counts back in time, so the page falls with it
       );
     }
     await saveSession('june', 30, at: DateTime(2026, 6, 10, 8));
@@ -241,7 +241,6 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).last,
     );
-    expect(find.byType(RatingStars), findsOneWidget);
     await tester.ensureVisible(find.byKey(const Key('add-note')));
     await settle(tester);
     await tester.tap(find.byKey(const Key('add-note')));
@@ -261,6 +260,15 @@ void main() {
     await settle(tester);
     expect(find.text('A line I loved'), findsOneWidget);
 
+    // Rating and review are at the bottom of the page.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('edit-review')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.byType(RatingStars), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('edit-review')));
+    await settle(tester);
     await tester.tap(find.byKey(const Key('edit-review')));
     await settle(tester);
     await tester.enterText(find.byKey(const Key('review-text')), 'Loved it.');
@@ -270,6 +278,13 @@ void main() {
     final saved = await tester.runAsync(() => repo.watchEntry(theDeal.id).first);
     expect(saved!.review, 'Loved it.');
 
+    await tester.scrollUntilVisible(
+      find.text('A line I loved'),
+      -300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.ensureVisible(find.text('A line I loved'));
+    await settle(tester);
     await tester.tap(find.text('A line I loved'));
     await settle(tester);
     await tester.tap(find.text('Delete note'));
@@ -481,8 +496,8 @@ void main() {
     );
     await launch(tester);
 
-    expect(find.text('Update'), findsNWidgets(2));
-    await tester.tap(find.text('Update').first);
+    expect(find.text('Update'), findsOneWidget, reason: 'only the latest book has buttons');
+    await tester.tap(find.text('Update'));
     await settle(tester);
     expect(find.text('Update progress'), findsOneWidget);
     await tester.tapAt(const Offset(10, 10)); // dismiss the sheet

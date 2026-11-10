@@ -7,6 +7,7 @@ Based on what the code does as of Phase 8. The forms' wording changes, and these
 - Encrypted in transit: yes (HTTPS only; plain HTTP exists only in the dev flavor, for the local emulators).
 - Users can request deletion: yes, in the app. Play also needs a web link (see docs/07 §3).
 - Ads: none. Tracking across apps: none.
+- Spotify (optional, only if the user links an account): Chapter stores login tokens and the Spotify display name on the server, and shows what's playing without storing it. Unlinking deletes them. Check this against each form.
 
 | Data | Collected | Why | Required? | Notes |
 |---|---|---|---|---|

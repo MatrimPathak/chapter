@@ -7,10 +7,10 @@ import 'package:intl/intl.dart';
 
 import '../../../app/providers.dart';
 import '../../../app/router/routes.dart';
+import '../../../app/router/search_action.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../integrations/presentation/integrations_providers.dart';
-import '../../library/domain/library_models.dart';
 import '../../library/presentation/library_providers.dart';
 import '../application/session_controller.dart';
 import '../domain/reading_session.dart';
@@ -37,9 +37,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
     final l10n = AppLocalizations.of(context);
     final active = ref.watch(sessionControllerProvider).value;
     final shelf = watchShelf(ref).value ?? const <ShelfItem>[];
-    final reading = continueReading(shelf);
-    final want = shelf.where((i) => i.entry.status == ReadingStatus.wantToRead).toList();
-    final candidates = [...reading, ...want];
+    final candidates = continueReading(shelf);
     final recent = ref.watch(recentSessionsProvider).value ?? const <ReadingSession>[];
     final titles = {for (final i in shelf) i.entry.workId: i.entry.book.title};
 
@@ -49,7 +47,7 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
     final minutes = _minutes ?? ref.watch(preferencesProvider).value?.defaultTimerMin ?? 30;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.navRead)),
+      appBar: AppBar(title: Text(l10n.navRead), actions: const [SearchAction()]),
       body: ListView(
         padding: const EdgeInsets.all(ChapterSpacing.gutter),
         children: [
@@ -77,29 +75,29 @@ class _ReadScreenState extends ConsumerState<ReadScreen> {
           else ...[
             ChapterSectionHeader(title: l10n.readPickBook),
             const SizedBox(height: ChapterSpacing.sm),
-            ChapterCard(
-              padding: EdgeInsets.zero,
-              child: RadioGroup<String>(
-                groupValue: workId,
-                onChanged: (v) => setState(() => _workId = v),
-                child: Column(
-                  children: [
-                    for (final c in candidates.take(8))
-                      RadioListTile<String>(
-                        value: c.entry.workId,
-                        title: Text(
-                          c.entry.book.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          c.entry.book.authorLine,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+            SizedBox(
+              height: bookRowHeight(context),
+              child: ListView.separated(
+                key: const Key('read-book-choices'),
+                scrollDirection: Axis.horizontal,
+                itemCount: candidates.length,
+                separatorBuilder: (_, _) => const SizedBox(width: ChapterSpacing.sm),
+                itemBuilder: (_, i) {
+                  final book = candidates[i].entry;
+                  return BookChoiceCard(
+                    key: ValueKey('read-book-${book.workId}'),
+                    width: 120,
+                    selected: workId == book.workId,
+                    onTap: () => setState(() => _workId = book.workId),
+                    child: BookGridCard(
+                      data: BookCardData(
+                        title: book.book.title,
+                        author: book.book.authorLine,
+                        coverUrl: book.book.coverUrl,
                       ),
-                  ],
-                ),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: ChapterSpacing.xl),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/providers.dart';
 import '../../../app/router/routes.dart';
+import '../../../app/router/search_action.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/sync/sync_status.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -35,7 +36,7 @@ class ProfileScreen extends ConsumerWidget {
     ProfileRepository repo() => ref.read(profileRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.navProfile)),
+      appBar: AppBar(title: Text(l10n.navProfile), actions: const [SearchAction()]),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: ChapterSpacing.lg),
         children: [

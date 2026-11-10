@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../app/providers.dart';
 import '../../../app/router/routes.dart';
+import '../../../app/router/search_action.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../goals/domain/goal.dart';
@@ -23,8 +24,6 @@ import '../../reading/presentation/session_flow.dart';
 /// when there is nothing to show.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
-
-  static const _maxUpNext = 3;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -51,7 +50,7 @@ class HomeScreen extends ConsumerWidget {
     ].take(2).toList();
     final sync = ref.watch(syncStatusProvider).value;
     final note = ref.watch(allNotesProvider).value?.firstOrNull;
-    final hasActivity = stats != null && stats.totals().seconds > 0;
+    final hasActivity = stats != null && !stats.totals().isEmpty;
 
     void openBook(String workId) => context.push(AppRoutes.book('id:$workId'));
 
@@ -79,26 +78,38 @@ class HomeScreen extends ConsumerWidget {
       ],
       if (reading.length > 1) ...[
         ChapterSectionHeader(title: l10n.homeAlsoReading),
-        for (final item in reading.skip(1))
-          ContinueReadingCard(
-            data: cardData(l10n, item),
-            resumeLabel: l10n.homeRead,
-            secondaryLabel: l10n.homeResume,
-            onSecondary: () => showProgressSheet(context, ref, item.entry.workId),
-            onTap: () => openBook(item.entry.workId),
-            onResume: () => startReadingSession(context, ref, item.entry.workId),
+        // Sideways and built on demand: there can be hundreds.
+        SizedBox(
+          height: bookRowHeight(context),
+          child: ListView.separated(
+            key: const Key('also-reading'),
+            scrollDirection: Axis.horizontal,
+            itemCount: reading.length - 1,
+            separatorBuilder: (_, _) => const SizedBox(width: ChapterSpacing.lg),
+            itemBuilder: (context, i) {
+              final item = reading[i + 1];
+              return BookGridCard(
+                data: cardData(l10n, item),
+                onTap: () => openBook(item.entry.workId),
+              );
+            },
           ),
+        ),
       ],
       if (hasActivity) _WeekCard(stats: stats, now: now),
       if (upNext.isNotEmpty) ...[
         ChapterSectionHeader(title: l10n.homeUpNext),
-        ChapterCard(
-          padding: EdgeInsets.zero,
-          child: Column(
-            children: [
-              for (final item in upNext.take(_maxUpNext))
-                BookListTile(data: cardData(l10n, item), onTap: () => openBook(item.entry.workId)),
-            ],
+        SizedBox(
+          height: bookRowHeight(context),
+          child: ListView.separated(
+            key: const Key('up-next'),
+            scrollDirection: Axis.horizontal,
+            itemCount: upNext.length,
+            separatorBuilder: (_, _) => const SizedBox(width: ChapterSpacing.lg),
+            itemBuilder: (context, i) => BookGridCard(
+              data: cardData(l10n, upNext[i]),
+              onTap: () => openBook(upNext[i].entry.workId),
+            ),
           ),
         ),
       ],
@@ -127,9 +138,16 @@ class HomeScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Semantics(
-                      header: true,
-                      child: Text(greeting, style: context.textTheme.displayMedium),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: Text(greeting, style: context.textTheme.displayMedium),
+                          ),
+                        ),
+                        const SearchAction(),
+                      ],
                     ),
                     if (sync != null) ...[
                       const SizedBox(height: ChapterSpacing.xs),
@@ -156,7 +174,7 @@ class HomeScreen extends ConsumerWidget {
                   title: l10n.homeEmptyTitle,
                   body: l10n.homeEmptyBody,
                   actionLabel: l10n.navSearch,
-                  onAction: () => context.go(AppRoutes.search),
+                  onAction: () => context.push(AppRoutes.search),
                   extraActions: [
                     ChapterButton(
                       label: l10n.scanTitle,
@@ -181,7 +199,8 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-/// This week's reading minutes, Monday first, with the current streak.
+/// Pages read this week, Monday first, with the current streak. Pages count
+/// with or without a timed session; minutes only exist with one.
 class _WeekCard extends StatelessWidget {
   const _WeekCard({required this.stats, required this.now});
 
@@ -199,14 +218,16 @@ class _WeekCard extends StatelessWidget {
       for (var i = 0; i < DateTime.daysPerWeek; i++)
         DateTime(monday.year, monday.month, monday.day + i),
     ];
-    final minutes = [for (final d in days) stats.day(stats.dayOf(d)).seconds ~/ 60];
-    final most = minutes.fold(0, (a, b) => a > b ? a : b);
-    final total = minutes.fold(0, (a, b) => a + b);
+    final pages = [for (final d in days) stats.day(stats.dayOf(d)).pages];
+    final most = pages.fold(0, (a, b) => a > b ? a : b);
+    final total = pages.fold(0, (a, b) => a + b);
     final streak = stats.streaks(stats.dayOf(now)).current;
     final letter = DateFormat('EEEEE', locale);
     const barArea = 72.0;
 
     return ChapterCard(
+      key: const Key('week-card'),
+      onTap: () => context.push(AppRoutes.insights),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -222,7 +243,7 @@ class _WeekCard extends StatelessWidget {
             ],
           ),
           Text(
-            l10n.homeWeekMinutes(total),
+            l10n.homeWeekPages(total),
             style: context.textTheme.bodySmall?.copyWith(color: colors.inkMuted),
           ),
           const SizedBox(height: ChapterSpacing.lg),
@@ -239,14 +260,14 @@ class _WeekCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Container(
-                            height: most == 0 || minutes[i] == 0
+                            height: most == 0 || pages[i] == 0
                                 ? ChapterSpacing.xs
                                 : ChapterSpacing.xs +
-                                      (barArea - ChapterSpacing.xs) * minutes[i] / most,
+                                      (barArea - ChapterSpacing.xs) * pages[i] / most,
                             decoration: BoxDecoration(
                               color: days[i] == today
                                   ? colors.highlight
-                                  : minutes[i] == 0
+                                  : pages[i] == 0
                                   ? colors.surfaceMuted
                                   : colors.accent,
                               borderRadius: BorderRadius.circular(ChapterRadius.cover),

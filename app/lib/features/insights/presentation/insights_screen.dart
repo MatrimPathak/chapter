@@ -104,7 +104,7 @@ class _Body extends ConsumerWidget {
     final average = stats.averageSession(from: from, to: to);
     final pace = stats.pagesPerHour(from: from, to: to);
     final rate = stats.booksPerMonth(today);
-    final weekdays = stats.weekdaySeconds(from: from, to: to);
+    final weekdays = stats.weekdayPages(from: from, to: to);
     final authors = stats.topAuthors(from: from, to: to);
     final genres = stats.topGenres(from: from, to: to);
     final notEnough = l10n.insightsNotEnough;
@@ -181,12 +181,12 @@ class _Body extends ConsumerWidget {
           child: stats.hasTrend(year)
               ? _Bars(
                   label: l10n.insightsMonthlyLabel,
-                  values: [for (final p in stats.monthly(year)) p.seconds / 60],
+                  values: [for (final p in stats.monthly(year)) p.pages.toDouble()],
                   labels: [
                     for (var m = 1; m <= 12; m++)
                       DateFormat.MMMMd().dateSymbols.NARROWMONTHS[m - 1],
                   ],
-                  valueText: (v) => l10n.readMinutes(v.round()),
+                  valueText: (v) => l10n.bookPages(v.round()),
                 )
               : _Muted(notEnough),
         ),
@@ -195,12 +195,12 @@ class _Body extends ConsumerWidget {
           child: weekdays != null
               ? _Bars(
                   label: l10n.insightsWeekdaysLabel,
-                  values: [for (final s in weekdays) s / 60],
+                  values: [for (final p in weekdays) p.toDouble()],
                   // intl's list starts on Sunday; statistics start on Monday.
                   labels: [
                     for (var d = 1; d <= 7; d++) DateFormat.E().dateSymbols.NARROWWEEKDAYS[d % 7],
                   ],
-                  valueText: (v) => l10n.readMinutes(v.round()),
+                  valueText: (v) => l10n.bookPages(v.round()),
                 )
               : _Muted(notEnough),
         ),

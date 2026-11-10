@@ -121,6 +121,30 @@ describe("users/{uid}", () => {
     await assertFails(
       setDoc(doc(db, "users/alice"), profile({ analyticsConsent: "yes" })),
     );
+    await assertSucceeds(
+      setDoc(
+        doc(db, "users/alice"),
+        profile({
+          librarySort: "series",
+          libraryGrid: true,
+          shelfSort: "title",
+          shelfGrid: true,
+          addBooksGrid: true,
+        }),
+      ),
+    );
+    await assertSucceeds(
+      setDoc(doc(db, "users/alice"), profile({ shelfSort: "manual" })),
+    );
+    await assertFails(
+      setDoc(doc(db, "users/alice"), profile({ librarySort: "manual" })),
+    );
+    await assertFails(
+      setDoc(doc(db, "users/alice"), profile({ shelfSort: "nope" })),
+    );
+    await assertFails(
+      setDoc(doc(db, "users/alice"), profile({ libraryGrid: "yes" })),
+    );
     await assertFails(
       setDoc(doc(db, "users/alice"), profile({ defaultTimerMin: 0 })),
     );
@@ -168,7 +192,7 @@ describe("users/{uid}", () => {
     await assertFails(
       addDoc(collection(db, "users/alice/library"), { status: "reading" }),
     );
-    await assertFails(getDoc(doc(db, "users/alice/shelves/n1")));
+    await assertFails(getDoc(doc(db, "users/alice/notAThing/n1")));
   });
 });
 
@@ -661,6 +685,79 @@ describe("imported notes and reads", () => {
   });
 });
 
+describe("shelves", () => {
+  const lww = (fields: Record<string, unknown>) => ({
+    ...fields,
+    fieldClock: Object.fromEntries(
+      Object.keys(fields).map((k) => [k, clock(1)]),
+    ),
+    updatedAt: serverTimestamp(),
+  });
+  const shelf = {
+    name: "Comfort reads",
+    createdAt: "2026-11-05T10:00:00.000Z",
+  };
+  const link = {
+    shelfId: "s1",
+    workId: "w1",
+    addedAt: "2026-11-05T10:00:00.000Z",
+    removed: false,
+  };
+
+  it("owner can write shelves and tombstones, never hard-delete", async () => {
+    const db = env.authenticatedContext("alice").firestore();
+    await assertSucceeds(setDoc(doc(db, "users/alice/shelves/s1"), lww(shelf)));
+    await assertSucceeds(
+      setDoc(
+        doc(db, "users/alice/shelves/s1"),
+        lww({ ...shelf, deleted: true }),
+      ),
+    );
+    await assertFails(deleteDoc(doc(db, "users/alice/shelves/s1")));
+    await assertSucceeds(
+      setDoc(doc(db, "users/alice/shelfBooks/s1_w1"), lww(link)),
+    );
+    await assertFails(deleteDoc(doc(db, "users/alice/shelfBooks/s1_w1")));
+  });
+
+  it("rejects bad shelves and other users", async () => {
+    const db = env.authenticatedContext("alice").firestore();
+    const bob = env.authenticatedContext("bob").firestore();
+    await assertFails(
+      setDoc(doc(db, "users/alice/shelves/s"), lww({ ...shelf, name: "" })),
+    );
+    await assertFails(
+      setDoc(
+        doc(db, "users/alice/shelves/s"),
+        lww({ ...shelf, name: "x".repeat(61) }),
+      ),
+    );
+    await assertFails(
+      setDoc(doc(db, "users/alice/shelves/s"), lww({ ...shelf, extra: 1 })),
+    );
+    await assertSucceeds(
+      setDoc(
+        doc(db, "users/alice/shelfBooks/b"),
+        lww({ ...link, position: 3 }),
+      ),
+    );
+    await assertFails(
+      setDoc(
+        doc(db, "users/alice/shelfBooks/b"),
+        lww({ ...link, position: -1 }),
+      ),
+    );
+    await assertFails(
+      setDoc(
+        doc(db, "users/alice/shelfBooks/b"),
+        lww({ ...link, removed: "no" }),
+      ),
+    );
+    await assertFails(setDoc(doc(bob, "users/alice/shelves/s"), lww(shelf)));
+    await assertFails(setDoc(doc(bob, "users/alice/shelfBooks/b"), lww(link)));
+  });
+});
+
 describe("goals", () => {
   const lww = (fields: Record<string, unknown>) => ({
     ...fields,
@@ -782,6 +879,8 @@ describe("audit: every user collection", () => {
     "sessionTombstones",
     "notes",
     "goals",
+    "shelves",
+    "shelfBooks",
   ];
 
   beforeEach(async () => {
@@ -858,6 +957,16 @@ describe("audit: every user collection", () => {
       setDoc(doc(alice, "private_integrations/alice"), { token: "x" }),
     );
   });
+
+  it.each(["spotify", "spotifyLinkState"])(
+    "Spotify's %s document is server-only, even for its owner",
+    async (name) => {
+      const alice = env.authenticatedContext("alice").firestore();
+      const path = `private_integrations/alice/services/${name}`;
+      await assertFails(getDoc(doc(alice, path)));
+      await assertFails(setDoc(doc(alice, path), { refreshToken: "x" }));
+    },
+  );
 
   it.each([
     "catalog_works",

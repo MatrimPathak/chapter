@@ -31,6 +31,9 @@ abstract class WorkSummary with _$WorkSummary {
     String? seriesName,
     double? seriesPosition,
     int? pageCount,
+
+    /// The exact edition an ISBN search matched.
+    String? matchedEditionId,
   }) = _WorkSummary;
 
   factory WorkSummary.fromJson(Map<String, dynamic> json) => _$WorkSummaryFromJson(json);
@@ -71,6 +74,9 @@ abstract class CatalogSeriesRef with _$CatalogSeriesRef {
 
   factory CatalogSeriesRef.fromJson(Map<String, dynamic> json) => _$CatalogSeriesRefFromJson(json);
 }
+
+bool isEnglishLanguage(String? language) =>
+    const {'eng', 'en', 'english'}.contains(language?.trim().toLowerCase());
 
 @freezed
 abstract class CatalogEdition with _$CatalogEdition {
@@ -115,11 +121,16 @@ abstract class CatalogWork with _$CatalogWork {
 
   factory CatalogWork.fromJson(Map<String, dynamic> json) => _$CatalogWorkFromJson(json);
 
+  /// The edition to show when no particular one was asked for: English when
+  /// there is one, because the app is in English.
   CatalogEdition? get defaultEdition {
-    for (final e in editions) {
-      if (e.id == defaultEditionId) return e;
-    }
-    return editions.isEmpty ? null : editions.first;
+    final chosen = editions.where((e) => e.id == defaultEditionId).firstOrNull;
+    if (chosen != null && isEnglishLanguage(chosen.language)) return chosen;
+    final english = editions.where((e) => isEnglishLanguage(e.language));
+    return english.where((e) => e.pageCount != null).firstOrNull ??
+        english.firstOrNull ??
+        chosen ??
+        editions.firstOrNull;
   }
 
   String get authorLine => authors.map((a) => a.name).join(', ');

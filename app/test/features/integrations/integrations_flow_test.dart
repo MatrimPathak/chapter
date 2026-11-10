@@ -9,6 +9,7 @@ import 'package:chapter/features/integrations/data/import_queue.dart';
 import 'package:chapter/features/integrations/data/platform_ports.dart';
 import 'package:chapter/features/integrations/domain/integration.dart';
 import 'package:chapter/features/integrations/domain/reading_import.dart' show parseReadingExport;
+import 'package:chapter/features/integrations/presentation/spotify_widgets.dart';
 import 'package:chapter/features/library/data/lww_library_repository.dart';
 import 'package:chapter/features/library/domain/library_models.dart';
 import 'package:chapter/features/library/presentation/library_providers.dart';
@@ -176,7 +177,6 @@ void main() {
     await openServices(tester);
     expect(find.textContaining('can’t read your Kindle progress'), findsOneWidget);
     expect(find.textContaining('can’t read your Audible progress'), findsOneWidget);
-    expect(find.textContaining('can’t see or control'), findsOneWidget);
     final texts = tester.widgetList<Text>(find.byType(Text)).map((t) => t.data ?? '').join(' ');
     expect(
       RegExp('automatic sync|syncs with|sign in to', caseSensitive: false).hasMatch(texts),
@@ -313,6 +313,43 @@ void main() {
     await unmountApp(tester);
   });
 
+  testWidgets('Spotify is linked from Connected services, not Profile', (tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    addTearDown(tester.view.reset);
+    await launch(tester);
+    await tester.tap(find.text('Profile').last);
+    await settle(tester);
+    expect(find.byType(SpotifyLinkRow), findsNothing);
+
+    await tester.tap(find.text('Connected services'));
+    await settle(tester);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('integration-spotify')),
+        matching: find.byType(SpotifyLinkRow),
+      ),
+      findsOneWidget,
+    );
+    await unmountApp(tester);
+  });
+
+  testWidgets('Open on the Spotify card goes straight to Spotify', (tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    addTearDown(tester.view.reset);
+    await launch(tester);
+    await tester.tap(find.text('Profile').last);
+    await settle(tester);
+    await tester.tap(find.text('Connected services'));
+    await settle(tester);
+
+    await tester.tap(find.byKey(const ValueKey('integration-spotify-action')));
+    await settle(tester);
+
+    expect(opener.opened.single.toString(), 'https://open.spotify.com');
+    expect(find.text('Reading playlists'), findsNothing);
+    await unmountApp(tester);
+  });
+
   testWidgets('Spotify: links open with no account; a failure stays a message', (tester) async {
     await launch(tester);
     await tester.tap(find.text('Reading').last);
@@ -379,7 +416,7 @@ void main() {
     await settle(tester);
     expect(find.text('Start a reading session'), findsOneWidget);
     await menu('Change edition');
-    await tester.tap(find.textContaining('12:00:00'));
+    await tester.tap(find.textContaining('12:00:00').last);
     await settle(tester);
     final entry = (await tester.runAsync(() => repo.watchEntry(theDeal.id).first))!;
     expect(entry.activeEditionId, audio.single.editionId);

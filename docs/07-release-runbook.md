@@ -20,6 +20,13 @@ Everything a v1.0 release needs that can't be done from the repository, in order
    ```bash
    firebase functions:secrets:set GOOGLE_BOOKS_KEY --project chapter-reads-prod
    ```
+   Spotify's two secrets are required the same way. Create the app at developer.spotify.com on a Premium account, register `https://asia-south1-chapter-reads-prod.cloudfunctions.net/spotifyOAuthCallback` as a redirect URI, and add each allowed account (5 at most). A value of one space hides Link Spotify:
+   ```bash
+   firebase functions:secrets:set SPOTIFY_CLIENT_ID --project chapter-reads-prod
+   ```
+   ```bash
+   firebase functions:secrets:set SPOTIFY_CLIENT_SECRET --project chapter-reads-prod
+   ```
 5. Deploy from the repository root:
    ```bash
    firebase deploy --only firestore:rules,firestore:indexes,functions --project chapter-reads-prod

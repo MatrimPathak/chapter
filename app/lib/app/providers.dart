@@ -27,6 +27,7 @@ import '../features/goals/data/lww_goal_repository.dart';
 import '../features/integrations/application/import_runner.dart';
 import '../features/integrations/data/import_queue.dart';
 import '../features/integrations/data/platform_ports.dart';
+import '../features/integrations/data/spotify_remote.dart';
 import '../features/integrations/domain/integration.dart';
 import '../features/library/data/lww_library_repository.dart';
 import '../features/library/domain/library_repository.dart';
@@ -40,6 +41,7 @@ import '../features/reading/data/channel_focus_mode.dart';
 import '../features/reading/data/drift_active_session_store.dart';
 import '../features/reading/data/local_session_notifications.dart';
 import '../features/reading/domain/session_ports.dart';
+import '../features/shelves/data/lww_shelf_repository.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'app_config.dart';
 
@@ -212,9 +214,20 @@ final _lwwLibraryRepositoryProvider = Provider<LwwLibraryRepository>((ref) {
   // lives with the signed-in user: Home and Library watch it).
   unawaited(repo.attachSync(engine));
   unawaited(ref.watch(goalRepositoryProvider).attachSync(engine));
+  unawaited(ref.watch(shelfRepositoryProvider).attachSync(engine));
   unawaited(ref.watch(notesRepositoryProvider).attachSync(engine));
   return repo;
 });
+
+final shelfRepositoryProvider = Provider<LwwShelfRepository>(
+  (ref) => LwwShelfRepository(
+    store: ref.watch(lwwStoreProvider),
+    clock: ref.watch(clockProvider),
+    ids: ref.watch(idGeneratorProvider),
+    uid: _requireUid(ref),
+    onLocalWrite: ref.watch(syncEngineProvider).nudge,
+  ),
+);
 
 final goalRepositoryProvider = Provider<LwwGoalRepository>(
   (ref) => LwwGoalRepository(
@@ -286,6 +299,10 @@ final sessionServiceProvider = Provider<SessionService>(
 final integrationsProvider = Provider<List<Integration>>((ref) => defaultIntegrations);
 
 final linkOpenerProvider = Provider<LinkOpener>((ref) => const UrlLauncherLinkOpener());
+
+final spotifyRemoteProvider = Provider<SpotifyRemote>(
+  (ref) => CallableSpotifyRemote(ref.watch(catalogRemoteProvider)),
+);
 
 final textFilePickerProvider = Provider<TextFilePicker>((ref) => const SystemTextFilePicker());
 

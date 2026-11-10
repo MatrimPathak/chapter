@@ -28,7 +28,8 @@ Future<T?> showChapterSheet<T>({
           Text(title, style: sheetContext.textTheme.headlineSmall),
           const SizedBox(height: ChapterSpacing.lg),
         ],
-        builder(sheetContext),
+        // Scrolls when large text makes the sheet taller than the screen.
+        Flexible(child: SingleChildScrollView(child: builder(sheetContext))),
       ],
     ),
   ),

@@ -18,6 +18,7 @@ import '../../progress/domain/progress_mapper.dart';
 import '../../progress/domain/reading_position.dart';
 import '../../reading/presentation/read_screen.dart' show SessionHistoryTile;
 import '../../reading/presentation/session_flow.dart';
+import '../../shelves/presentation/shelf_sheets.dart';
 import '../domain/library_models.dart';
 import '../domain/library_repository.dart';
 import 'library_providers.dart';
@@ -84,7 +85,7 @@ Future<void> showAddToLibrarySheet(
   final edition = work.editions.where((e) => e.id == choice.editionId).firstOrNull;
   final result = await repo.add(
     workId: work.id,
-    book: bookSummaryOf(work),
+    book: bookSummaryOf(work, edition: edition),
     status: choice.status,
     finish: finish,
     edition: edition == null ? null : userEditionOf(edition, owned: choice.owned),
@@ -124,10 +125,24 @@ class _AddFormState extends State<_AddForm> {
   late String? _editionId = widget.initialEditionId;
   late bool _owned = widget.initialOwned;
 
+  // Settled once, so the row doesn't jump around as the reader taps.
+  late final List<CatalogEdition> _editions = () {
+    bool english(CatalogEdition e) => isEnglishLanguage(e.language);
+    final all = widget.work.editions.take(30).toList();
+    final anyEnglish = all.any(english);
+    final shown = [
+      for (final e in all)
+        if (!anyEnglish || english(e) || e.id == widget.initialEditionId) e,
+    ];
+    final start = shown.indexWhere((e) => e.id == widget.initialEditionId);
+    if (start > 0) shown.insert(0, shown.removeAt(start));
+    return shown;
+  }();
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final editions = widget.work.editions.take(30).toList();
+    final editions = _editions;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -151,21 +166,35 @@ class _AddFormState extends State<_AddForm> {
         ),
         if (editions.isNotEmpty) ...[
           const SizedBox(height: ChapterSpacing.lg),
-          DropdownButtonFormField<String>(
-            initialValue: _editionId,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l10n.libraryAddEdition),
-            items: [
-              for (final e in editions)
-                DropdownMenuItem(
-                  value: e.id,
-                  child: Text(
-                    editionLabel(l10n, userEditionOf(e)),
-                    overflow: TextOverflow.ellipsis,
+          Text(l10n.libraryAddEdition, style: context.textTheme.titleSmall),
+          const SizedBox(height: ChapterSpacing.sm),
+          SizedBox(
+            height: bookRowHeight(context, coverWidth: 84),
+            child: ListView.separated(
+              key: const Key('add-edition-choices'),
+              scrollDirection: Axis.horizontal,
+              itemCount: editions.length,
+              separatorBuilder: (_, _) => const SizedBox(width: ChapterSpacing.sm),
+              itemBuilder: (_, i) {
+                final e = editions[i];
+                return BookChoiceCard(
+                  key: ValueKey('add-edition-${e.id}'),
+                  selected: _editionId == e.id,
+                  onTap: () => setState(() => _editionId = e.id),
+                  child: BookGridCard(
+                    coverWidth: 84,
+                    data: BookCardData(
+                      title: [_formatName(e.format), ?e.publisher].join(' · '),
+                      author: [
+                        if (e.pageCount != null) l10n.bookPages(e.pageCount!),
+                        if (e.audioDurationSec != null) formatDuration(e.audioDurationSec!),
+                      ].join(' · '),
+                      coverUrl: e.coverUrl ?? widget.work.coverUrl,
+                    ),
                   ),
-                ),
-            ],
-            onChanged: (v) => setState(() => _editionId = v),
+                );
+              },
+            ),
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
@@ -289,37 +318,61 @@ Future<void> showEditionPicker(
 ) async {
   final l10n = AppLocalizations.of(context);
   final repo = ref.read(libraryRepositoryProvider);
-  final typed = typedAudiobookEditions(await repo.watchEditions(entry.workId).first, work);
+  final typed = typedEditions(await repo.watchEditions(entry.workId).first, work);
   if (!context.mounted) return;
+  bool english(CatalogEdition e) => isEnglishLanguage(e.language);
+  final anyEnglish = work.editions.any(english);
+  final choices =
+      <UserEdition>[
+        ...typed,
+        for (final e in work.editions.take(40))
+          if (!anyEnglish || english(e) || e.id == entry.activeEditionId) userEditionOf(e),
+      ]..sort((a, b) {
+        // The current edition first, so the row opens on it.
+        final aActive = a.editionId == entry.activeEditionId ? 0 : 1;
+        final bActive = b.editionId == entry.activeEditionId ? 0 : 1;
+        return aActive - bActive;
+      });
   final picked = await showChapterSheet<UserEdition>(
     context: context,
     title: l10n.libraryChangeEdition,
-    builder: (sheet) => ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(sheet).height * 0.6),
-      child: ListView(
-        shrinkWrap: true,
-        children: [
-          for (final e in typed)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(editionLabel(l10n, e)),
-              trailing: e.editionId == entry.activeEditionId ? const Icon(Icons.check) : null,
-              onTap: () => Navigator.of(sheet).pop(e),
+    builder: (sheet) => SizedBox(
+      height: bookRowHeight(context, coverWidth: 84),
+      child: ListView.separated(
+        key: const Key('change-edition-choices'),
+        scrollDirection: Axis.horizontal,
+        itemCount: choices.length,
+        separatorBuilder: (_, _) => const SizedBox(width: ChapterSpacing.sm),
+        itemBuilder: (_, i) {
+          final e = choices[i];
+          return BookChoiceCard(
+            key: ValueKey('change-edition-${e.editionId}'),
+            selected: e.editionId == entry.activeEditionId,
+            onTap: () => Navigator.of(sheet).pop(e),
+            child: BookGridCard(
+              coverWidth: 84,
+              data: BookCardData(
+                title: [_formatName(e.format), ?e.publisher].join(' · '),
+                author: [
+                  if (e.pageCount != null) l10n.bookPages(e.pageCount!),
+                  if (e.audioDurationSec != null) formatDuration(e.audioDurationSec!),
+                ].join(' · '),
+                coverUrl: e.coverUrl ?? work.coverUrl,
+              ),
             ),
-          for (final e in work.editions.take(40))
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(editionLabel(l10n, userEditionOf(e))),
-              subtitle: e.isbn13 == null ? null : Text(e.isbn13!),
-              trailing: e.id == entry.activeEditionId ? const Icon(Icons.check) : null,
-              onTap: () => Navigator.of(sheet).pop(userEditionOf(e)),
-            ),
-        ],
+          );
+        },
       ),
     ),
   );
   if (picked != null) await repo.setActiveEdition(entry.workId, picked);
 }
+
+/// Editions the reader added by hand, as opposed to catalog ones.
+List<UserEdition> typedEditions(List<UserEdition> editions, CatalogWork work) => [
+  for (final e in editions)
+    if (!work.editions.any((c) => c.id == e.editionId)) e,
+];
 
 /// Audiobook editions the reader typed in, as opposed to catalog ones.
 List<UserEdition> typedAudiobookEditions(List<UserEdition> editions, CatalogWork work) => [
@@ -640,12 +693,80 @@ class _ProgressFormState extends State<ProgressForm> {
 
 // ─── Book detail section ───
 
+/// The heart and the ⋮ menu for a book in the library, in the app bar.
+class BookLibraryActions extends ConsumerWidget {
+  const BookLibraryActions({required this.work, super.key});
+
+  final CatalogWork work;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entry = ref.watch(libraryEntryProvider(work.id)).value;
+    if (entry == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    final editions = ref.watch(userEditionsProvider(work.id)).value ?? const [];
+    final edition = editions.where((e) => e.editionId == entry.activeEditionId).firstOrNull;
+    final typedAudio = typedAudiobookEditions(editions, work);
+    final editableAudio =
+        typedAudio.where((e) => e.editionId == entry.activeEditionId).firstOrNull ??
+        typedAudio.firstOrNull;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: entry.isFavorite ? l10n.libraryUnfavorite : l10n.libraryFavorite,
+          icon: Icon(entry.isFavorite ? Icons.favorite : Icons.favorite_border),
+          onPressed: () => unawaited(
+            ref
+                .read(libraryRepositoryProvider)
+                .setFavorite(entry.workId, favorite: !entry.isFavorite),
+          ),
+        ),
+        PopupMenuButton<String>(
+          onSelected: (v) {
+            if (v == 'edition') unawaited(showEditionPicker(context, ref, work, entry));
+            if (v == 'audio') unawaited(showAudiobookSheet(context, ref, entry, editableAudio));
+            if (v == 'shelf') unawaited(showAddToShelfSheet(context, entry));
+            if (v == 'wishlist') {
+              unawaited(
+                ref
+                    .read(libraryRepositoryProvider)
+                    .setWishlist(entry.workId, wishlist: !entry.isWishlist),
+              );
+            }
+            if (v == 'details' && edition != null) {
+              unawaited(showEditionDetailsSheet(context, edition));
+            }
+          },
+          itemBuilder: (_) => [
+            if (work.editions.length + typedAudio.length > 1)
+              PopupMenuItem(value: 'edition', child: Text(l10n.libraryChangeEdition)),
+            PopupMenuItem(
+              value: 'audio',
+              child: Text(editableAudio == null ? l10n.audioAddEdition : l10n.audioEditEdition),
+            ),
+            if (edition != null) PopupMenuItem(value: 'details', child: Text(l10n.editionDetails)),
+            PopupMenuItem(value: 'shelf', child: Text(l10n.shelfAddTo)),
+            PopupMenuItem(
+              value: 'wishlist',
+              child: Text(entry.isWishlist ? l10n.wishlistRemove : l10n.wishlistAdd),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 /// The user's relationship with a work on the book detail screen: add
 /// button, or shelf, progress and actions once it's in the library.
 class LibrarySection extends ConsumerWidget {
-  const LibrarySection({required this.work, super.key});
+  const LibrarySection({required this.work, this.editionId, super.key});
 
   final CatalogWork work;
+
+  /// The edition on screen, which Add to library starts from.
+  final String? editionId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -656,7 +777,7 @@ class LibrarySection extends ConsumerWidget {
         label: l10n.bookAddToLibrary,
         expand: true,
         icon: const Icon(Icons.add),
-        onPressed: () => unawaited(showAddToLibrarySheet(context, ref, work)),
+        onPressed: () => unawaited(showAddToLibrarySheet(context, ref, work, editionId: editionId)),
       );
     }
     final editions = ref.watch(userEditionsProvider(work.id)).value ?? const [];
@@ -668,10 +789,6 @@ class LibrarySection extends ConsumerWidget {
         edition?.metrics ?? EditionMetrics(format: 'other', pageCount: entry.book.pageCount);
     final position = currentPosition(progress, edition, editions, entry);
     final finishedCount = throughs.where((t) => t.outcome == ReadThroughOutcome.finished).length;
-    final typedAudio = typedAudiobookEditions(editions, work);
-    final editableAudio =
-        typedAudio.where((e) => e.editionId == entry.activeEditionId).firstOrNull ??
-        typedAudio.firstOrNull;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -685,47 +802,6 @@ class LibrarySection extends ConsumerWidget {
                 label: Text(statusLabel(l10n, entry.status)),
                 onPressed: () => unawaited(showStatusPicker(context, ref, entry)),
               ),
-            ),
-            IconButton(
-              tooltip: entry.isFavorite ? l10n.libraryUnfavorite : l10n.libraryFavorite,
-              icon: Icon(entry.isFavorite ? Icons.favorite : Icons.favorite_border),
-              onPressed: () => unawaited(
-                ref
-                    .read(libraryRepositoryProvider)
-                    .setFavorite(entry.workId, favorite: !entry.isFavorite),
-              ),
-            ),
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                if (v == 'edition') unawaited(showEditionPicker(context, ref, work, entry));
-                if (v == 'audio') unawaited(showAudiobookSheet(context, ref, entry, editableAudio));
-                if (v == 'remove') unawaited(confirmRemoveFromLibrary(context, ref, entry));
-                if (v == 'wishlist') {
-                  unawaited(
-                    ref
-                        .read(libraryRepositoryProvider)
-                        .setWishlist(entry.workId, wishlist: !entry.isWishlist),
-                  );
-                }
-                if (v == 'details' && edition != null) {
-                  unawaited(showEditionDetailsSheet(context, edition));
-                }
-              },
-              itemBuilder: (_) => [
-                if (work.editions.length + typedAudio.length > 1)
-                  PopupMenuItem(value: 'edition', child: Text(l10n.libraryChangeEdition)),
-                PopupMenuItem(
-                  value: 'audio',
-                  child: Text(editableAudio == null ? l10n.audioAddEdition : l10n.audioEditEdition),
-                ),
-                if (edition != null)
-                  PopupMenuItem(value: 'details', child: Text(l10n.editionDetails)),
-                PopupMenuItem(
-                  value: 'wishlist',
-                  child: Text(entry.isWishlist ? l10n.wishlistRemove : l10n.wishlistAdd),
-                ),
-                PopupMenuItem(value: 'remove', child: Text(l10n.libraryRemove)),
-              ],
             ),
           ],
         ),
@@ -817,13 +893,21 @@ class LibrarySection extends ConsumerWidget {
             ),
           ),
         ],
+        const SizedBox(height: ChapterSpacing.sm),
+        ChapterButton(
+          key: const Key('remove-from-library'),
+          label: l10n.libraryRemove,
+          expand: true,
+          variant: ChapterButtonVariant.text,
+          onPressed: () => unawaited(confirmRemoveFromLibrary(context, ref, entry)),
+        ),
         _BookSessions(workId: entry.workId),
         BookNotesSection(entry: entry),
-        if (finishedCount > 0) ...[
+        if (throughs.isNotEmpty) ...[
           const SizedBox(height: ChapterSpacing.sm),
-          Text(l10n.libraryReadCount(finishedCount), style: context.textTheme.bodySmall),
-          for (final t in throughs.where((t) => t.outcome == ReadThroughOutcome.finished))
-            _FinishedTile(through: t),
+          if (finishedCount > 0)
+            Text(l10n.libraryReadCount(finishedCount), style: context.textTheme.bodySmall),
+          for (final t in throughs) _ReadDates(through: t),
         ],
       ],
     );
@@ -1054,6 +1138,213 @@ Future<void> showAudiobookSheet(
   );
 }
 
+/// Adds a copy the reader owns, in any format. A book can have several.
+Future<void> showAddEditionSheet(BuildContext context, CatalogWork work) => showChapterSheet<void>(
+  context: context,
+  title: AppLocalizations.of(context).editionAddTitle,
+  builder: (_) => _AddEditionForm(work: work),
+);
+
+/// The catalog's editions of [format], English first; only English when any
+/// exist. Audible also covers other audiobooks.
+List<CatalogEdition> editionsForFormat(CatalogWork work, String format) {
+  bool english(CatalogEdition e) => isEnglishLanguage(e.language);
+  // Hardcover leaves many editions unlabelled: they could be either print format.
+  final unlabelled = format == 'paperback' || format == 'hardcover'
+      ? work.editions.where((e) => e.format == 'other')
+      : const <CatalogEdition>[];
+  final all = [
+    ...work.editions.where(
+      (e) => format == 'audible'
+          ? e.format == 'audible' || e.format == 'audiobook'
+          : e.format == format,
+    ),
+    ...unlabelled,
+  ];
+  final inEnglish = all.where(english).toList();
+  return inEnglish.isNotEmpty ? inEnglish : all;
+}
+
+/// The page count, or for Audible the length, of [edition].
+String editionValue(CatalogEdition? edition, String format) {
+  if (edition == null) return '';
+  if (format == 'audible') {
+    final seconds = edition.audioDurationSec;
+    return seconds == null ? '' : formatDuration(seconds);
+  }
+  final pages = edition.pageCount;
+  return pages == null ? '' : '$pages';
+}
+
+class _AddEditionForm extends ConsumerStatefulWidget {
+  const _AddEditionForm({required this.work});
+
+  final CatalogWork work;
+
+  @override
+  ConsumerState<_AddEditionForm> createState() => _AddEditionFormState();
+}
+
+class _AddEditionFormState extends ConsumerState<_AddEditionForm> {
+  static const _formats = ['paperback', 'hardcover', 'kindle', 'audible'];
+
+  late CatalogEdition? _edition = editionsForFormat(widget.work, _formats.first).firstOrNull;
+  late final _value = TextEditingController(text: editionValue(_edition, _formats.first));
+  String _format = _formats.first;
+  String? _error;
+
+  bool get _isAudio => _format == 'audible';
+
+  @override
+  void dispose() {
+    _value.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final l10n = AppLocalizations.of(context);
+    final raw = _value.text.trim();
+    int? pages;
+    int? seconds;
+    if (_isAudio) {
+      seconds = raw.contains(':') ? parseDuration(raw) : null;
+      if (seconds == null || seconds <= 0 || seconds > 1000000) {
+        setState(() => _error = l10n.audioInvalid);
+        return;
+      }
+    } else if (raw.isNotEmpty) {
+      pages = int.tryParse(raw);
+      if (pages == null || pages <= 0 || pages > 20000) {
+        setState(() => _error = l10n.editionPagesInvalid);
+        return;
+      }
+    }
+    final picked = _edition;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    await ref
+        .read(libraryRepositoryProvider)
+        .setOwned(
+          UserEdition(
+            editionId: picked?.id ?? ref.read(idGeneratorProvider).newId(),
+            workId: widget.work.id,
+            format: picked == null || picked.format == 'other' ? _format : picked.format,
+            owned: true,
+            isbn13: picked?.isbn13,
+            publisher: picked?.publisher,
+            coverUrl: picked?.coverUrl,
+            pageCount: pages,
+            audioDurationSec: seconds,
+          ),
+          owned: true,
+        );
+    navigator.pop();
+    messenger.showSnackBar(SnackBar(content: Text(l10n.editionAdded)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final choices = editionsForFormat(widget.work, _format);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: ChapterSpacing.sm,
+          children: [
+            for (final format in _formats)
+              ChoiceChip(
+                key: ValueKey('edition-format-$format'),
+                label: Text(_formatName(format)),
+                selected: _format == format,
+                onSelected: (_) => setState(() {
+                  _format = format;
+                  _error = null;
+                  _edition = editionsForFormat(widget.work, format).firstOrNull;
+                  _value.text = editionValue(_edition, format);
+                }),
+              ),
+          ],
+        ),
+        const SizedBox(height: ChapterSpacing.sm),
+        SizedBox(
+          height: bookRowHeight(context, coverWidth: 84),
+          child: ListView.separated(
+            key: const Key('edition-choices'),
+            scrollDirection: Axis.horizontal,
+            itemCount: choices.length + 1,
+            separatorBuilder: (_, _) => const SizedBox(width: ChapterSpacing.sm),
+            itemBuilder: (context, i) {
+              if (i == choices.length) {
+                return BookChoiceCard(
+                  key: const Key('edition-not-listed'),
+                  selected: _edition == null,
+                  onTap: () => setState(() {
+                    _edition = null;
+                    _error = null;
+                    _value.clear();
+                  }),
+                  child: SizedBox(
+                    width: 84,
+                    height: 126,
+                    child: Center(child: Text(l10n.editionNotListed, textAlign: TextAlign.center)),
+                  ),
+                );
+              }
+              final e = choices[i];
+              final value = editionValue(e, _format);
+              final year = (e.publishedDate?.length ?? 0) >= 4
+                  ? e.publishedDate!.substring(0, 4)
+                  : null;
+              return BookChoiceCard(
+                key: ValueKey('edition-choice-${e.id}'),
+                selected: _edition?.id == e.id,
+                onTap: () => setState(() {
+                  _edition = e;
+                  _error = null;
+                  _value.text = value;
+                }),
+                child: BookGridCard(
+                  coverWidth: 84,
+                  data: BookCardData(
+                    title: e.publisher ?? _formatName(_format),
+                    author: [
+                      if (value.isNotEmpty) _isAudio ? value : l10n.bookPages(e.pageCount!),
+                      ?year,
+                    ].join(' · '),
+                    coverUrl: e.coverUrl,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        if (_edition?.isbn13 != null) ...[
+          const SizedBox(height: ChapterSpacing.xs),
+          Text('ISBN ${_edition!.isbn13}', style: context.textTheme.bodySmall),
+        ],
+        const SizedBox(height: ChapterSpacing.md),
+        TextField(
+          key: const Key('edition-value'),
+          controller: _value,
+          keyboardType: _isAudio ? TextInputType.datetime : TextInputType.number,
+          decoration: InputDecoration(
+            labelText: _isAudio ? l10n.audioDuration : l10n.editionPagesOptional,
+            errorText: _error,
+          ),
+        ),
+        const SizedBox(height: ChapterSpacing.lg),
+        ChapterButton(
+          key: const Key('edition-save'),
+          label: l10n.editionAdd,
+          expand: true,
+          onPressed: _save,
+        ),
+      ],
+    );
+  }
+}
+
 class _AudiobookForm extends ConsumerStatefulWidget {
   const _AudiobookForm({required this.entry, required this.existing});
 
@@ -1154,30 +1445,75 @@ class _AudiobookFormState extends ConsumerState<_AudiobookForm> {
   }
 }
 
-/// One finished read: tap to set or correct its date.
-class _FinishedTile extends ConsumerWidget {
-  const _FinishedTile({required this.through});
+/// The start and finish dates of one read: tap either to set or correct it.
+class _ReadDates extends ConsumerWidget {
+  const _ReadDates({required this.through});
 
   final ReadThrough through;
+
+  // Midday, so the date stays the same in nearby time zones.
+  static DateTime _midday(DateTime d) => DateTime(d.year, d.month, d.day, 12);
+
+  Future<void> _pickStart(BuildContext context, WidgetRef ref) async {
+    final now = ref.read(clockProvider).now();
+    final finished = through.finishedAt?.toLocal();
+    final last = finished ?? now;
+    final started = through.startedAt?.toLocal();
+    final repo = ref.read(libraryRepositoryProvider);
+    final picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime(1900),
+      lastDate: last,
+      currentDate: now,
+      initialDate: started != null && !started.isAfter(last) ? started : last,
+    );
+    if (picked != null) await repo.setStartDate(through.id, _midday(picked));
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final at = through.finishedAt?.toLocal();
-    final locale = Localizations.localeOf(context).toString();
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      dense: true,
-      title: Text(
-        at == null ? l10n.finishedNoDate : l10n.finishedOn(DateFormat.yMMMd(locale).format(at)),
-        style: context.textTheme.bodyMedium,
+    final format = DateFormat.yMMMd(Localizations.localeOf(context).toString());
+    final started = through.startedAt?.toLocal();
+    final finished = through.finishedAt?.toLocal();
+    Widget cell(Key key, String text, String label, VoidCallback onTap) => Expanded(
+      child: InkWell(
+        key: key,
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Row(
+            children: [
+              Expanded(child: Text(text, style: context.textTheme.bodyMedium)),
+              Icon(Icons.edit_calendar_outlined, size: 18, semanticLabel: label),
+              const SizedBox(width: ChapterSpacing.sm),
+            ],
+          ),
+        ),
       ),
-      trailing: Icon(Icons.edit_calendar_outlined, semanticLabel: l10n.finishChangeDate),
-      onTap: () async {
-        final repo = ref.read(libraryRepositoryProvider);
-        final finish = await askFinishDate(context, ref, current: at);
-        if (finish != null) await repo.setFinishDate(through.id, finish);
-      },
+    );
+    return Row(
+      children: [
+        cell(
+          ValueKey('read-started-${through.id}'),
+          started == null ? l10n.startedNoDate : l10n.startedOn(format.format(started)),
+          l10n.startChangeDate,
+          () => unawaited(_pickStart(context, ref)),
+        ),
+        if (through.outcome == ReadThroughOutcome.finished)
+          cell(
+            ValueKey('read-finished-${through.id}'),
+            finished == null ? l10n.finishedNoDate : l10n.finishedOn(format.format(finished)),
+            l10n.finishChangeDate,
+            () async {
+              final repo = ref.read(libraryRepositoryProvider);
+              final finish = await askFinishDate(context, ref, current: finished);
+              if (finish != null) await repo.setFinishDate(through.id, finish);
+            },
+          )
+        else
+          const Spacer(),
+      ],
     );
   }
 }
