@@ -51,8 +51,7 @@ describe("FirestoreSpotifyStore", () => {
   it("refuses an expired attempt and removes it", async () => {
     await store.saveState(UID, { nonceHash: "h", expiresAt: NOW });
     expect(await store.consumeState(UID, "h", NOW)).toBe(false);
-    await store.saveState(UID, { nonceHash: "h", expiresAt: NOW });
-    await store.deleteLink(UID);
+    // Would pass if the expired attempt were still stored.
     expect(await store.consumeState(UID, "h", 0)).toBe(false);
   });
 

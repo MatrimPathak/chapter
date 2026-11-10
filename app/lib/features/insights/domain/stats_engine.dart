@@ -126,7 +126,7 @@ class StatsEngine {
   static const minSessionsForPace = 3;
   static const minSecondsForPace = 3600;
   static const minBooksForRanking = 3;
-  static const minSessionsForWeekdays = 7;
+  static const minSamplesForWeekdays = 7;
   static const minBooksForMonthlyRate = 3;
   static const minMonthsForMonthlyRate = 3;
   static const minActiveMonthsForTrend = 2;
@@ -307,10 +307,10 @@ class StatsEngine {
       minActiveMonthsForTrend;
 
   /// Reading seconds per weekday, Monday first (index 0), or `null` with fewer
-  /// than [minSessionsForWeekdays] sessions.
+  /// than [minSamplesForWeekdays] sessions.
   List<int>? weekdaySeconds({String? from, String? to}) {
     final list = _sessions.where((s) => _inRange(s.localDate, from, to)).toList();
-    if (list.length < minSessionsForWeekdays) return null;
+    if (list.length < minSamplesForWeekdays) return null;
     final out = List<int>.filled(7, 0);
     for (final s in list) {
       final d = _parse(s.localDate);
@@ -320,7 +320,7 @@ class StatsEngine {
   }
 
   /// Pages per weekday, Monday first (index 0), or `null` with pages on fewer
-  /// than [minSessionsForWeekdays] days.
+  /// than [minSamplesForWeekdays] days.
   List<int>? weekdayPages({String? from, String? to}) {
     final out = List<double>.filled(7, 0);
     var activeDays = 0;
@@ -331,7 +331,7 @@ class StatsEngine {
       activeDays++;
       out[day.weekday - 1] += d.pages;
     });
-    if (activeDays < minSessionsForWeekdays) return null;
+    if (activeDays < minSamplesForWeekdays) return null;
     return [for (final p in out) p.round()];
   }
 

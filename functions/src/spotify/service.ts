@@ -46,7 +46,14 @@ function parseState(state: string): { uid: string; nonce: string } | null {
   const dot = state.indexOf(".");
   if (dot <= 0 || dot === state.length - 1) return null;
   const uid = Buffer.from(state.slice(0, dot), "base64url").toString("utf8");
-  return uid.length > 0 ? { uid, nonce: state.slice(dot + 1) } : null;
+  // Public input that becomes a Firestore path: only a valid Auth uid may pass.
+  const valid =
+    uid.length > 0 &&
+    uid.length <= 128 &&
+    !uid.includes("/") &&
+    uid !== "." &&
+    uid !== "..";
+  return valid ? { uid, nonce: state.slice(dot + 1) } : null;
 }
 
 export class SpotifyService {

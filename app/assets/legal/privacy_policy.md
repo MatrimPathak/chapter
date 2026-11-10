@@ -28,7 +28,7 @@ Analytics. Off unless you turn it on, during setup or in Profile. Analytics even
 
 Crash reports. On by default, and you can turn them off during setup or in Profile. A crash report contains the type of error, where in the code it happened and basic device details, not the content of your library or notes.
 
-Links. Spotify and Audible links open in those services, under their own privacy policies. Chapter doesn't connect to your accounts there and can't see what you do.
+Links. Spotify and Audible links open in those services, under their own privacy policies. Opening a link doesn't connect Chapter to your account there. Chapter can't see what you do on Audible, or on Spotify unless you choose to link your account, as described above.
 
 Chapter doesn't sell your data, show ads or share your reading with other people. There are no public profiles.
 

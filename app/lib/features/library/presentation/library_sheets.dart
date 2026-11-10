@@ -127,8 +127,7 @@ class _AddFormState extends State<_AddForm> {
 
   // Settled once, so the row doesn't jump around as the reader taps.
   late final List<CatalogEdition> _editions = () {
-    bool english(CatalogEdition e) =>
-        const {'eng', 'en', 'english'}.contains(e.language?.trim().toLowerCase());
+    bool english(CatalogEdition e) => isEnglishLanguage(e.language);
     final all = widget.work.editions.take(30).toList();
     final anyEnglish = all.any(english);
     final shown = [
@@ -321,8 +320,7 @@ Future<void> showEditionPicker(
   final repo = ref.read(libraryRepositoryProvider);
   final typed = typedEditions(await repo.watchEditions(entry.workId).first, work);
   if (!context.mounted) return;
-  bool english(CatalogEdition e) =>
-      const {'eng', 'en', 'english'}.contains(e.language?.trim().toLowerCase());
+  bool english(CatalogEdition e) => isEnglishLanguage(e.language);
   final anyEnglish = work.editions.any(english);
   final choices =
       <UserEdition>[
@@ -1150,8 +1148,7 @@ Future<void> showAddEditionSheet(BuildContext context, CatalogWork work) => show
 /// The catalog's editions of [format], English first; only English when any
 /// exist. Audible also covers other audiobooks.
 List<CatalogEdition> editionsForFormat(CatalogWork work, String format) {
-  bool english(CatalogEdition e) =>
-      const {'eng', 'en', 'english'}.contains(e.language?.trim().toLowerCase());
+  bool english(CatalogEdition e) => isEnglishLanguage(e.language);
   // Hardcover leaves many editions unlabelled: they could be either print format.
   final unlabelled = format == 'paperback' || format == 'hardcover'
       ? work.editions.where((e) => e.format == 'other')

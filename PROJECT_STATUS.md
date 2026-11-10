@@ -12,7 +12,7 @@ This is Chapter's **central development tracker**. It is governed by the `chapte
 | Active phase | **Series page content: COMPLETED WITH WARNINGS, in review.** Release is BLOCKED on owner items: docs/07 |
 | Last Spotify work | **Spotify account linking (Tier B): COMPLETED WITH WARNINGS, in review.** Built and tested with fakes. Live testing waits on your Spotify Client ID and secret. See the pre-phase record below. |
 | Git publishing authorization | Granted for the series PR only ("Approved, open a PR"). Merge and functions deploy NOT GRANTED. |
-| Repository | Public at `MatrimPathak/chapter`. `main` at `4902a65`, four required CI checks. |
+| Repository | Public at `MatrimPathak/chapter`. `main` at `8dfa0c4`, four required CI checks. |
 
 ---
 
@@ -58,7 +58,7 @@ Statuses: NOT STARTED · PLANNED · IN PROGRESS · IN REVIEW · COMPLETED · BLO
 | 10 | Author & series management | 3 (pages), 6 (organization) | IN PROGRESS | Author and series pages done (Phase 3). Series entities come from Hardcover, connected in production since 2026-11-07. Library can filter by author and series (Phase 6). |
 | 11 | Personal notes & ratings | 6 | COMPLETED WITH WARNINGS | Notes with page anchors and conflict copies; half-star rating and review. |
 | 12 | Audible integration | 7 | COMPLETED WITH WARNINGS | Manual only, because there is no public API: audiobook edition, time progress, listening labels, store link. Goodreads, StoryGraph and Kindle clippings imports are also in this phase; none tested with real export files (W35). |
-| 13 | Spotify integration | 7 | COMPLETED WITH WARNINGS | Search links only. Web API (Tier B) not built; it needs your Spotify developer app, a Premium account and secrets. Tier B is built and awaiting live testing (see "Spotify account linking" pre-phase record). |
+| 13 | Spotify integration | 7 | COMPLETED WITH WARNINGS | Search links, plus Web API account linking (Tier B). Tier B is deployed; linking and now playing are confirmed with a real account through the local emulators, production linking is untested (see "Spotify account linking" pre-phase record). |
 | 14 | Offline synchronization | 2 (core) → 8 | COMPLETED WITH WARNINGS | Soak-tested across three simulated devices in Phase 8. Phase 2 core done (outbox, HLC, per-field LWW, SyncEngine, Firestore transaction push). Phase 4 adds collection pull with persisted cursors, atomic multi-document batches and append-only creates. |
 | 15 | Profile & settings | 2 (prefs), 8 (export/deletion) | COMPLETED WITH WARNINGS | Export and deletion done in Phase 8. Phase 2 part done: identity, theme, consents, sync status, sign-out. Export and deletion in Phase 8. |
 
@@ -70,7 +70,7 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 |---|---|---|---|---|
 | TD-1 | 2026-11-04 | Metadata / Firebase | Providers implemented in Cloud Functions (TypeScript); Blaze plan accepted; secrets in Secret Manager | docs/02 D1 |
 | TD-2 | 2026-11-04 | Auth | Android + iOS for v1; Sign in with Apple on iOS (App Store 4.8) | docs/01 §8 |
-| TD-3 | 2026-11-04 | Navigation | Home · Library · **Read** · Search · Profile | docs/02 §6 |
+| TD-3 | 2026-11-04, changed 2026-11-10 | Navigation | Home · Library · Shelves · Reading · Profile, with Search as a top-bar icon on every tab | docs/02 §6 |
 | TD-4 | 2026-11-04 | Offline sync | Drift as the single source of truth; transactional outbox + HLC; Firestore offline persistence disabled | docs/02 D2–D3 |
 | TD-5 | 2026-11-04 | Data model | Append-only ProgressEvents and Sessions; ReadThroughs for rereads; per-field LWW for library entries | docs/03 §4 |
 | TD-6 | 2026-11-04 | Book/Edition | Work and Edition are separate aggregates; progress belongs to the work as a fraction; cross-format mapping is labelled approximate | docs/02 D5, docs/03 §7 |
@@ -124,7 +124,7 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ## Shelves plan (pre-phase record)
 
-**Status:** COMPLETED WITH WARNINGS (2026-11-10). Built and checked on the simulator against the emulators. Warning: production rules are deployed, but the code is not yet committed, so the deployed rules are ahead of `main` (see Actual result). Publishing NOT GRANTED.
+**Status:** COMPLETED WITH WARNINGS (2026-11-10). Built and checked on the simulator against the emulators. Warning: production rules and functions are deployed from PR #9, which isn't merged, so production is ahead of `main` (see Actual result). Publishing NOT GRANTED.
 
 **Objectives:** group books into shelves you name, with Favorites built in, and give Shelves its own tab.
 
@@ -548,7 +548,7 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 ### 2026-11-09 — Spotify account linking (COMPLETED WITH WARNINGS)
 
-- **Built:** Link Spotify in Profile, Account section, for every signed-in user once the secrets are set (Link, Reconnect, Unlink). Server-side login with single-use `state`, tokens only under `private_integrations/{uid}/services/`. Now playing on the timer, with cover art, title, artist, attribution and link back. Playlist picker, play, pause and resume.
+- **Built:** Link Spotify in Profile, Account section (moved to Connected services on 2026-11-10), for every signed-in user once the secrets are set (Link, Reconnect, Unlink). Server-side login with single-use `state`, tokens only under `private_integrations/{uid}/services/`. Now playing on the timer, with cover art, title, artist, attribution and link back. Playlist picker, play, pause and resume.
 - **Files created:** `functions/src/spotify/{api,service,store,callables,service.test}.ts`, `functions/test/integration/spotifyStore.test.ts`, `app/lib/features/integrations/domain/spotify.dart`, `app/lib/features/integrations/data/spotify_remote.dart`, `app/lib/features/integrations/presentation/spotify_widgets.dart`, `app/test/features/integrations/spotify_test.dart`.
 - **Files modified:** `functions/src/index.ts`, `functions/src/catalog/http.ts` (PUT), `functions/src/catalog/callables.ts` (fallback switches), `functions/package.json` (integration tests run serially), `functions/test/rules/firestore.rules.test.ts`, `functions/test/integration/deleteAccount.test.ts`, `app/lib/app/providers.dart`, `app/lib/app/app.dart` (keyboard), `app/lib/l10n/app_en.arb`, `app/lib/features/integrations/presentation/{integrations_providers,integrations_screen}.dart`, `app/lib/features/profile/presentation/profile_screen.dart`, `app/lib/features/reading/presentation/session_screen.dart`, `app/assets/legal/privacy_policy.md`, docs/04, docs/05, docs/07, `docs/store/data-safety.md`. No dependencies added.
 - **Also changed at your request:** Open Library and Google Books are off through `FALLBACK_PROVIDERS` in `functions/src/catalog/callables.ts`. Takes effect in production only after a functions deploy, which is NOT GRANTED. Tapping empty space now closes the keyboard.

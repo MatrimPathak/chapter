@@ -231,8 +231,18 @@ class LwwLibraryRepository implements LibraryRepository {
     final rt = ReadThrough.fromFields(readThroughId, (await _store.read(path)).fields);
     if (rt == null) return;
     final finished = rt.finishedAt;
-    if (finished != null && date.isAfter(finished)) return;
-    await _store.write(path, {'startedAt': _iso(date)});
+    var start = date;
+    if (finished != null) {
+      DateTime day(DateTime t) {
+        final local = t.toLocal();
+        return DateTime(local.year, local.month, local.day);
+      }
+
+      if (day(date).isAfter(day(finished))) return;
+      // Same day: the picker stores midday, which may be after the finish.
+      if (date.isAfter(finished)) start = finished;
+    }
+    await _store.write(path, {'startedAt': _iso(start)});
     _onLocalWrite();
   }
 

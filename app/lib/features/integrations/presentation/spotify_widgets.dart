@@ -199,6 +199,11 @@ class _SpotifyNowPlayingCardState extends ConsumerState<SpotifyNowPlayingCard> {
         return;
       }
       next = SpotifyNowPlayingCard.retryInterval;
+    } on Object {
+      // A malformed reply must never stop polling or reach the timer.
+      if (!mounted) return;
+      setState(() => _failed = true);
+      next = SpotifyNowPlayingCard.retryInterval;
     } finally {
       _fetching = false;
     }

@@ -18,6 +18,7 @@ const ACCOUNTS = "https://accounts.spotify.com";
 const API = "https://api.spotify.com/v1";
 const TIMEOUT_MS = 8000;
 const PLAYLIST_PAGE = 50;
+const PLAYLIST_MAX_PAGES = 10; // 500 playlists is plenty for a picker
 
 export type SpotifyReason =
   | "not-configured"
@@ -189,20 +190,26 @@ export class SpotifyApi {
   }
 
   async playlists(accessToken: string): Promise<SpotifyPlaylist[]> {
-    const { status, json } = await this.call(
-      accessToken,
-      "GET",
-      `/me/playlists?limit=${PLAYLIST_PAGE}`,
-    );
-    if (status !== 200) throw failureFor(status, json);
-    return asArray(asRecord(json)?.items).flatMap((raw) => {
-      const playlist = asRecord(raw);
-      const id = asString(playlist?.id);
-      const name = asString(playlist?.name);
-      return id && name
-        ? [{ id, name, imageUrl: largestImage(playlist?.images) }]
-        : [];
-    });
+    const all: SpotifyPlaylist[] = [];
+    for (let page = 0; page < PLAYLIST_MAX_PAGES; page++) {
+      const { status, json } = await this.call(
+        accessToken,
+        "GET",
+        `/me/playlists?limit=${PLAYLIST_PAGE}&offset=${page * PLAYLIST_PAGE}`,
+      );
+      if (status !== 200) throw failureFor(status, json);
+      const body = asRecord(json);
+      for (const raw of asArray(body?.items)) {
+        const playlist = asRecord(raw);
+        const id = asString(playlist?.id);
+        const name = asString(playlist?.name);
+        if (id && name) {
+          all.push({ id, name, imageUrl: largestImage(playlist?.images) });
+        }
+      }
+      if (!asString(body?.next)) break;
+    }
+    return all;
   }
 
   /** Starts [playlistId], or resumes what was playing when there is none. */

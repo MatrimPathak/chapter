@@ -75,7 +75,7 @@ abstract class CatalogSeriesRef with _$CatalogSeriesRef {
   factory CatalogSeriesRef.fromJson(Map<String, dynamic> json) => _$CatalogSeriesRefFromJson(json);
 }
 
-bool _isEnglish(String? language) =>
+bool isEnglishLanguage(String? language) =>
     const {'eng', 'en', 'english'}.contains(language?.trim().toLowerCase());
 
 @freezed
@@ -125,8 +125,8 @@ abstract class CatalogWork with _$CatalogWork {
   /// there is one, because the app is in English.
   CatalogEdition? get defaultEdition {
     final chosen = editions.where((e) => e.id == defaultEditionId).firstOrNull;
-    if (chosen != null && _isEnglish(chosen.language)) return chosen;
-    final english = editions.where((e) => _isEnglish(e.language));
+    if (chosen != null && isEnglishLanguage(chosen.language)) return chosen;
+    final english = editions.where((e) => isEnglishLanguage(e.language));
     return english.where((e) => e.pageCount != null).firstOrNull ??
         english.firstOrNull ??
         chosen ??

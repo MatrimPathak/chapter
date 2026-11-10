@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { FetchJson } from "../catalog/http";
 import { SPOTIFY_SCOPES } from "./api";
@@ -195,6 +195,17 @@ describe("completeLink", () => {
     now += 10 * 60 * 1000;
     expect(await service.completeLink({ code: "abc", state })).toBe("expired");
     expect(sent).toHaveLength(0);
+  });
+
+  it.each([
+    ["a slash", "a/b"],
+    ["a dot segment", ".."],
+    ["too many characters", "x".repeat(129)],
+  ])("never looks up a uid with %s", async (_, uid) => {
+    const lookup = vi.spyOn(store, "consumeState");
+    const state = `${Buffer.from(uid).toString("base64url")}.nonce`;
+    expect(await service.completeLink({ code: "abc", state })).toBe("expired");
+    expect(lookup).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -451,6 +462,28 @@ describe("playback", () => {
       { status: 403, json: { error: { reason: "ALREADY_PAUSED" } } },
     ];
     await expect(service.pause("u1")).resolves.toBeUndefined();
+  });
+
+  it("follows Spotify's pages until there are no more", async () => {
+    responses = [
+      {
+        status: 200,
+        json: {
+          items: [{ id: "a", name: "First" }],
+          next: "https://api.spotify.com/v1/me/playlists?offset=50",
+        },
+      },
+      {
+        status: 200,
+        json: { items: [{ id: "b", name: "Second" }], next: null },
+      },
+    ];
+    const playlists = await service.playlists("u1");
+    expect(playlists.map((p) => p.id)).toEqual(["a", "b"]);
+    expect(sent.map((r) => r.url)).toEqual([
+      expect.stringContaining("offset=0"),
+      expect.stringContaining("offset=50"),
+    ]);
   });
 
   it("lists playlists without unusable entries", async () => {

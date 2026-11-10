@@ -207,6 +207,16 @@ void main() {
       expect((await phone.throughs('w1')).single.startedAt, DateTime.utc(2020, 6));
     });
 
+    test('a start date on the finish day is kept, never after the finish', () async {
+      await phone.repo.add(workId: 'w1', book: book, status: ReadingStatus.reading);
+      final rt = (await phone.throughs('w1')).single;
+      final finished = DateTime(2020, 6, 10, 9);
+      await phone.repo.setStatus('w1', ReadingStatus.read);
+      await phone.repo.setFinishDate(rt.id, ReadFinish.on(finished));
+      await phone.repo.setStartDate(rt.id, DateTime(2020, 6, 10, 12));
+      expect((await phone.throughs('w1')).single.startedAt, finished.toUtc());
+    });
+
     test('an earlier finish date moves the start back with it', () async {
       await phone.repo.add(workId: 'w1', book: book, status: ReadingStatus.reading);
       final rt = (await phone.throughs('w1')).single;
