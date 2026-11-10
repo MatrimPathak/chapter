@@ -131,6 +131,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 TabBar(
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
+                  // Lines the first chip up with the search field above.
+                  padding: const EdgeInsets.symmetric(horizontal: ChapterSpacing.gutter),
                   tabs: [
                     for (final s in _shelves)
                       Tab(

@@ -137,6 +137,26 @@ void main() {
     await unmountApp(tester);
   });
 
+  testWidgets('with nothing shelved, Shelves invites you to make one', (tester) async {
+    await launch(tester);
+    await openShelves(tester);
+    expect(find.byKey(const Key('shelves-empty')), findsOneWidget);
+    expect(find.byKey(const Key('new-shelf')), findsNothing);
+
+    await tester.tap(find.text('New shelf'));
+    await settle(tester);
+    await tester.enterText(find.byKey(const Key('shelf-name')), 'Holiday');
+    await tester.tap(find.byKey(const Key('shelf-save')));
+    await settle(tester);
+    expect(find.text('Holiday'), findsOneWidget);
+    expect(find.text('Tap the heart on a book to add it here.'), findsOneWidget);
+
+    await tester.tap(find.text('Add books'));
+    await settle(tester);
+    expect(find.byKey(ValueKey('add-book-${theDeal.id}')), findsOneWidget);
+    await unmountApp(tester);
+  });
+
   testWidgets('Favourites comes first and follows the heart', (tester) async {
     await library.setFavorite(theDeal.id, favorite: true);
     await launch(tester);
@@ -171,15 +191,15 @@ void main() {
   });
 
   testWidgets('adding to Favourites sets the heart', (tester) async {
+    await shelves.create('Holiday'); // so the shelves list shows
     await launch(tester);
     await openShelves(tester);
-    await tester.tap(find.byKey(const Key('shelf-view-favorites')));
-    await settle(tester);
-    await tester.tap(find.byKey(const Key('add-books')));
+    await tester.tap(find.byKey(const ValueKey('shelf-empty-favorites')));
     await settle(tester);
     await tester.tap(find.byKey(ValueKey('add-book-${theDeal.id}')));
     await settle(tester);
-    expect(find.text('Reading 1'), findsOneWidget);
+    // The Favourites row now shows the book instead of the empty placeholder.
+    expect(find.byKey(const ValueKey('shelf-empty-favorites')), findsNothing);
     await unmountApp(tester);
   });
 
