@@ -29,6 +29,21 @@ class LwwProfileRepository implements ProfileRepository {
       _write({ProfileFields.defaultTimerMin: minutes.clamp(1, 600)});
 
   @override
+  Future<void> setBookViews({
+    String? librarySort,
+    bool? libraryGrid,
+    String? shelfSort,
+    bool? shelfGrid,
+    bool? addBooksGrid,
+  }) => _write({
+    ProfileFields.librarySort: ?librarySort,
+    ProfileFields.libraryGrid: ?libraryGrid,
+    ProfileFields.shelfSort: ?shelfSort,
+    ProfileFields.shelfGrid: ?shelfGrid,
+    ProfileFields.addBooksGrid: ?addBooksGrid,
+  });
+
+  @override
   Future<void> setConsents({bool? analytics, bool? crash}) =>
       _write({ProfileFields.analyticsConsent: ?analytics, ProfileFields.crashConsent: ?crash});
 

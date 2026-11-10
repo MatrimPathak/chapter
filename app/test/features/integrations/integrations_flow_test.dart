@@ -379,7 +379,7 @@ void main() {
     await settle(tester);
     expect(find.text('Start a reading session'), findsOneWidget);
     await menu('Change edition');
-    await tester.tap(find.textContaining('12:00:00'));
+    await tester.tap(find.textContaining('12:00:00').last);
     await settle(tester);
     final entry = (await tester.runAsync(() => repo.watchEntry(theDeal.id).first))!;
     expect(entry.activeEditionId, audio.single.editionId);

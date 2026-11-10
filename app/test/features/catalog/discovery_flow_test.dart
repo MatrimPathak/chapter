@@ -17,7 +17,7 @@ Future<FakeCatalogRepository> openSearch(WidgetTester tester, {FakeCatalogReposi
   );
   await tester.tap(find.text('Start reading'));
   await settle(tester);
-  await tester.tap(find.text('Search').last);
+  await tester.tap(find.byKey(const Key('open-search')).first);
   await settle(tester);
   return catalog;
 }
@@ -58,7 +58,7 @@ void main() {
 
     await tester.tap(find.text('The Deal').last);
     await settle(tester);
-    expect(find.text('The international sensation'), findsOneWidget);
+    expect(find.text('The international sensation'), findsNothing);
     expect(find.text('Book 1 of Off-Campus'), findsOneWidget);
     expect(find.text('374 pages · 2015'), findsOneWidget);
     expect(find.text('Add to library'), findsOneWidget);

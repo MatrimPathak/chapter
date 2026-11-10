@@ -10,17 +10,16 @@ import '../../insights/presentation/insights_providers.dart';
 import '../../library/domain/library_models.dart';
 import '../domain/note.dart';
 
-/// The reader's own words on a book: rating, review and notes. Private, and
-/// never sent to analytics.
-class BookNotesSection extends ConsumerWidget {
-  const BookNotesSection({required this.entry, super.key});
+/// The reader's rating and review of a book. Private, and never sent to
+/// analytics.
+class BookRatingSection extends ConsumerWidget {
+  const BookRatingSection({required this.entry, super.key});
 
   final LibraryEntry entry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final notes = ref.watch(bookNotesProvider(entry.workId)).value ?? const <Note>[];
     final review = entry.review;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -43,10 +42,38 @@ class BookNotesSection extends ConsumerWidget {
           child: TextButton(
             key: const Key('edit-review'),
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
-            onPressed: () => unawaited(_showReviewSheet(context, ref)),
+            onPressed: () => unawaited(_showReviewSheet(context)),
             child: Text(review == null ? l10n.reviewAdd : l10n.reviewEdit),
           ),
         ),
+      ],
+    );
+  }
+
+  Future<void> _showReviewSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return showChapterSheet<void>(
+      context: context,
+      title: l10n.reviewTitle,
+      enableDrag: false, // a swipe would skip the unsaved-text check
+      builder: (_) => _ReviewForm(entry: entry),
+    );
+  }
+}
+
+/// The reader's notes on a book. Private, and never sent to analytics.
+class BookNotesSection extends ConsumerWidget {
+  const BookNotesSection({required this.entry, super.key});
+
+  final LibraryEntry entry;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final notes = ref.watch(bookNotesProvider(entry.workId)).value ?? const <Note>[];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         _Heading(l10n.notesTitle),
         for (final n in notes) _NoteTile(note: n),
         Align(
@@ -60,16 +87,6 @@ class BookNotesSection extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Future<void> _showReviewSheet(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    return showChapterSheet<void>(
-      context: context,
-      title: l10n.reviewTitle,
-      enableDrag: false, // a swipe would skip the unsaved-text check
-      builder: (_) => _ReviewForm(entry: entry),
     );
   }
 }

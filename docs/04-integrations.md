@@ -59,15 +59,17 @@ The internal ID is a UUIDv7. Records resolve to the same work through `catalog_p
 | **Open Library** | Public, no key | Send an identifying `User-Agent` (app name and contact). Be polite with rate limits (~1 request/s unidentified, higher when identified). Load covers by **cover ID** (`/b/id/…`), not by ISBN, because the ISBN cover endpoint is IP rate-limited. Data quality varies; series data is sparse. Provides `/trending/*.json` for the discovery section. Author works come from `search.json?q=author_key:…&sort=editions` rather than `/authors/{id}/works.json`, which is ordered by recency and returns translations without covers first. Bios contain HTML and Markdown and are cleaned server-side. |
 | **Google Books** | API key (server-side) | The default quota is about 1,000 requests/day (check the GCP console; an increase can be requested). Good descriptions and publisher search. Weak series data and occasional mismatched ISBNs. **Keyless requests are unusable** (on 2026-11-04 they returned HTTP 429 with a per-day limit of 0), so the provider is disabled until `GOOGLE_BOOKS_KEY` is set. |
 
-### 1.6 Implementation status (Phase 3)
+### 1.6 Implementation status (updated 2026-11-09)
 
 | Provider | Status |
 |---|---|
 | Open Library | Live and verified end to end (search, ISBN, work, author, trending). |
-| Hardcover | Implemented from the documented GraphQL shapes and tested against schema fixtures. **Not verified live**: no token yet (`SPIKE-88083021`). It is disabled until the `HARDCOVER_TOKEN` secret is set. |
-| Google Books | Implemented and tested against schema fixtures. Disabled until the `GOOGLE_BOOKS_KEY` secret is set. |
+| Hardcover | **Primary provider, live in production.** Token added to Secret Manager and verified through the app on 2026-11-07 (series searches only Hardcover can answer). Local emulators need `HARDCOVER_TOKEN` in `functions/.secret.local`, or Hardcover stays off there. Production-use permission is still open (`SPIKE-88083021`). |
+| Google Books | Implemented and tested against schema fixtures. The key worked in a direct ISBN lookup on 2026-11-07, but results have not been seen through the app. Off wherever the `GOOGLE_BOOKS_KEY` secret is empty. |
 
-Consequence while Hardcover is off: series entities (ids, positions, reading order) don't exist, so the book screen shows the series *name* only and the series screen is unreachable.
+Consequence wherever Hardcover is off, such as a local emulator without a token: series entities (ids, positions, reading order) don't exist, so the book screen shows the series *name* only and the series screen is unreachable.
+
+**Provider switches (2026-11-09):** Open Library and Google Books are off (`FALLBACK_PROVIDERS`, TD-54). Hardcover is the only live provider, and it has no trending source. Already saved catalog data is still served.
 
 ## 2. Audible
 
@@ -112,7 +114,18 @@ Consequence while Hardcover is off: series entities (ids, positions, reading ord
 
 If Spotify fails, the only effect is that the music card is hidden.
 
-**Implemented (Phase 7):** Tier A only, with public search links (`open.spotify.com/search/...`) in place of curated playlists until real ones are chosen. Tier B is not in the app.
+**Implemented (Phase 7):** Tier A only, with public search links (`open.spotify.com/search/...`) in place of curated playlists until real ones are chosen. Tier B was added afterwards: see below.
+
+**Implemented (2026-11-09):** Tier B: Link Spotify in Profile, now playing on the timer, playlists and playback. Server-side Authorization Code flow with the client secret (TD-53), not PKCE. Not yet tested against a real Spotify account.
+
+**Re-verified 2026-11-09 for the Tier B plan (`PROJECT_STATUS.md`):**
+- Extended Quota applications are accepted only from registered organizations with at least 250k monthly active users, so Tier B stays limited to 5 allow-listed users.
+- Refresh tokens last 6 months from authorization, and refreshing doesn't extend them. Expiry returns `invalid_grant`.
+- Players, devices, currently playing and the current user's playlists remain available in Development Mode. The profile no longer includes `country`, `email`, `explicit_content`, `followers` or `product`, so Premium can't be detected in advance.
+- Accounts not on the allow-list may be able to sign in, but their API calls return 403.
+- Redirect URIs must be HTTPS or an explicit loopback address (`http://127.0.0.1:PORT`). `localhost` is not allowed.
+- Quotas in Development Mode are counted per developer account (July 2026). Exceeding one returns 429 with reason `QUOTA_EXCEEDED`.
+- The Developer Policy requires Spotify attribution and a link back, an easy way to disconnect that deletes the user's data, and a privacy policy. It forbids derived listening metrics, and it bars selling access, e-commerce and advertising in an app with streaming.
 
 ## 5. Focus / Do Not Disturb
 

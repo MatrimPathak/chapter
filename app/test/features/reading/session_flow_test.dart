@@ -55,6 +55,10 @@ void main() {
       ),
     );
     await repo.recordProgress(theDeal.id, const ReadingPosition.page(page: 100));
+    await repo.add(
+      workId: 'want-to-read-book',
+      book: const BookSummary(title: 'Later', authorNames: ['Someone'], pageCount: 200),
+    );
   });
 
   Future<void> launch(WidgetTester tester) async {
@@ -71,6 +75,15 @@ void main() {
     await tester.tap(find.text('Start reading')); // onboarding
     await settle(tester);
   }
+
+  testWidgets('Read tab offers only books in Reading', (tester) async {
+    await launch(tester);
+    await tester.tap(find.text('Reading').last);
+    await settle(tester);
+    expect(find.byKey(ValueKey('read-book-${theDeal.id}')), findsOneWidget);
+    expect(find.byKey(const ValueKey('read-book-want-to-read-book')), findsNothing);
+    await unmountApp(tester);
+  });
 
   testWidgets('Read tab: start, pause, end, edit the summary and save', (tester) async {
     tester.view.physicalSize = const Size(1080, 6000);
@@ -238,10 +251,20 @@ void main() {
     await launch(tester);
     await tester.tap(find.text('Reading').last);
     await settle(tester);
+    // The page's own list, not the sideways row of books.
+    final page = find.byWidgetPredicate((w) => w is Scrollable && w.axis == Axis.vertical).first;
+    await tester.scrollUntilVisible(
+      find.text('Do Not Disturb while reading'),
+      200,
+      scrollable: page,
+    );
     await tester.ensureVisible(find.text('Do Not Disturb while reading'));
+    await tester.pump();
     await tester.tap(find.text('Do Not Disturb while reading'));
     await tester.pump();
+    await tester.scrollUntilVisible(find.byKey(const Key('read-start')), 200, scrollable: page);
     await tester.ensureVisible(find.byKey(const Key('read-start')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('read-start')));
     await settle(tester);
 

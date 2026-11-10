@@ -22,9 +22,11 @@ Future<void> openTheDeal(WidgetTester tester) async {
     catalog: repo,
   );
   await tester.scrollUntilVisible(find.text('Start reading'), 200);
+  await tester.ensureVisible(find.text('Start reading'));
+  await tester.pump();
   await tester.tap(find.text('Start reading'));
   await settle(tester);
-  await tester.tap(find.text('Search').last);
+  await tester.tap(find.byKey(const Key('open-search')).first);
   await settle(tester);
   await tester.enterText(find.byType(TextField), 'the deal');
   await settle(tester);
@@ -63,6 +65,9 @@ void main() {
 
     // Home: Continue reading.
     await tester.pageBack();
+    await settle(tester);
+    await tester.pump(const Duration(seconds: 1)); // let the book page finish closing
+    await tester.pageBack(); // Search opens above the tabs
     await settle(tester);
     await tester.tap(find.text('Home'));
     await settle(tester);
@@ -103,11 +108,9 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, 'Read'), findsOneWidget);
     expect(find.text('Read once'), findsOneWidget);
 
-    await tester.ensureVisible(find.byType(PopupMenuButton<String>));
+    await tester.ensureVisible(find.byKey(const Key('remove-from-library')));
     await settle(tester);
-    await tester.tap(find.byType(PopupMenuButton<String>));
-    await settle(tester);
-    await tester.tap(find.text('Remove from library'));
+    await tester.tap(find.byKey(const Key('remove-from-library')));
     await settle(tester);
     await tester.tap(find.text('Remove from library').last);
     await settle(tester);
@@ -137,6 +140,9 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Add to library').last);
     await settle(tester);
     await tester.pageBack();
+    await settle(tester);
+    await tester.pump(const Duration(seconds: 1)); // let the book page finish closing
+    await tester.pageBack(); // Search opens above the tabs
     await settle(tester);
     await tester.tap(find.text('Library'));
     await settle(tester);

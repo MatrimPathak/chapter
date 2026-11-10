@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/providers.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../integrations/presentation/spotify_widgets.dart';
 import '../../library/domain/library_models.dart';
 import '../../library/presentation/library_providers.dart';
 import '../../library/presentation/library_sheets.dart';
@@ -182,6 +183,8 @@ class _TimerView extends ConsumerWidget {
                         onPressed: () => unawaited(enableFocusFlow(context, ref)),
                       ),
                     ],
+                    // Keyed: the rows above come and go, and polling lives in its state.
+                    const SpotifyNowPlayingCard(key: ValueKey('spotify-now-playing')),
                     const Spacer(),
                     _ControlRow(
                       primary: ChapterButton(

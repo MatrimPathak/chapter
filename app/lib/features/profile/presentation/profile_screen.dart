@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/providers.dart';
 import '../../../app/router/routes.dart';
+import '../../../app/router/search_action.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/sync/sync_status.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../insights/presentation/insights_providers.dart';
+import '../../integrations/presentation/spotify_widgets.dart';
 import '../../library/presentation/library_providers.dart';
 import '../application/account_actions.dart';
 import '../domain/profile_repository.dart';
@@ -35,7 +37,7 @@ class ProfileScreen extends ConsumerWidget {
     ProfileRepository repo() => ref.read(profileRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.navProfile)),
+      appBar: AppBar(title: Text(l10n.navProfile), actions: const [SearchAction()]),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: ChapterSpacing.lg),
         children: [
@@ -148,6 +150,7 @@ class ProfileScreen extends ConsumerWidget {
           _SectionHeader(l10n.profileAccount),
           _Group(
             children: [
+              const SpotifyLinkRow(),
               ListTile(
                 leading: const Icon(Icons.logout_rounded),
                 title: Text(l10n.signOut),

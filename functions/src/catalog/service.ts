@@ -83,7 +83,7 @@ export class CatalogService {
         throw e;
       });
       return {
-        results: found ? [summaryOf(found.work)] : [],
+        results: found ? [matchedSummaryOf(found)] : [],
         page: 1,
         hasMore: false,
         provider: null,
@@ -162,10 +162,17 @@ export class CatalogService {
       }
       throw new CatalogError("not-found", "No provider knows this ISBN");
     }
-    const candidates: MergeCandidate[] = hits.map((h) => ({
-      work: withEdition(h.data.work, h.data),
-      fetchedAt: h.fetchedAt,
-    }));
+    // A lookup returns one edition; the book needs them all, or the saved copy
+    // would stay at one edition until its next refresh.
+    const candidates: MergeCandidate[] = await Promise.all(
+      hits.map(async (h) => {
+        const full = await this.orchestrator.getWork(h.data.work.ref);
+        return {
+          work: withEdition(full.ok ? full.data : h.data.work, h.data),
+          fetchedAt: h.fetchedAt,
+        };
+      }),
+    );
     const work = await this.resolveAndSave(candidates, isbn13, known?.workId);
     const edition = work.editions.find((e) => e.isbn13 === isbn13);
     return { work, editionId: edition?.id ?? null };
@@ -184,7 +191,10 @@ export class CatalogService {
         ) ?? null;
 
     const existing = workId ? await this.store.getWork(workId) : null;
-    const relink = existing !== null && lacksSeriesLink(existing);
+    // Also heals books saved from an ISBN lookup with a single edition.
+    const relink =
+      existing !== null &&
+      (lacksSeriesLink(existing) || existing.editions.length <= 1);
     if (
       existing &&
       this.isFresh(existing.refreshedAt, relink ? SERIES_LINK_RETRY : WORK_TTL)
@@ -570,6 +580,17 @@ function summaryOfHit(h: RawWorkHit): WorkSummary {
     seriesName: h.seriesName ?? null,
     seriesPosition: h.seriesPosition ?? null,
     pageCount: h.pageCount ?? null,
+  };
+}
+
+/** A result for one exact edition: its id, and its cover rather than the work's. */
+function matchedSummaryOf(found: WorkResult): WorkSummary {
+  const summary = summaryOf(found.work);
+  const edition = found.work.editions.find((e) => e.id === found.editionId);
+  return {
+    ...summary,
+    matchedEditionId: found.editionId,
+    coverUrl: edition?.coverUrl ?? summary.coverUrl,
   };
 }
 

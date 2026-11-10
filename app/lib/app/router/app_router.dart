@@ -22,6 +22,8 @@ import '../../features/reading/presentation/read_screen.dart';
 import '../../features/reading/presentation/session_screen.dart';
 import '../../features/scanner/presentation/scan_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
+import '../../features/shelves/presentation/shelf_screen.dart';
+import '../../features/shelves/presentation/shelves_screen.dart';
 import 'routes.dart';
 import 'scaffold_with_nav.dart';
 import 'session_phase.dart';
@@ -102,12 +104,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.bookPattern,
         parentNavigatorKey: _rootKey,
-        builder: (_, state) => BookDetailScreen(workKey: state.pathParameters['key']!),
+        builder: (_, state) => BookDetailScreen(
+          workKey: state.pathParameters['key']!,
+          editionId: state.uri.queryParameters['edition'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.authorPattern,
         parentNavigatorKey: _rootKey,
         builder: (_, state) => AuthorScreen(authorKey: state.pathParameters['key']!),
+      ),
+      GoRoute(
+        path: AppRoutes.search,
+        parentNavigatorKey: _rootKey,
+        builder: (_, _) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.shelfPattern,
+        parentNavigatorKey: _rootKey,
+        builder: (_, state) => ShelfScreen(shelfId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.seriesPattern,
@@ -119,7 +134,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         branches: [
           _branch(AppRoutes.home, const HomeScreen()),
           _branch(AppRoutes.library, const LibraryScreen()),
-          _branch(AppRoutes.search, const SearchScreen()),
+          _branch(AppRoutes.shelves, const ShelvesScreen()),
           _branch(AppRoutes.read, const ReadScreen()),
           _branch(AppRoutes.profile, const ProfileScreen()),
         ],

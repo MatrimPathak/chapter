@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const home = '/home';
   static const library = '/library';
   static const read = '/read';
+  static const shelves = '/shelves';
   static const search = '/search';
   static const profile = '/profile';
 
@@ -16,6 +17,7 @@ abstract final class AppRoutes {
   static const bookPattern = '/book/:key';
   static const authorPattern = '/author/:key';
   static const seriesPattern = '/series/:id';
+  static const shelfPattern = '/shelf/:id';
 
   /// Full-screen timer / summary of the live session (root navigator).
   static const session = '/session';
@@ -30,7 +32,11 @@ abstract final class AppRoutes {
   static const importCsv = '/integrations/import';
   static const importClippings = '/integrations/clippings';
 
-  static String book(String key) => '/book/${Uri.encodeComponent(key)}';
+  /// [editionId] opens the book at one specific edition, such as a scanned one.
+  static String book(String key, {String? editionId}) =>
+      '/book/${Uri.encodeComponent(key)}'
+      '${editionId == null ? '' : '?edition=${Uri.encodeQueryComponent(editionId)}'}';
+  static String shelf(String id) => '/shelf/${Uri.encodeComponent(id)}';
   static String author(String key) => '/author/${Uri.encodeComponent(key)}';
   static String series(String id) => '/series/${Uri.encodeComponent(id)}';
 
@@ -38,5 +44,5 @@ abstract final class AppRoutes {
   static const gateRoutes = {splash, signIn, onboarding};
 
   /// Bottom-navigation order (approved TD-3).
-  static const tabs = [home, library, read, search, profile];
+  static const tabs = [home, library, shelves, read, profile];
 }

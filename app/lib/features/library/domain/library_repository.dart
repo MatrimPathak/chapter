@@ -67,6 +67,10 @@ abstract interface class LibraryRepository {
   /// progress events are never edited.
   Future<void> setFinishDate(String readThroughId, ReadFinish finish);
 
+  /// Sets or corrects when a read began, on any read. A date after the read's
+  /// finish date is ignored.
+  Future<void> setStartDate(String readThroughId, DateTime date);
+
   /// Records progress in the active edition. Starts reading if needed.
   /// Returns the stored event, or `null` when the position can't be
   /// converted (e.g. a page number in a book of unknown length).

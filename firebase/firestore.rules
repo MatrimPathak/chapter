@@ -24,7 +24,8 @@ service cloud.firestore {
     // app/lib/features/profile/domain/user_preferences.dart (ProfileFields).
     function profileFields() {
       return ['displayName', 'photoUrl', 'email', 'onboardingDone', 'theme',
-              'analyticsConsent', 'crashConsent', 'defaultTimerMin', 'weekStartsOn'];
+              'analyticsConsent', 'crashConsent', 'defaultTimerMin', 'weekStartsOn',
+              'librarySort', 'libraryGrid', 'shelfSort', 'shelfGrid', 'addBooksGrid'];
     }
 
     function optionalString(data, key, maxLen) {
@@ -46,6 +47,11 @@ service cloud.firestore {
         && clock.values().size() == clock.keys().size();
     }
 
+    function optionalBookSort(data, key) {
+      return !(key in data)
+        || data[key] in ['recent', 'title', 'author', 'series', 'added', 'progress'];
+    }
+
     function validProfile(data) {
       return data.keys().hasOnly(profileFields().concat(['fieldClock', 'updatedAt']))
         && data.keys().hasAll(['fieldClock', 'updatedAt'])
@@ -58,6 +64,11 @@ service cloud.firestore {
         && optionalBool(data, 'onboardingDone')
         && optionalBool(data, 'analyticsConsent')
         && optionalBool(data, 'crashConsent')
+        && optionalBookSort(data, 'librarySort')
+        && (optionalBookSort(data, 'shelfSort') || data.shelfSort == 'manual')
+        && optionalBool(data, 'libraryGrid')
+        && optionalBool(data, 'shelfGrid')
+        && optionalBool(data, 'addBooksGrid')
         && (!('theme' in data) || data.theme in ['system', 'light', 'dark'])
         && optionalIntInRange(data, 'defaultTimerMin', 1, 600)
         && optionalIntInRange(data, 'weekStartsOn', 1, 7);
@@ -146,6 +157,22 @@ service cloud.firestore {
         && optionalIntInRange(data, 'target', 1, 1000000)
         && optionalString(data, 'createdAt', 40)
         && optionalBool(data, 'deleted');
+    }
+
+    function validShelf(data) {
+      return validLww(data, ['name', 'createdAt', 'deleted'])
+        && (!('name' in data) || (data.name is string && data.name.size() >= 1 && data.name.size() <= 60))
+        && optionalString(data, 'createdAt', 40)
+        && optionalBool(data, 'deleted');
+    }
+
+    function validShelfBook(data) {
+      return validLww(data, ['shelfId', 'workId', 'addedAt', 'removed', 'position'])
+        && (!('shelfId' in data) || (data.shelfId is string && data.shelfId.size() <= 64))
+        && (!('workId' in data) || (data.workId is string && data.workId.size() <= 64))
+        && optionalString(data, 'addedAt', 40)
+        && optionalBool(data, 'removed')
+        && optionalIntInRange(data, 'position', 0, 100000);
     }
 
     // A deleted session: created once, never changed (D4).
@@ -285,6 +312,18 @@ service cloud.firestore {
         allow read: if isOwner(uid);
         allow create, update: if isOwner(uid) && validGoal(request.resource.data);
         allow delete: if false;
+      }
+
+      match /shelves/{id} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validShelf(request.resource.data);
+        allow delete: if false; // removal is a `deleted` tombstone field
+      }
+
+      match /shelfBooks/{id} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validShelfBook(request.resource.data);
+        allow delete: if false; // removal is a `removed` tombstone field
       }
 
       // Other sub-collections stay denied until their phase adds rules.

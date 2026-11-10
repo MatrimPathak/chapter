@@ -74,6 +74,8 @@ void main() {
     'Library': ['Library'],
     'Reading': ['Reading'],
     'Search': ['Search'],
+    'Shelves': ['Shelves'],
+    'Shelf page': ['Shelves', 'View all'],
     'Profile': ['Profile'],
     'Goals': ['Profile', 'Goals'],
     'Insights': ['Profile', 'Insights'],
@@ -88,6 +90,11 @@ void main() {
 
   Future<void> open(WidgetTester tester, List<String> path) async {
     for (final label in path) {
+      if (label == 'Search') {
+        await tester.tap(find.byKey(const Key('open-search')).first);
+        await settle(tester);
+        continue;
+      }
       // Long lists build lazily, more so at large text sizes.
       if (find.text(label).evaluate().isEmpty) {
         await tester.scrollUntilVisible(

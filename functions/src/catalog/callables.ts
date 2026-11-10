@@ -22,6 +22,12 @@ import { CatalogError, CatalogService } from "./service";
 const HARDCOVER_TOKEN = defineSecret("HARDCOVER_TOKEN");
 const GOOGLE_BOOKS_KEY = defineSecret("GOOGLE_BOOKS_KEY");
 
+/** Turned off at the owner's request (2026-11-09). Hardcover is unaffected. */
+export const FALLBACK_PROVIDERS = {
+  openLibrary: false,
+  googleBooks: false,
+} as const;
+
 const MAX_INSTANCES = 10;
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
@@ -52,8 +58,12 @@ function catalog(): CatalogService {
         secret(HARDCOVER_TOKEN),
         TokenBucket.perMinute(Math.floor(60 / MAX_INSTANCES)),
       ),
-      new OpenLibraryProvider(nodeFetchJson),
-      new GoogleBooksProvider(nodeFetchJson, secret(GOOGLE_BOOKS_KEY)),
+      ...(FALLBACK_PROVIDERS.openLibrary
+        ? [new OpenLibraryProvider(nodeFetchJson)]
+        : []),
+      ...(FALLBACK_PROVIDERS.googleBooks
+        ? [new GoogleBooksProvider(nodeFetchJson, secret(GOOGLE_BOOKS_KEY))]
+        : []),
     ]);
     service = new CatalogService(
       orchestrator,

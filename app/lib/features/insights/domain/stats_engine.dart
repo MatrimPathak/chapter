@@ -319,6 +319,22 @@ class StatsEngine {
     return out;
   }
 
+  /// Pages per weekday, Monday first (index 0), or `null` with pages on fewer
+  /// than [minSessionsForWeekdays] days.
+  List<int>? weekdayPages({String? from, String? to}) {
+    final out = List<double>.filled(7, 0);
+    var activeDays = 0;
+    _days.forEach((date, d) {
+      if (d.pages <= 0 || !_inRange(date, from, to)) return;
+      final day = _parse(date);
+      if (day == null) return;
+      activeDays++;
+      out[day.weekday - 1] += d.pages;
+    });
+    if (activeDays < minSessionsForWeekdays) return null;
+    return [for (final p in out) p.round()];
+  }
+
   /// Most-finished authors, or `null` with fewer than [minBooksForRanking]
   /// finished books whose details are known.
   List<RankedName>? topAuthors({String? from, String? to, int limit = 5}) =>

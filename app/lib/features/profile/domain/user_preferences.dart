@@ -16,6 +16,11 @@ abstract final class ProfileFields {
   static const crashConsent = 'crashConsent';
   static const defaultTimerMin = 'defaultTimerMin';
   static const weekStartsOn = 'weekStartsOn';
+  static const librarySort = 'librarySort';
+  static const libraryGrid = 'libraryGrid';
+  static const shelfSort = 'shelfSort';
+  static const shelfGrid = 'shelfGrid';
+  static const addBooksGrid = 'addBooksGrid';
 
   static const all = {
     displayName,
@@ -27,6 +32,11 @@ abstract final class ProfileFields {
     crashConsent,
     defaultTimerMin,
     weekStartsOn,
+    librarySort,
+    libraryGrid,
+    shelfSort,
+    shelfGrid,
+    addBooksGrid,
   };
 }
 
@@ -41,6 +51,11 @@ abstract class UserPreferences with _$UserPreferences {
     @Default(true) bool crashConsent,
     @Default(30) int defaultTimerMin,
     @Default(DateTime.monday) int weekStartsOn,
+    @Default('recent') String librarySort,
+    @Default(false) bool libraryGrid,
+    @Default('recent') String shelfSort,
+    @Default(false) bool shelfGrid,
+    @Default(false) bool addBooksGrid,
   }) = _UserPreferences;
 
   const UserPreferences._();
@@ -65,6 +80,11 @@ abstract class UserPreferences with _$UserPreferences {
       crashConsent: read(ProfileFields.crashConsent, d.crashConsent),
       defaultTimerMin: timer >= 1 && timer <= 600 ? timer : d.defaultTimerMin,
       weekStartsOn: weekStart >= 1 && weekStart <= 7 ? weekStart : d.weekStartsOn,
+      librarySort: read(ProfileFields.librarySort, d.librarySort),
+      libraryGrid: read(ProfileFields.libraryGrid, d.libraryGrid),
+      shelfSort: read(ProfileFields.shelfSort, d.shelfSort),
+      shelfGrid: read(ProfileFields.shelfGrid, d.shelfGrid),
+      addBooksGrid: read(ProfileFields.addBooksGrid, d.addBooksGrid),
     );
   }
 }

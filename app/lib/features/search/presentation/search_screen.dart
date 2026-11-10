@@ -222,7 +222,9 @@ class _IdleView extends ConsumerWidget {
                     author: book.authors.firstOrNull,
                     coverUrl: book.coverUrl,
                   ),
-                  onTap: () => context.push(AppRoutes.book(workKeyOf(book))),
+                  onTap: () => context.push(
+                    AppRoutes.book(workKeyOf(book), editionId: book.matchedEditionId),
+                  ),
                 );
               },
             ),
@@ -306,7 +308,8 @@ class _Results extends ConsumerWidget {
                 caption: _caption(context, book),
               ),
               padding: const EdgeInsets.all(ChapterSpacing.lg),
-              onTap: () => context.push(AppRoutes.book(workKeyOf(book))),
+              onTap: () =>
+                  context.push(AppRoutes.book(workKeyOf(book), editionId: book.matchedEditionId)),
             ),
           ),
         );

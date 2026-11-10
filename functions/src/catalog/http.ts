@@ -7,7 +7,7 @@ export const USER_AGENT =
 export type FetchJson = (
   url: string,
   init: {
-    method?: "GET" | "POST";
+    method?: "GET" | "POST" | "PUT";
     headers?: Record<string, string>;
     body?: string;
     signal: AbortSignal;

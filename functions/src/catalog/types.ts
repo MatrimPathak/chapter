@@ -197,6 +197,8 @@ export interface WorkSummary {
   seriesName: string | null;
   seriesPosition: number | null;
   pageCount: number | null;
+  /** The exact edition an ISBN search matched. */
+  matchedEditionId?: string | null;
 }
 
 export interface CatalogAuthor {

@@ -20,6 +20,8 @@ WHAT CHAPTER SENDS TO OTHERS
 
 Book lookups. Searches and ISBNs go to our servers, which ask book data services (Open Library, and Hardcover and Google Books where enabled). Your account details aren't included in these requests. Our servers cache book information, which is public data about books, not about you.
 
+Spotify. Only if you choose to link your Spotify account: Chapter keeps your Spotify login tokens and display name on our servers, shows your playlists and what's playing, and can start or pause music on your devices. We don't store what you listen to or build statistics from it. Unlinking in Profile deletes the tokens and name straight away, and so does deleting your account.
+
 Google Firebase. Chapter's sign-in, database and server functions run on Firebase, provided by Google, which processes your data on our behalf.
 
 Analytics. Off unless you turn it on, during setup or in Profile. Analytics events never include book titles, notes or searches.

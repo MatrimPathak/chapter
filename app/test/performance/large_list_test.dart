@@ -58,7 +58,7 @@ void main() {
     final open = Stopwatch()..start();
     await tester.tap(find.text('Library'));
     await settle(tester);
-    await tester.tap(find.textContaining('Want to Read'));
+    await tester.tap(find.textContaining('Want to Read ('));
     await settle(tester);
     open.stop();
 

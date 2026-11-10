@@ -209,11 +209,7 @@ export function mergeWork(
     series,
     coverUrl,
     pageCount,
-    defaultEditionId:
-      matched?.id ??
-      editions.find((e) => validPages(e.pageCount ?? undefined))?.id ??
-      editions[0]?.id ??
-      null,
+    defaultEditionId: matched?.id ?? preferredEditionId(editions),
     editions,
     providerIds,
     provenance,
@@ -329,4 +325,27 @@ export function cleanDescription(raw: string | undefined): string | undefined {
 
 function formatPosition(p: number): string {
   return Number.isInteger(p) ? String(p) : String(Number(p.toFixed(2)));
+}
+
+const isEnglish = (language: string | null | undefined): boolean =>
+  ["eng", "en", "english"].includes(language?.trim().toLowerCase() ?? "");
+
+/** English with a usable page count first: the app is in English. */
+export function preferredEditionId(
+  editions: Array<{
+    id: string;
+    language?: string | null;
+    pageCount?: number | null;
+  }>,
+): string | null {
+  const hasPages = (e: { pageCount?: number | null }): boolean =>
+    validPages(e.pageCount ?? undefined);
+  const english = editions.filter((e) => isEnglish(e.language));
+  return (
+    english.find(hasPages)?.id ??
+    english[0]?.id ??
+    editions.find(hasPages)?.id ??
+    editions[0]?.id ??
+    null
+  );
 }

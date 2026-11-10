@@ -11,6 +11,15 @@ abstract interface class ProfileRepository {
   /// Last-used reading timer length, in minutes (1–600).
   Future<void> setDefaultTimer(int minutes);
 
+  /// Remembers how book lists are sorted and laid out.
+  Future<void> setBookViews({
+    String? librarySort,
+    bool? libraryGrid,
+    String? shelfSort,
+    bool? shelfGrid,
+    bool? addBooksGrid,
+  });
+
   Future<void> setConsents({bool? analytics, bool? crash});
 
   Future<void> completeOnboarding({required bool analytics, required bool crash});

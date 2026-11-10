@@ -195,6 +195,48 @@ void main() {
       expect((await phone.throughs('w1')).single.finishedAt, isNull);
     });
 
+    test('a start date can be set on any read, never after its finish', () async {
+      await phone.repo.add(workId: 'w1', book: book, status: ReadingStatus.reading);
+      final rt = (await phone.throughs('w1')).single;
+      await phone.repo.setStartDate(rt.id, DateTime.utc(2020, 6));
+      expect((await phone.throughs('w1')).single.startedAt, DateTime.utc(2020, 6));
+
+      await phone.repo.setStatus('w1', ReadingStatus.read);
+      await phone.repo.setFinishDate(rt.id, ReadFinish.on(DateTime.utc(2020, 6, 10)));
+      await phone.repo.setStartDate(rt.id, DateTime.utc(2020, 6, 11));
+      expect((await phone.throughs('w1')).single.startedAt, DateTime.utc(2020, 6));
+    });
+
+    test('an earlier finish date moves the start back with it', () async {
+      await phone.repo.add(workId: 'w1', book: book, status: ReadingStatus.reading);
+      final rt = (await phone.throughs('w1')).single;
+      await phone.repo.setStartDate(rt.id, DateTime.utc(2020, 6, 10));
+      await phone.repo.setStatus('w1', ReadingStatus.read);
+      await phone.repo.setFinishDate(rt.id, ReadFinish.on(DateTime.utc(2020, 6, 5)));
+      final after = (await phone.throughs('w1')).single;
+      expect(after.finishedAt, DateTime.utc(2020, 6, 5));
+      expect(after.startedAt, DateTime.utc(2020, 6, 5));
+    });
+
+    test('one book can own several formats at once', () async {
+      await phone.repo.add(workId: 'w1', book: book, status: ReadingStatus.reading);
+      for (final format in ['paperback', 'hardcover', 'kindle', 'audible']) {
+        await phone.repo.setOwned(
+          UserEdition(editionId: format, workId: 'w1', format: format, owned: true),
+          owned: true,
+        );
+      }
+      final owned = (await phone.repo.watchEditions('w1').first).where((e) => e.owned);
+      expect(
+        owned.map((e) => e.format),
+        containsAll(['paperback', 'hardcover', 'kindle', 'audible']),
+      );
+
+      await phone.repo.setOwned(owned.firstWhere((e) => e.format == 'kindle'), owned: false);
+      final after = (await phone.repo.watchEditions('w1').first).where((e) => e.owned);
+      expect(after.map((e) => e.format), isNot(contains('kindle')));
+    });
+
     test('remove tombstones the entry; re-adding keeps the history', () async {
       await phone.repo.add(workId: 'w1', book: book);
       await phone.repo.setStatus('w1', ReadingStatus.read);

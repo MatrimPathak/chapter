@@ -24,6 +24,8 @@ const COLLECTIONS = [
   "sessionTombstones",
   "notes",
   "goals",
+  "shelves",
+  "shelfBooks",
 ];
 
 let app: App;
@@ -35,6 +37,9 @@ async function seed(uid: string): Promise<void> {
   await db.doc(`users/${uid}`).set({ displayName: "Reader" });
   await db.doc(`private_integrations/${uid}`).set({ spotify: "x" });
   await db.doc(`private_integrations/${uid}/tokens/a`).set({ value: "x" });
+  await db
+    .doc(`private_integrations/${uid}/services/spotify`)
+    .set({ refreshToken: "x" });
   for (const c of COLLECTIONS) {
     await db.doc(`users/${uid}/${c}/a`).set({ value: 1 });
     await db.doc(`users/${uid}/${c}/b`).set({ value: 2 });
@@ -87,7 +92,7 @@ describe("deleteUserData", () => {
     });
 
     const bob = await remaining("bob");
-    expect(bob).toHaveLength(2 + 1 + COLLECTIONS.length * 2);
+    expect(bob).toHaveLength(2 + 2 + COLLECTIONS.length * 2);
     expect((await auth.getUser("bob")).uid).toBe("bob");
   });
 

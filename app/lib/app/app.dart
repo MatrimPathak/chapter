@@ -43,6 +43,14 @@ class ChapterApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
+      // iOS keyboards have no dismiss key: a tap on empty space closes them.
+      builder: (context, child) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        // Convenience for touch only: screen readers shouldn't see a tappable app.
+        excludeFromSemantics: true,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: child,
+      ),
     );
   }
 }

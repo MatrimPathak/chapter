@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/providers.dart';
 import '../../../app/router/routes.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/error/failure.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../library/domain/library_models.dart';
+import '../../library/presentation/library_providers.dart';
 import '../../library/presentation/library_sheets.dart';
+import '../../library/presentation/progress_format.dart';
+import '../../notes/presentation/book_notes_section.dart';
 import '../domain/catalog_models.dart';
 import 'catalog_detail_providers.dart';
 import 'search_controller.dart';
@@ -16,21 +21,24 @@ import 'search_controller.dart';
 /// [LibrarySection] adds the user's shelf, edition and progress (Phase 4);
 /// rating and notes join in Phases 5–6.
 class BookDetailScreen extends ConsumerWidget {
-  const BookDetailScreen({required this.workKey, super.key});
+  const BookDetailScreen({required this.workKey, this.editionId, super.key});
 
   /// `id:<uuid>` or `ref:<provider>:<externalId>`.
   final String workKey;
+
+  /// The edition to show, when the reader arrived at a specific one.
+  final String? editionId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final work = ref.watch(workDetailProvider(workKey));
-    return Scaffold(
-      appBar: AppBar(),
-      body: work.when(
-        data: (w) => _WorkView(work: w),
-        loading: () => const _DetailSkeleton(),
-        error: (error, _) => ErrorState(
+    return work.when(
+      data: (w) => _WorkPage(work: w, editionId: editionId),
+      loading: () => Scaffold(appBar: AppBar(), body: const _DetailSkeleton()),
+      error: (error, _) => Scaffold(
+        appBar: AppBar(),
+        body: ErrorState(
           message: error is NotFoundFailure ? l10n.bookNotFound : l10n.genericError,
           retryLabel: error is NotFoundFailure ? null : l10n.retry,
           onRetry: () => ref.invalidate(workDetailProvider(workKey)),
@@ -40,20 +48,102 @@ class BookDetailScreen extends ConsumerWidget {
   }
 }
 
-class _WorkView extends StatelessWidget {
-  const _WorkView({required this.work});
+/// The book page and its app bar, which picks up the title once the big one
+/// has scrolled out of sight.
+class _WorkPage extends StatefulWidget {
+  const _WorkPage({required this.work, this.editionId});
 
   final CatalogWork work;
+  final String? editionId;
 
   @override
-  Widget build(BuildContext context) {
+  State<_WorkPage> createState() => _WorkPageState();
+}
+
+class _WorkPageState extends State<_WorkPage> {
+  final _scroll = ScrollController();
+  final _titleKey = GlobalKey();
+  bool _titleOffScreen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(_update);
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  // After the frame: scrolling back rebuilds the title only once it's laid out.
+  void _update() => WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    final box = _titleKey.currentContext?.findRenderObject() as RenderBox?;
+    final barBottom = MediaQuery.paddingOf(context).top + kToolbarHeight;
+    // The list drops rows far off screen, so no title here means it's gone.
+    final offScreen = box == null || box.localToGlobal(Offset(0, box.size.height)).dy <= barBottom;
+    if (offScreen != _titleOffScreen) setState(() => _titleOffScreen = offScreen);
+  });
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: _titleOffScreen
+          ? Text(widget.work.title, maxLines: 1, overflow: TextOverflow.ellipsis)
+          : null,
+      actions: [BookLibraryActions(work: widget.work)],
+    ),
+    body: _WorkView(
+      work: widget.work,
+      editionId: widget.editionId,
+      scrollController: _scroll,
+      titleKey: _titleKey,
+    ),
+  );
+}
+
+class _WorkView extends ConsumerWidget {
+  const _WorkView({
+    required this.work,
+    required this.scrollController,
+    required this.titleKey,
+    this.editionId,
+  });
+
+  final CatalogWork work;
+  final String? editionId;
+  final ScrollController scrollController;
+  final GlobalKey titleKey;
+
+  CatalogEdition? _edition(String? id) => work.editions.where((e) => e.id == id).firstOrNull;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final colors = context.chapterColors;
-    final edition = work.defaultEdition;
+    // What the reader asked for, then the copy they have, then a sensible default.
+    final entry = ref.watch(libraryEntryProvider(work.id)).value;
+    final chosen = _edition(editionId) ?? _edition(entry?.activeEditionId);
+    final fallback = work.defaultEdition;
+    // Nothing chosen: keep the cover the reader tapped, and describe that edition.
+    final edition =
+        chosen ??
+        (fallback?.coverUrl == work.coverUrl
+            ? fallback
+            : work.editions.where((e) => e.coverUrl == work.coverUrl).firstOrNull ?? fallback);
+    // A removed book keeps its record, but isn't one the reader has any more.
+    final owned = entry == null
+        ? const <UserEdition>[]
+        : (ref.watch(userEditionsProvider(work.id)).value ?? const <UserEdition>[])
+              .where((e) => e.owned)
+              .toList();
     final series = work.series.firstOrNull;
+    final author = work.authors.where((a) => a.id != null).firstOrNull;
     final year = RegExp(r'\d{4}').firstMatch(work.firstPublishedDate ?? '')?.group(0);
 
     return ListView(
+      controller: scrollController,
       padding: const EdgeInsets.fromLTRB(
         ChapterSpacing.gutter,
         0,
@@ -65,7 +155,7 @@ class _WorkView extends StatelessWidget {
           child: BookCover(
             title: work.title,
             author: work.authors.firstOrNull?.name,
-            imageUrl: work.coverUrl,
+            imageUrl: chosen?.coverUrl ?? work.coverUrl,
             width: 176,
           ),
         ),
@@ -73,19 +163,12 @@ class _WorkView extends StatelessWidget {
         Semantics(
           header: true,
           child: Text(
+            key: titleKey,
             work.title,
             textAlign: TextAlign.center,
             style: context.textTheme.displayMedium,
           ),
         ),
-        if (work.subtitle != null) ...[
-          const SizedBox(height: ChapterSpacing.xs),
-          Text(
-            work.subtitle!,
-            textAlign: TextAlign.center,
-            style: context.textTheme.bodyLarge?.copyWith(color: colors.inkMuted),
-          ),
-        ],
         Wrap(
           alignment: WrapAlignment.center,
           spacing: ChapterSpacing.sm,
@@ -111,19 +194,23 @@ class _WorkView extends StatelessWidget {
                 onTap: series.seriesId == null
                     ? () {
                         ref.read(searchControllerProvider.notifier).submit(series.name);
-                        context.go(AppRoutes.search);
+                        context.push(AppRoutes.search);
                       }
                     : () => context.push(AppRoutes.series(series.seriesId!)),
               ),
             ),
           ),
         Text(
-          [if (work.pageCount != null) l10n.bookPages(work.pageCount!), ?year].join(' · '),
+          [
+            if ((edition?.pageCount ?? work.pageCount) != null)
+              l10n.bookPages((edition?.pageCount ?? work.pageCount)!),
+            ?year,
+          ].join(' · '),
           textAlign: TextAlign.center,
           style: context.textTheme.bodySmall,
         ),
         const SizedBox(height: ChapterSpacing.xl),
-        LibrarySection(work: work),
+        LibrarySection(work: work, editionId: edition?.id),
         if (work.description != null) ...[
           _Heading(l10n.bookAbout),
           ChapterCard(child: _ExpandableText(text: work.description!)),
@@ -136,6 +223,8 @@ class _WorkView extends StatelessWidget {
             children: [for (final g in work.genres) Chip(label: Text(g))],
           ),
         ],
+        if (series?.seriesId != null) _SeriesBooks(seriesId: series!.seriesId!, workId: work.id),
+        if (author?.id != null) _AboutAuthor(authorId: author!.id!),
         _Heading(l10n.bookDetails),
         ChapterCard(
           child: Column(
@@ -148,35 +237,80 @@ class _WorkView extends StatelessWidget {
               _Fact(label: l10n.bookIsbn, value: edition?.isbn13 ?? edition?.isbn10),
               _Fact(
                 label: l10n.bookFormat,
-                value: edition == null ? null : _format(edition.format),
+                value: edition == null || edition.format == 'other'
+                    ? null
+                    : _format(edition.format),
               ),
-              _Fact(label: l10n.bookLanguage, value: edition?.language ?? work.language),
+              _Fact(label: l10n.bookLanguage, value: _language(edition?.language ?? work.language)),
             ],
           ),
         ),
-        if (work.editions.length > 1) ...[
-          _Heading(l10n.bookEditions(work.editions.length)),
-          for (final e in work.editions.take(12))
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: Text(
-                [_format(e.format), ?e.publisher].join(' · '),
-                style: context.textTheme.bodyMedium,
-              ),
-              subtitle: Text(
-                [
-                  ?e.publishedDate,
-                  if (e.pageCount != null) l10n.bookPages(e.pageCount!),
-                  ?e.isbn13,
-                ].join(' · '),
-                style: context.textTheme.bodySmall,
+        if (entry != null) ...[
+          _Heading(l10n.bookYourEditions),
+          if (owned.isNotEmpty)
+            SizedBox(
+              height: bookRowHeight(context),
+              child: ListView.separated(
+                key: const Key('owned-editions'),
+                scrollDirection: Axis.horizontal,
+                itemCount: owned.length,
+                separatorBuilder: (_, _) => const SizedBox(width: ChapterSpacing.lg),
+                itemBuilder: (context, i) {
+                  final e = owned[i];
+                  return Stack(
+                    key: ValueKey('owned-edition-${e.editionId}'),
+                    children: [
+                      BookGridCard(
+                        data: BookCardData(
+                          title: [_format(e.format), ?e.publisher].join(' · '),
+                          author: [
+                            if (e.pageCount != null) l10n.bookPages(e.pageCount!),
+                            if (e.audioDurationSec != null) formatDuration(e.audioDurationSec!),
+                          ].join(' · '),
+                          coverUrl: e.coverUrl ?? work.coverUrl,
+                        ),
+                      ),
+                      PositionedDirectional(
+                        top: 0,
+                        end: 0,
+                        child: IconButton.filledTonal(
+                          icon: const Icon(Icons.remove),
+                          tooltip: l10n.editionRemove,
+                          onPressed: () async {
+                            final repo = ref.read(libraryRepositoryProvider);
+                            final confirmed = await showChapterConfirmDialog(
+                              context: context,
+                              title: l10n.editionRemove,
+                              body: l10n.editionRemoveBody,
+                              confirmLabel: l10n.editionRemove,
+                              cancelLabel: l10n.cancel,
+                              destructive: true,
+                            );
+                            if (confirmed) await repo.setOwned(e, owned: false);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              key: const Key('add-edition'),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.editionAdd),
+              onPressed: () => showAddEditionSheet(context, work),
+            ),
+          ),
         ],
+        if (entry != null) BookRatingSection(entry: entry),
       ],
     );
   }
+
+  static String? _language(String? code) => const {'eng': 'English', 'en': 'English'}[code] ?? code;
 
   static String _format(String format) => switch (format) {
     'paperback' => 'Paperback',
@@ -189,6 +323,108 @@ class _WorkView extends StatelessWidget {
     'audible' => 'Audible',
     _ => 'Edition',
   };
+}
+
+/// Every book in the series, in reading order. If it can't load, it isn't shown.
+class _SeriesBooks extends ConsumerWidget {
+  const _SeriesBooks({required this.seriesId, required this.workId});
+
+  final String seriesId;
+  final String workId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final series = ref.watch(seriesDetailProvider(seriesId)).value;
+    if (series == null || series.entries.length < 2) return const SizedBox.shrink();
+    return Column(
+      key: const Key('book-series-list'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _Heading(l10n.bookInThisSeries),
+        // Sideways, so a long series doesn't push the rest of the page away.
+        SizedBox(
+          height: bookRowHeight(context),
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: series.entries.length,
+            separatorBuilder: (_, _) => const SizedBox(width: ChapterSpacing.lg),
+            itemBuilder: (context, i) => _SeriesBookCard(
+              entry: series.entries[i],
+              current: series.entries[i].work.id == workId,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// One book in the row. A book in the library shows the reader's own edition.
+class _SeriesBookCard extends ConsumerWidget {
+  const _SeriesBookCard({required this.entry, required this.current});
+
+  final SeriesEntry entry;
+  final bool current;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final work = entry.work;
+    final owned = work.id == null ? null : ref.watch(libraryEntryProvider(work.id!)).value;
+    final label = entry.positionLabel;
+    return BookGridCard(
+      data: BookCardData(
+        title: work.title,
+        author: current
+            ? l10n.bookThisBook
+            : label == null
+            ? l10n.seriesNovella
+            : l10n.seriesBookNumber(label),
+        coverUrl: owned?.book.coverUrl ?? work.coverUrl,
+      ),
+      onTap: current ? null : () => context.push(AppRoutes.book(workKeyOf(work))),
+    );
+  }
+}
+
+/// The first credited author's biography. If it can't load, it isn't shown.
+class _AboutAuthor extends ConsumerWidget {
+  const _AboutAuthor({required this.authorId});
+
+  final String authorId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final key = 'id:$authorId';
+    final author = ref.watch(authorDetailProvider(key)).value;
+    if (author == null) return const SizedBox.shrink();
+    return Column(
+      key: const Key('book-about-author'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _Heading(l10n.bookAboutAuthor),
+        ChapterCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(author.name, style: context.textTheme.headlineSmall),
+              const SizedBox(height: ChapterSpacing.sm),
+              if (author.bio == null)
+                Text(l10n.authorNoBio, style: context.textTheme.bodyMedium)
+              else
+                _ExpandableText(text: author.bio!),
+              TextButton(
+                onPressed: () => context.push(AppRoutes.author(key)),
+                child: Text(l10n.bookViewAuthor),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _LinkText extends StatelessWidget {

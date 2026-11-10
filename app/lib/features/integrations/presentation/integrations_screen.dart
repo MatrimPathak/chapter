@@ -7,6 +7,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/integration.dart';
+import '../domain/spotify.dart';
 import 'integrations_providers.dart';
 
 /// Profile → Connected services. Says plainly what each one does and doesn't
@@ -57,7 +58,9 @@ class _Card extends ConsumerWidget {
       IntegrationId.audible => (l10n.integrationAudible, l10n.integrationAudibleBody, null),
       IntegrationId.spotify => (
         l10n.integrationSpotify,
-        l10n.integrationSpotifyBody,
+        ref.watch(spotifyStatusProvider).value?.state == SpotifyLinkState.linked
+            ? l10n.integrationSpotifyBodyLinked
+            : l10n.integrationSpotifyBody,
         l10n.integrationOpenLinks,
       ),
     };

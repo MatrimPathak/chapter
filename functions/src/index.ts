@@ -17,3 +17,13 @@ export {
   catalogTrending,
 } from "./catalog/callables";
 export { deleteAccount, sweepDeletedAccounts } from "./account/deleteAccount";
+export {
+  spotifyBeginLink,
+  spotifyDisconnect,
+  spotifyListPlaylists,
+  spotifyNowPlaying,
+  spotifyOAuthCallback,
+  spotifyPause,
+  spotifyPlay,
+  spotifyStatus,
+} from "./spotify/callables";

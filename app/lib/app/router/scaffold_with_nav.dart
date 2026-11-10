@@ -68,9 +68,9 @@ class _ScaffoldWithNavState extends ConsumerState<ScaffoldWithNav> {
                 selectedIcon: Icons.auto_stories_rounded,
               ),
               ChapterNavItem(
-                label: l10n.navSearch,
-                icon: Icons.search_rounded,
-                selectedIcon: Icons.search_rounded,
+                label: l10n.navShelves,
+                icon: Icons.collections_bookmark_outlined,
+                selectedIcon: Icons.collections_bookmark_rounded,
               ),
               ChapterNavItem(
                 label: l10n.navRead,

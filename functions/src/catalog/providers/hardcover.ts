@@ -178,7 +178,11 @@ export class HardcoverProvider implements BookMetadataProvider {
       `query Author($id: Int!) {
         authors(where: {id: {_eq: $id}}, limit: 1) {
           id name bio image { url }
-          contributions(limit: 40) { book { id title release_year image { url } } }
+          contributions(
+            limit: 40
+            order_by: {book: {users_count: desc}}
+            where: {book: {default_physical_edition: {language: {code3: {_eq: "eng"}}}}}
+          ) { book { id title release_year image { url } } }
         }
       }`,
       { id },
@@ -202,6 +206,7 @@ export class HardcoverProvider implements BookMetadataProvider {
               const bid = asNumber(b?.id);
               const title = asString(b?.title);
               if (!b || bid === undefined || !title) return undefined;
+              if (isBundleTitle(title)) return undefined;
               const hit: RawWorkHit = {
                 ref: { provider: "hardcover", externalId: String(bid) },
                 title,
@@ -336,8 +341,19 @@ const SERIES_ENTRY_FIELDS = `position
 /** Unnumbered books have no position to deduplicate on, so cap them. */
 const MAX_UNNUMBERED_SERIES_ENTRIES = 20;
 
+/**
+ * Box sets and multi-book bundles, by title. Hardcover's `compilation` flag
+ * can't be used: it marks single-volume collections like The Assassin's Blade
+ * and misses some sets.
+ */
+export function isBundleTitle(title: string): boolean {
+  return /\bbooks?\s+\d|\bbox(ed)?\s*set\b|\bbundle\b|\bcomplete\b.*\bcollection\b|;/i.test(
+    title,
+  );
+}
+
 const EDITION_FIELDS = `id isbn_10 isbn_13 pages audio_seconds release_date edition_format title
-  publisher { name } image { url }`;
+  publisher { name } image { url } language { code3 }`;
 
 const BOOK_FIELDS = `id title subtitle description release_date pages
   image { url }
@@ -399,6 +415,7 @@ function editionFromJson(e: Record<string, unknown>): RawEdition | undefined {
     pageCount: asNumber(e.pages),
     audioDurationSec: audio,
     coverUrl: asString(asRecord(e.image)?.url),
+    language: asString(asRecord(e.language)?.code3),
   };
 }
 

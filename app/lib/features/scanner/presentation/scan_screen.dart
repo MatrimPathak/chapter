@@ -263,7 +263,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       if (!mounted) return;
     }
     if (action == _FoundAction.view) {
-      context.pushReplacement(AppRoutes.book('id:${work.id}'));
+      context.pushReplacement(AppRoutes.book('id:${work.id}', editionId: lookup.editionId));
     } else {
       ref.read(scanControllerProvider.notifier).reset();
       unawaited(_camera?.start());

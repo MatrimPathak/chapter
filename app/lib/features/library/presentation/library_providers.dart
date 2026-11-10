@@ -93,8 +93,26 @@ List<ShelfItem> continueReading(List<ShelfItem> items) =>
     items.where((i) => i.entry.status == ReadingStatus.reading).toList()
       ..sort((a, b) => b.lastActivity.compareTo(a.lastActivity));
 
+/// Each series together in reading order; books outside a series come last.
+int compareBySeriesOrder(BookSummary a, BookSummary b) {
+  int byTitle() => a.title.toLowerCase().compareTo(b.title.toLowerCase());
+  final seriesA = a.seriesName?.toLowerCase();
+  final seriesB = b.seriesName?.toLowerCase();
+  if (seriesA == null || seriesB == null) {
+    if (seriesA != seriesB) return seriesA == null ? 1 : -1;
+    return byTitle();
+  }
+  final series = seriesA.compareTo(seriesB);
+  if (series != 0) return series;
+  final positionA = a.seriesPosition ?? double.infinity;
+  final positionB = b.seriesPosition ?? double.infinity;
+  final position = positionA.compareTo(positionB);
+  return position != 0 ? position : byTitle();
+}
+
 /// Library summary of a catalog work (denormalized onto the entry).
-BookSummary bookSummaryOf(CatalogWork w) {
+/// [edition] is the copy being added: its cover is the one the reader sees.
+BookSummary bookSummaryOf(CatalogWork w, {CatalogEdition? edition}) {
   final series = w.series.where((s) => s.isPrimary).firstOrNull ?? w.series.firstOrNull;
   final year = int.tryParse(
     RegExp(r'\d{4}').firstMatch(w.firstPublishedDate ?? '')?.group(0) ?? '',
@@ -103,7 +121,7 @@ BookSummary bookSummaryOf(CatalogWork w) {
     title: w.title,
     subtitle: w.subtitle,
     authorNames: [for (final a in w.authors) a.name],
-    coverUrl: w.coverUrl,
+    coverUrl: edition?.coverUrl ?? w.coverUrl,
     pageCount: w.pageCount,
     seriesId: series?.seriesId,
     seriesName: series?.name,
