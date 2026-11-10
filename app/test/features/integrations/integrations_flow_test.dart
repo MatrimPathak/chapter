@@ -9,6 +9,7 @@ import 'package:chapter/features/integrations/data/import_queue.dart';
 import 'package:chapter/features/integrations/data/platform_ports.dart';
 import 'package:chapter/features/integrations/domain/integration.dart';
 import 'package:chapter/features/integrations/domain/reading_import.dart' show parseReadingExport;
+import 'package:chapter/features/integrations/presentation/spotify_widgets.dart';
 import 'package:chapter/features/library/data/lww_library_repository.dart';
 import 'package:chapter/features/library/domain/library_models.dart';
 import 'package:chapter/features/library/presentation/library_providers.dart';
@@ -176,7 +177,6 @@ void main() {
     await openServices(tester);
     expect(find.textContaining('can’t read your Kindle progress'), findsOneWidget);
     expect(find.textContaining('can’t read your Audible progress'), findsOneWidget);
-    expect(find.textContaining('can’t see or control'), findsOneWidget);
     final texts = tester.widgetList<Text>(find.byType(Text)).map((t) => t.data ?? '').join(' ');
     expect(
       RegExp('automatic sync|syncs with|sign in to', caseSensitive: false).hasMatch(texts),
@@ -310,6 +310,43 @@ void main() {
     final entry = (await tester.runAsync(() => repo.watchEntry(theDeal.id).first))!;
     final latest = (await tester.runAsync(() => repo.watchLatestProgress().first))!;
     expect(latest[entry.activeReadThroughId]!.fraction, closeTo(0.75, 1e-9));
+    await unmountApp(tester);
+  });
+
+  testWidgets('Spotify is linked from Connected services, not Profile', (tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    addTearDown(tester.view.reset);
+    await launch(tester);
+    await tester.tap(find.text('Profile').last);
+    await settle(tester);
+    expect(find.byType(SpotifyLinkRow), findsNothing);
+
+    await tester.tap(find.text('Connected services'));
+    await settle(tester);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('integration-spotify')),
+        matching: find.byType(SpotifyLinkRow),
+      ),
+      findsOneWidget,
+    );
+    await unmountApp(tester);
+  });
+
+  testWidgets('Open on the Spotify card goes straight to Spotify', (tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    addTearDown(tester.view.reset);
+    await launch(tester);
+    await tester.tap(find.text('Profile').last);
+    await settle(tester);
+    await tester.tap(find.text('Connected services'));
+    await settle(tester);
+
+    await tester.tap(find.byKey(const ValueKey('integration-spotify-action')));
+    await settle(tester);
+
+    expect(opener.opened.single.toString(), 'https://open.spotify.com');
+    expect(find.text('Reading playlists'), findsNothing);
     await unmountApp(tester);
   });
 

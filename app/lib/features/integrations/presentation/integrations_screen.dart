@@ -7,8 +7,8 @@ import '../../../app/router/routes.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/integration.dart';
-import '../domain/spotify.dart';
 import 'integrations_providers.dart';
+import 'spotify_widgets.dart';
 
 /// Profile → Connected services. Says plainly what each one does and doesn't
 /// do. A failure shows on its own card only.
@@ -58,9 +58,7 @@ class _Card extends ConsumerWidget {
       IntegrationId.audible => (l10n.integrationAudible, l10n.integrationAudibleBody, null),
       IntegrationId.spotify => (
         l10n.integrationSpotify,
-        ref.watch(spotifyStatusProvider).value?.state == SpotifyLinkState.linked
-            ? l10n.integrationSpotifyBodyLinked
-            : l10n.integrationSpotifyBody,
+        l10n.integrationSpotifyBody,
         l10n.integrationOpenLinks,
       ),
     };
@@ -76,6 +74,8 @@ class _Card extends ConsumerWidget {
             Semantics(header: true, child: Text(title, style: context.textTheme.headlineSmall)),
             const SizedBox(height: ChapterSpacing.xs),
             Text(body, style: context.textTheme.bodyMedium),
+            if (id == IntegrationId.spotify)
+              ListTileTheme.merge(contentPadding: EdgeInsets.zero, child: const SpotifyLinkRow()),
             if (unavailable) ...[
               const SizedBox(height: ChapterSpacing.sm),
               Text(
@@ -105,7 +105,7 @@ class _Card extends ConsumerWidget {
       case IntegrationId.kindle:
         context.push(AppRoutes.importClippings);
       case IntegrationId.spotify:
-        showMusicSheet(context, ref);
+        openExternal(context, ref, ExternalLinks.spotifyHome);
       case IntegrationId.audible:
         break;
     }

@@ -146,6 +146,14 @@ Open blockers and spikes: **B3 store accounts, release key and App Check registr
 
 **Rules deployed:** `firebase deploy --only firestore:rules --project chapter-reads-prod` released on 2026-11-10 with your approval, from the uncommitted working tree. The change only adds allowed fields and collections. Functions and indexes were not deployed.
 
+**Published 2026-11-10 with your approval:** commit `61aa095` "Add Shelves, Spotify linking and edition fixes" pushed to `origin/claude/ios-simulator-dev-build-75f2e1`. Not merged; `main` is still `8dfa0c4`, so the deployed rules are ahead of `main`. The two untracked `app/ios/.../swiftpm/` folders were left out.
+
+**Functions and indexes deployed 2026-11-10 with your approval:** `firebase deploy --only functions,firestore:indexes --project chapter-reads-prod`, from commit `61aa095`, after you set `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`. All 16 functions updated or created in asia-south1. Open Library and Google Books stay off in production too. The Firebase CLI doesn't exclude `functions/.secret.local` from the source upload, so that file was moved aside for the deploy and restored; do the same next time, or add it to the `ignore` list in `firebase.json`.
+
+**Still to do:** the Redirect URI `https://asia-south1-chapter-reads-prod.cloudfunctions.net/spotifyOAuthCallback` is in the Spotify app. A real Spotify account linked on 2026-11-10 through the local emulators (dev build on the iOS Simulator): login, consent, callback, tokens stored server-side, "Linked as" shown in Profile. Now playing showed the real track, artist and cover on the session timer. Not yet tested: playlist and pause/play controls with real music, and linking against production. A production test on iOS is blocked until iOS has `GoogleService-Info.plist`, an iOS client ID and URL scheme for Google sign-in, and App Attest registration. Merge the branch to `main`. Ship a new app build.
+
+**Moved after commit `61aa095`:** Link Spotify is now on the Spotify card in Connected services, at your request, and no longer in Profile. The card's Open button now goes straight to open.spotify.com instead of showing the list of playlists; the Music for reading sheet on the Reading tab is unchanged.
+
 **Release order:** the rules deploy must come before the app. The profile rule only accepts listed fields, so a new app against old rules would have every profile write rejected, not just shelves.
 
 **Spelling:** the built-in shelf reads "Favourites", matching the app's existing wording.

@@ -116,7 +116,7 @@ If Spotify fails, the only effect is that the music card is hidden.
 
 **Implemented (Phase 7):** Tier A only, with public search links (`open.spotify.com/search/...`) in place of curated playlists until real ones are chosen. Tier B was added afterwards: see below.
 
-**Implemented (2026-11-09):** Tier B: Link Spotify in Profile, now playing on the timer, playlists and playback. Server-side Authorization Code flow with the client secret (TD-53), not PKCE. Not yet tested against a real Spotify account.
+**Implemented (2026-11-09):** Tier B: Link Spotify in Connected services, now playing on the timer, playlists and playback. Server-side Authorization Code flow with the client secret (TD-53), not PKCE. Not yet tested against a real Spotify account.
 
 **Re-verified 2026-11-09 for the Tier B plan (`PROJECT_STATUS.md`):**
 - Extended Quota applications are accepted only from registered organizations with at least 250k monthly active users, so Tier B stays limited to 5 allow-listed users.
