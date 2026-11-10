@@ -23,6 +23,13 @@ bool _matches(ShelfItem item, String query) {
       b.authorNames.any((a) => a.toLowerCase().contains(query));
 }
 
+/// Ticks library books on or off [shelfId], from anywhere.
+Future<void> showAddBooksSheet(BuildContext context, String shelfId) => showChapterSheet<void>(
+  context: context,
+  title: AppLocalizations.of(context).shelfAddBooks,
+  builder: (_) => _AddBooks(shelfId: shelfId),
+);
+
 /// All the books on one shelf.
 class ShelfScreen extends ConsumerStatefulWidget {
   const ShelfScreen({required this.shelfId, super.key});
@@ -129,13 +136,7 @@ class _ShelfScreenState extends ConsumerState<ShelfScreen> {
         heroTag: null, // no flight from the Shelves tab's button
         icon: const Icon(Icons.add),
         label: Text(l10n.shelfAddBooks),
-        onPressed: () => unawaited(
-          showChapterSheet<void>(
-            context: context,
-            title: l10n.shelfAddBooks,
-            builder: (_) => _AddBooks(shelfId: widget.shelfId),
-          ),
-        ),
+        onPressed: () => unawaited(showAddBooksSheet(context, widget.shelfId)),
       ),
       appBar: AppBar(
         actions: [
